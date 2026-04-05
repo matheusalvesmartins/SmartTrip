@@ -25,6 +25,7 @@
   --accent-bg-strong: rgba(13, 137, 224, 0.25);
   --danger: #C45050;
   --success: #5CAA6E;
+  --hotel: #E64A19; /* Laranja escuro para hotéis */
   --white: #FFFFFF;
   --black: #000000;
   --radius: 12px;
@@ -100,7 +101,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .trip-card .meta { font-size:12px; color:var(--text-secondary); }
 .trip-actions { display:flex; gap:2px; }
 
-/* ROTEIRO & MAPA COMUM */
+/* FILTROS COMUNS */
 .filters-bar { padding:10px 16px; display:flex; align-items:center; gap:8px; overflow-x:auto; flex-shrink:0; border-bottom:1px solid var(--border); scrollbar-width:none; background:var(--bg); }
 .filters-bar::-webkit-scrollbar { display:none; }
 .filter-chip { display:flex; align-items:center; gap:4px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; font-size:13px; color:var(--text-secondary); flex-shrink:0; transition:all var(--transition);}
@@ -110,7 +111,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .btn-clear { display:flex; align-items:center; gap:4px; font-size:12px; font-family:var(--font-body); background:transparent; border:1px solid var(--border); color:var(--text-muted); border-radius:20px; padding:6px 12px; cursor:pointer; flex-shrink:0; transition:all var(--transition); }
 .btn-clear:hover { background:var(--bg-elevated); color:var(--text); }
 
-/* ROTEIRO (ITINERARY) */
+/* LISTAS (ROTEIRO & HOSPEDAGEM) */
 .itinerary-list { flex:1; overflow-y:auto; padding:8px 16px 24px; }
 .day-header { display:flex; align-items:center; gap:10px; padding:12px 0 8px; margin-bottom:4px; position:sticky; top:0; z-index:5; background:var(--bg); }
 .day-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--bg); background:var(--text); padding:4px 12px; border-radius:20px; }
@@ -124,12 +125,14 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .card-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
 .tag { display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:4px 8px; border-radius:4px; font-weight:600; }
 .tag-anexo { background:var(--bg-elevated); color:var(--text-secondary); border:1px solid var(--border); }
+.tag-hospedagem { border: 1px solid var(--hotel); color: var(--hotel); background: transparent; }
 
 /* MAPA */
 .map-container { flex:1; position:relative; }
 #main-map { width:100%; height:100%; z-index:1; }
 .leaflet-tile-pane { filter:var(--map-filter); transition:filter 0.3s ease; }
 .map-marker-label { display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:var(--text); color:var(--bg); border-radius:50%; font-weight:700; font-size:12px; border:2px solid var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.6); }
+.map-marker-hotel { display:flex; align-items:center; justify-content:center; width:34px; height:34px; background:var(--white); border-radius:50%; font-size:18px; border:3px solid var(--hotel); box-shadow:0 2px 10px rgba(0,0,0,.8); z-index: 1000 !important; }
 .map-marker-user { width:16px; height:16px; background:var(--accent-light); border:3px solid var(--white); border-radius:50%; box-shadow:0 0 0 6px rgba(13,137,224,.3); animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100%{box-shadow:0 0 0 6px rgba(13,137,224,.3)} 50%{box-shadow:0 0 0 12px rgba(13,137,224,.1)} }
 
@@ -186,7 +189,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
     <div style="max-width:600px; margin:0 auto; width:100%;">
       <div style="background:var(--bg-card); padding:24px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:32px;">
         <h2 style="font-size:18px; margin-bottom:8px; font-family:var(--font-display);">Nova Viagem</h2>
-        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Cole o link público da sua planilha do Google Sheets.</p>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Cole o link público da sua planilha do Google Sheets. A planilha deve conter as abas "Roteiro" e "Hospedagens".</p>
         <div style="display:flex; flex-direction:column; gap:12px;">
           <input type="text" id="new-sheet-url" class="input-field" placeholder="https://docs.google.com/spreadsheets/d/...">
           <button class="btn btn-primary" onclick="initImport()">
@@ -205,9 +208,20 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day" onchange="applyFilters('itinerary')"><option value="">Dia</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category" onchange="applyFilters('itinerary')"><option value="">Categoria</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade" onchange="applyFilters('itinerary')"><option value="">Atividade</option></select></div>
-      <button class="btn-clear" onclick="clearFilters('itinerary')"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
+      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
     </div>
     <div class="itinerary-list" id="itinerary-list"></div>
+  </div>
+
+  <div class="screen" id="hospedagens-screen">
+    <div class="filters-bar">
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city-hosp" onchange="applyFilters('hospedagens')"><option value="">Cidade</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day-hosp" onchange="applyFilters('hospedagens')"><option value="">Dia</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category-hosp" onchange="applyFilters('hospedagens')"><option value="">Categoria</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade-hosp" onchange="applyFilters('hospedagens')"><option value="">Hospedagem</option></select></div>
+      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
+    </div>
+    <div class="itinerary-list" id="hospedagens-list"></div>
   </div>
 
   <div class="screen" id="map-screen">
@@ -216,7 +230,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day-map" onchange="applyFilters('map')"><option value="">Dia</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category-map" onchange="applyFilters('map')"><option value="">Categoria</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade-map" onchange="applyFilters('map')"><option value="">Atividade</option></select></div>
-      <button class="btn-clear" onclick="clearFilters('map')"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
+      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
     </div>
     <div class="map-container">
       <div id="main-map"></div>
@@ -226,16 +240,16 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-home" onclick="navigate('home')">
-    <span class="material-symbols-rounded">home</span>
-    <span>Início</span>
+    <span class="material-symbols-rounded">home</span><span>Início</span>
   </div>
   <div class="nav-item" id="nav-itinerary" onclick="navigate('itinerary')">
-    <span class="material-symbols-rounded">view_list</span>
-    <span>Roteiro</span>
+    <span class="material-symbols-rounded">view_list</span><span>Roteiro</span>
+  </div>
+  <div class="nav-item" id="nav-hospedagens" onclick="navigate('hospedagens')">
+    <span class="material-symbols-rounded">hotel</span><span>Hotéis</span>
   </div>
   <div class="nav-item" id="nav-map" onclick="navigate('map')">
-    <span class="material-symbols-rounded">map</span>
-    <span>Mapa</span>
+    <span class="material-symbols-rounded">map</span><span>Mapa</span>
   </div>
 </nav>
 
@@ -261,22 +275,22 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 // ===== ESTADO GLOBAL =====
 let savedTrips = []; 
 let activeTripId = null;
-let activeTripData = [];
+let activeRoteiro = [];
+let activeHospedagens = [];
 let mapMarkers = [];
 let mainMap = null;
 let modalMap = null;
 let userMarker = null;
-let pendingImportInfo = null; // Controla se a importação é nova ou atualização
 
-// Paleta de cores vibrantes para as tags
+// Controle de Importação Paralela
+let importContext = null;
+
 const COLOR_PALETTE = ['#D32F2F', '#C2185B', '#7B1FA2', '#512DA8', '#303F9F', '#1976D2', '#0288D1', '#0097A7', '#00796B', '#388E3C', '#689F38', '#F57C00', '#E64A19', '#5D4037'];
 
 function getDynamicColor(str) {
   if(!str) return '#555';
   let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
+  for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
   return COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length];
 }
 
@@ -289,7 +303,7 @@ window.onload = () => {
   if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
 };
 
-// ===== TEMA (DARK/LIGHT) =====
+// ===== TEMA =====
 function toggleTheme() {
   let isLight = document.body.classList.toggle('light-theme');
   localStorage.setItem('smartTripTheme', isLight ? 'light' : 'dark');
@@ -303,20 +317,14 @@ function loadTheme() {
 }
 
 // ===== UTILITÁRIOS E UI =====
-function showToast(msg) {
-  let t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('visible');
-  setTimeout(() => t.classList.remove('visible'), 3000);
-}
+function showToast(msg) { let t = document.getElementById('toast'); t.textContent = msg; t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 3000); }
 function showLoading(msg) { document.getElementById('loading-text').textContent = msg; document.getElementById('loading').classList.remove('hidden'); }
 function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
 function esc(s) { let d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 
-// Navegação
 function navigate(tab) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-  
   document.getElementById(`nav-${tab}`).classList.add('active');
   document.getElementById(`${tab}-screen`).classList.add('active');
 
@@ -326,8 +334,8 @@ function navigate(tab) {
       else mainMap.invalidateSize();
       applyFilters('map');
     }, 200);
-  } else if (tab === 'itinerary') {
-    applyFilters('itinerary');
+  } else if (tab === 'itinerary' || tab === 'hospedagens') {
+    applyFilters(tab);
   }
 }
 
@@ -338,9 +346,7 @@ function saveTripsToStorage() { localStorage.setItem('smartTrips', JSON.stringif
 function updateTopSelector() {
   let sel = document.getElementById('global-trip-selector');
   if(savedTrips.length === 0) {
-    sel.innerHTML = `<option value="">Nenhuma viagem cadastrada</option>`;
-    sel.disabled = true;
-    return;
+    sel.innerHTML = `<option value="">Nenhuma viagem cadastrada</option>`; sel.disabled = true; return;
   }
   sel.disabled = false;
   sel.innerHTML = savedTrips.map(t => `<option value="${t.id}" ${t.id === activeTripId ? 'selected':''}>${esc(t.title)}</option>`).join('');
@@ -354,42 +360,39 @@ function changeActiveTrip(tripId, skipNav = false) {
   activeTripId = tripId;
   document.getElementById('global-trip-selector').value = tripId;
   
-  activeTripData = trip.data.sort((a,b) => {
-    let da = parseDayNum(a.dia), db = parseDayNum(b.dia);
-    if (da !== db) return da - db;
-    return parseTimeMin(a.hora) - parseTimeMin(b.hora);
-  });
-  
-  ['filter-city','filter-day','filter-category','filter-atividade',
-   'filter-city-map','filter-day-map','filter-category-map','filter-atividade-map'].forEach(id => {
-    let el = document.getElementById(id);
-    if(el) { el.value = ''; el.closest('.filter-chip').classList.remove('active'); }
-  });
+  // Suporte a legado (viagens antigas que só tinham "data") e novas (roteiro e hospedagens)
+  let rotData = trip.roteiro || trip.data || [];
+  let hospData = trip.hospedagens || [];
 
-  updateCascadingFilters(activeTripData, {});
+  activeRoteiro = rotData.sort((a,b) => {
+    let da = parseDayNum(a.dia), db = parseDayNum(b.dia);
+    if (da !== db) return da - db; return parseTimeMin(a.hora) - parseTimeMin(b.hora);
+  });
+  activeHospedagens = hospData.sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
+  
+  clearFilters(null, true); // Limpa selects mas não chama applyFilters ainda
+  updateCascadingFilters(activeRoteiro, activeHospedagens, {});
   
   if(!skipNav) {
-    let currentActive = document.querySelector('.nav-item.active').id;
-    if(currentActive === 'nav-home') navigate('itinerary');
-    else if (currentActive === 'nav-itinerary') applyFilters('itinerary');
-    else if (currentActive === 'nav-map') applyFilters('map');
+    let currentActive = document.querySelector('.nav-item.active').id.replace('nav-', '');
+    if(currentActive === 'home') navigate('itinerary');
+    else applyFilters(currentActive);
   }
 }
 
-// ===== TELA INICIAL (DASHBOARD) =====
+// ===== TELA INICIAL =====
 function renderHomeTrips() {
   let list = document.getElementById('trips-list');
   if(savedTrips.length === 0) {
     list.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">flight_takeoff</span><p>Você ainda não tem viagens.<br>Importe sua planilha acima.</p></div>`;
     return;
   }
-  
   list.innerHTML = savedTrips.map(trip => `
     <div class="trip-card" onclick="changeActiveTrip('${trip.id}')">
       <div class="icon"><span class="material-symbols-rounded">map</span></div>
       <div class="info">
         <div class="title">${esc(trip.title)}</div>
-        <div class="meta">${trip.data.length} atividades</div>
+        <div class="meta">${(trip.roteiro||trip.data||[]).length} rotas · ${(trip.hospedagens||[]).length} hotéis</div>
       </div>
       <div class="trip-actions">
         <button class="btn-icon" onclick="updateTrip(event, '${trip.id}')" title="Atualizar dados da planilha">
@@ -407,26 +410,28 @@ function renderHomeTrips() {
 }
 
 function renameTrip(e, id) {
-  e.stopPropagation();
-  let trip = savedTrips.find(t => t.id === id);
-  let newName = prompt("Digite o novo nome para a viagem:", trip.title);
-  if(newName && newName.trim() !== "") {
-    trip.title = newName.trim();
-    saveTripsToStorage(); renderHomeTrips(); updateTopSelector();
-  }
+  e.stopPropagation(); let trip = savedTrips.find(t => t.id === id);
+  let newName = prompt("Novo nome para a viagem:", trip.title);
+  if(newName && newName.trim() !== "") { trip.title = newName.trim(); saveTripsToStorage(); renderHomeTrips(); updateTopSelector(); }
 }
 function deleteTrip(e, id) {
   e.stopPropagation();
-  if(confirm("Tem certeza que deseja excluir esta viagem do app?")) {
-    savedTrips = savedTrips.filter(t => t.id !== id);
-    saveTripsToStorage();
-    if(activeTripId === id) { activeTripId = null; activeTripData = []; }
+  if(confirm("Tem certeza que deseja excluir esta viagem?")) {
+    savedTrips = savedTrips.filter(t => t.id !== id); saveTripsToStorage();
+    if(activeTripId === id) { activeTripId = null; activeRoteiro = []; activeHospedagens = []; }
     renderHomeTrips(); updateTopSelector();
     if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
   }
 }
 
-// ===== IMPORTAÇÃO E ATUALIZAÇÃO (GOOGLE SHEETS) =====
+// ===== IMPORTAÇÃO PARALELA =====
+function injectScript(id, url) {
+  let old = document.getElementById(id); if(old) old.remove();
+  let script = document.createElement('script'); script.id = id; script.src = url;
+  script.onerror = () => { importContext.errors++; checkImportStatus(); };
+  document.body.appendChild(script);
+}
+
 function initImport() {
   let url = document.getElementById('new-sheet-url').value.trim();
   if (!url) { showToast('Cole um link do Google Sheets.'); return; }
@@ -434,87 +439,80 @@ function initImport() {
 }
 
 function updateTrip(e, id) {
-  e.stopPropagation();
-  let trip = savedTrips.find(t => t.id === id);
-  let url = trip.sheetUrl;
-  
-  // Tratativa para viagens antigas criadas antes de implementarmos o salvamento da URL
-  if (!url) {
-    url = prompt("Para atualizar esta viagem antiga, precisamos da URL da planilha pela última vez. Cole a URL aqui:");
-    if(!url || !url.trim()) return;
+  e.stopPropagation(); let trip = savedTrips.find(t => t.id === id);
+  if (!trip.sheetUrl) {
+    showToast('Viagem legada. Por favor, exclua e importe o link novamente para ativar a atualização 1-clique.');
+    return;
   }
-  executeImport(url, id);
+  executeImport(trip.sheetUrl, id);
 }
 
 function executeImport(url, updateId) {
   let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (!m) { showToast('Link inválido do Google Sheets.'); return; }
+  if (!m) { showToast('Link inválido.'); return; }
+  let sheetId = m[1];
+
+  importContext = { url: url, updateId: updateId, rotDone: false, hospDone: false, roteiro: [], hospedagens: [], errors: 0 };
+  showLoading(updateId ? 'Sincronizando...' : 'Analisando planilhas...');
   
-  pendingImportInfo = { sheetUrl: url, updateId: updateId };
-  showLoading(updateId ? 'Atualizando roteiro...' : 'Analisando planilha...');
-  
-  let script = document.createElement('script');
-  script.id = 'gviz-script';
-  script.src = `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=responseHandler:_gvizCallback&headers=1&gid=${(url.match(/[#&?]gid=(\d+)/)||[])[1]||'0'}`;
-  script.onerror = () => { hideLoading(); showToast('Erro de acesso. A planilha está pública?'); };
-  document.body.appendChild(script);
+  let base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1`;
+  injectScript('gviz-rot', `${base}&sheet=Roteiro&tqx=responseHandler:_cbRoteiro`);
+  injectScript('gviz-hosp', `${base}&sheet=Hospedagens&tqx=responseHandler:_cbHospedagens`);
 }
 
-function _gvizCallback(data) {
-  hideLoading();
-  let old = document.getElementById('gviz-script'); if(old) old.remove();
-  
-  try {
-    let headers = data.table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
-    let map = {
-      cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')),
-      dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
-      hora: headers.findIndex(h => h.includes('hora')||h.includes('time')),
-      categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
-      atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')),
-      google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
-      observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')),
-      link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps'))
-    };
+function _cbRoteiro(data) { importContext.roteiro = parseGviz(data); importContext.rotDone = true; checkImportStatus(); }
+function _cbHospedagens(data) { importContext.hospedagens = parseGviz(data); importContext.hospDone = true; checkImportStatus(); }
 
-    let parsed = [];
-    for(let i=0; i<data.table.rows.length; i++) {
-      let r = data.table.rows[i].c; if(!r) continue;
-      let item = { _i: i };
-      Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
-      if(item.atividade || item.cidade || item.dia) parsed.push(item);
+function parseGviz(data) {
+  if(!data || data.status === 'error' || !data.table) return [];
+  let headers = data.table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+  let map = {
+    cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')),
+    dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
+    hora: headers.findIndex(h => h.includes('hora')||h.includes('time')),
+    categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
+    atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')),
+    google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
+    observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')),
+    link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps'))
+  };
+
+  let parsed = [];
+  data.table.rows.forEach((row, i) => {
+    let r = row.c; if(!r) return;
+    let item = { _i: i + Math.random() }; // Random para ID único global
+    Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
+    if(item.atividade || item.cidade || item.dia) parsed.push(item);
+  });
+  return parsed;
+}
+
+function checkImportStatus() {
+  if(importContext.rotDone && importContext.hospDone) {
+    hideLoading();
+    if(importContext.errors > 0 || (importContext.roteiro.length === 0 && importContext.hospedagens.length === 0)) {
+      showToast('Erro ao ler dados. Certifique-se que a planilha está pública e tem as abas corretas.');
+      return;
     }
-    if(parsed.length === 0) throw new Error();
-
-    if (pendingImportInfo && pendingImportInfo.updateId) {
-      // É uma atualização
-      let trip = savedTrips.find(t => t.id === pendingImportInfo.updateId);
-      trip.data = parsed;
-      trip.sheetUrl = pendingImportInfo.sheetUrl; // Salva a URL para o futuro
-      saveTripsToStorage();
-      renderHomeTrips();
+    
+    if (importContext.updateId) {
+      let trip = savedTrips.find(t => t.id === importContext.updateId);
+      trip.roteiro = importContext.roteiro; trip.hospedagens = importContext.hospedagens;
+      saveTripsToStorage(); renderHomeTrips();
       if(activeTripId === trip.id) changeActiveTrip(trip.id, true);
-      showToast('Viagem atualizada com sucesso!');
+      showToast('Sincronização concluída!');
     } else {
-      // É uma nova viagem
-      let newTrip = { 
-        id: 'trip_' + Date.now(), 
-        title: 'Viagem (' + (parsed[0].cidade || 'Nova') + ')', 
-        data: parsed,
-        sheetUrl: pendingImportInfo.sheetUrl
-      };
-      savedTrips.push(newTrip); 
-      saveTripsToStorage();
+      let titleCity = importContext.roteiro[0]?.cidade || importContext.hospedagens[0]?.cidade || 'Nova';
+      let newTrip = { id: 'trip_' + Date.now(), title: 'Viagem (' + titleCity + ')', roteiro: importContext.roteiro, hospedagens: importContext.hospedagens, sheetUrl: importContext.url };
+      savedTrips.push(newTrip); saveTripsToStorage();
       document.getElementById('new-sheet-url').value = '';
-      renderHomeTrips(); 
-      updateTopSelector(); 
-      changeActiveTrip(newTrip.id);
+      renderHomeTrips(); updateTopSelector(); changeActiveTrip(newTrip.id);
       showToast('Viagem importada com sucesso!');
     }
-  } catch(e) { showToast('Erro na estrutura da planilha.'); }
+  }
 }
 
-// ===== PARSERS (DATA/HORA/MAPS) =====
+// ===== PARSERS =====
 function formatDayWithWeekday(dStr) {
   if (!dStr) return "Sem data";
   let parts = String(dStr).split(/[\/\-]/);
@@ -522,8 +520,7 @@ function formatDayWithWeekday(dStr) {
     let d = parseInt(parts[0]), m = parseInt(parts[1]) - 1, y = parts.length === 3 && parts[2].length === 4 ? parseInt(parts[2]) : new Date().getFullYear();
     let dateObj = new Date(y, m, d);
     if (!isNaN(dateObj)) return `${dStr} - ${['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'][dateObj.getDay()]}`;
-  }
-  return dStr;
+  } return dStr;
 }
 function parseDayNum(dStr) {
   if (!dStr) return 99999999;
@@ -532,135 +529,127 @@ function parseDayNum(dStr) {
   return parseInt(String(dStr).replace(/\D/g, '')) || 9999;
 }
 function parseTimeMin(t) {
-  let m = String(t||'').match(/(\d{1,2})[:\.](\d{2})/);
-  return m ? parseInt(m[1])*60 + parseInt(m[2]) : 9999;
+  let m = String(t||'').match(/(\d{1,2})[:\.](\d{2})/); return m ? parseInt(m[1])*60 + parseInt(m[2]) : 9999;
 }
-
 function extractCoords(url) {
-  if (!url) return null;
-  let m;
-  m = url.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/);
-  if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  m = url.match(/[?&](?:q|ll)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-  if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  m = url.match(/\/dir\/.*?\/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-  if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  m = url.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
-  if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  if (!url) return null; let m;
+  m = url.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  m = url.match(/[?&](?:q|ll)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  m = url.match(/\/dir\/.*?\/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  m = url.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
   return null;
 }
 
 // ===== FILTROS E SINCRONIZAÇÃO =====
-function clearFilters(context) {
-  let destSuffix = context === 'map' ? '-map' : '';
+function clearFilters(context, preventApply = false) {
   ['filter-city', 'filter-day', 'filter-category', 'filter-atividade'].forEach(baseId => {
-    let el = document.getElementById(baseId + destSuffix);
-    if(el) { el.value = ''; el.closest('.filter-chip').classList.remove('active'); }
+    ['', '-hosp', '-map'].forEach(suf => { let el = document.getElementById(baseId + suf); if(el) { el.value = ''; el.closest('.filter-chip').classList.remove('active'); } });
   });
-  applyFilters(context);
+  if(!preventApply) applyFilters(context || document.querySelector('.nav-item.active').id.replace('nav-', ''));
 }
 
 function applyFilters(sourceTab) {
-  if(activeTripData.length === 0) return;
+  if(activeRoteiro.length === 0 && activeHospedagens.length === 0) return;
 
-  let srcSuffix = sourceTab === 'map' ? '-map' : '';
-  let destSuffix = sourceTab === 'map' ? '' : '-map';
-
+  // Descobre de onde ler o estado atual
+  let srcSuffix = sourceTab === 'hospedagens' ? '-hosp' : (sourceTab === 'map' ? '-map' : '');
+  
   let city = document.getElementById('filter-city'+srcSuffix).value;
   let day = document.getElementById('filter-day'+srcSuffix).value;
   let cat = document.getElementById('filter-category'+srcSuffix).value;
   let atv = document.getElementById('filter-atividade'+srcSuffix).value;
 
-  if(document.getElementById('filter-city'+destSuffix)) document.getElementById('filter-city'+destSuffix).value = city;
-  if(document.getElementById('filter-day'+destSuffix)) document.getElementById('filter-day'+destSuffix).value = day;
-  if(document.getElementById('filter-category'+destSuffix)) document.getElementById('filter-category'+destSuffix).value = cat;
-  if(document.getElementById('filter-atividade'+destSuffix)) document.getElementById('filter-atividade'+destSuffix).value = atv;
+  // Sincroniza visualmente em todas as abas
+  ['', '-hosp', '-map'].forEach(suf => {
+    if(document.getElementById('filter-city'+suf)) document.getElementById('filter-city'+suf).value = city;
+    if(document.getElementById('filter-day'+suf)) document.getElementById('filter-day'+suf).value = day;
+    if(document.getElementById('filter-category'+suf)) document.getElementById('filter-category'+suf).value = cat;
+    if(document.getElementById('filter-atividade'+suf)) document.getElementById('filter-atividade'+suf).value = atv;
+  });
 
-  let filtered = activeTripData.filter(d => {
-    if (city && d.cidade !== city) return false;
-    if (day && d.dia !== day) return false;
-    if (cat && d.categoria !== cat) return false;
-    if (atv && d.atividade !== atv) return false;
+  // Filtra Roteiros
+  let filRot = activeRoteiro.filter(d => {
+    if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
+    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false;
     return true;
   });
 
-  updateCascadingFilters(filtered, { city, day, cat, atv });
+  // Filtra Hospedagens (Atividade/Hospedagem unificados)
+  let filHosp = activeHospedagens.filter(d => {
+    if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
+    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false;
+    return true;
+  });
 
-  renderItinerary(filtered);
-  renderMapMarkers(filtered);
+  updateCascadingFilters(filRot, filHosp, { city, day, cat, atv });
+
+  // Renderiza tudo
+  renderList('itinerary-list', filRot, false);
+  renderList('hospedagens-list', filHosp, true);
+  renderMapMarkers(filRot, filHosp);
 }
 
-function updateCascadingFilters(dataset, current = {}) {
+function updateCascadingFilters(dsRot, dsHosp, current = {}) {
   let cities=[], days=[], cats=[], atvs=[], cityEarliest={};
   
-  dataset.forEach(d => {
+  const process = (d) => {
     if(d.cidade && !cities.includes(d.cidade)) cities.push(d.cidade);
     if(d.dia && !days.includes(d.dia)) days.push(d.dia);
     if(d.categoria && !cats.includes(d.categoria)) cats.push(d.categoria);
     if(d.atividade && !atvs.includes(d.atividade)) atvs.push(d.atividade);
-
-    if(d.cidade && d.dia) {
-      let dNum = parseDayNum(d.dia);
-      if(!cityEarliest[d.cidade] || dNum < cityEarliest[d.cidade]) cityEarliest[d.cidade] = dNum;
-    }
-  });
+    if(d.cidade && d.dia) { let dNum = parseDayNum(d.dia); if(!cityEarliest[d.cidade] || dNum < cityEarliest[d.cidade]) cityEarliest[d.cidade] = dNum; }
+  };
+  dsRot.forEach(process); dsHosp.forEach(process);
 
   cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
   days.sort((a,b) => parseDayNum(a) - parseDayNum(b));
-  cats.sort();
-  atvs.sort((a,b) => a.localeCompare(b));
+  cats.sort(); atvs.sort((a,b) => a.localeCompare(b));
 
-  const fillBothTabs = (idBase, items, label, selectedVal) => {
-    let finalVal = items.includes(selectedVal) ? selectedVal : '';
-    let htmlOptions = `<option value="">${label}</option>` + items.map(v => `<option value="${esc(v)}" ${v===finalVal ? 'selected':''}>${esc(v)}</option>`).join('');
-    
-    ['', '-map'].forEach(suffix => {
-      let el = document.getElementById(idBase + suffix);
-      if(el) {
-        el.innerHTML = htmlOptions;
-        if(finalVal) el.closest('.filter-chip').classList.add('active');
-        else el.closest('.filter-chip').classList.remove('active');
-      }
+  const fill = (idBase, items, label, val) => {
+    let fVal = items.includes(val) ? val : '';
+    let html = `<option value="">${label}</option>` + items.map(v => `<option value="${esc(v)}" ${v===fVal ? 'selected':''}>${esc(v)}</option>`).join('');
+    ['', '-hosp', '-map'].forEach(suf => {
+      let el = document.getElementById(idBase + suf);
+      if(el) { el.innerHTML = html; if(fVal) el.closest('.filter-chip').classList.add('active'); else el.closest('.filter-chip').classList.remove('active'); }
     });
   };
 
-  fillBothTabs('filter-city', cities, 'Cidade', current.city);
-  fillBothTabs('filter-day', days, 'Dia', current.day);
-  fillBothTabs('filter-category', cats, 'Categoria', current.cat);
-  fillBothTabs('filter-atividade', atvs, 'Atividade', current.atv);
+  fill('filter-city', cities, 'Cidade', current.city);
+  fill('filter-day', days, 'Dia', current.day);
+  fill('filter-category', cats, 'Categoria', current.cat);
+  fill('filter-atividade', atvs, 'Atividade/Local', current.atv);
 }
 
-// ===== RENDERIZAÇÃO: ROTEIRO =====
-function renderItinerary(items) {
-  let container = document.getElementById('itinerary-list');
+// ===== RENDERIZAÇÃO: LISTAS =====
+function renderList(containerId, items, isHosp) {
+  let container = document.getElementById(containerId);
+  if(!container) return;
   if(items.length === 0) {
-    container.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">search_off</span><p>Nenhuma atividade encontrada.</p></div>`;
+    container.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">search_off</span><p>Nenhuma ${isHosp ? 'hospedagem' : 'atividade'} encontrada.</p></div>`;
     return;
   }
 
   let html = '', currentDay = null;
   items.forEach(item => {
     let formattedDay = formatDayWithWeekday(item.dia);
-    if(formattedDay !== currentDay) {
-      html += `<div class="day-header"><span class="day-label">${esc(formattedDay)}</span></div>`;
-      currentDay = formattedDay;
-    }
+    if(formattedDay !== currentDay) { html += `<div class="day-header"><span class="day-label">${esc(formattedDay)}</span></div>`; currentDay = formattedDay; }
     
-    // Cores Dinâmicas
-    let catColor = getDynamicColor(item.categoria);
-    let cityColor = getDynamicColor(item.cidade);
-    
+    let catColor = getDynamicColor(item.categoria); let cityColor = getDynamicColor(item.cidade);
     let catHtml = item.categoria ? `<span class="tag" style="background:${catColor}; color:#fff;"><span class="material-symbols-rounded" style="font-size:14px">label</span>${esc(item.categoria)}</span>` : '';
     let cityHtml = item.cidade ? `<span class="tag" style="background:${cityColor}; color:#fff;"><span class="material-symbols-rounded" style="font-size:14px">location_on</span>${esc(item.cidade)}</span>` : '';
     let anexoHtml = item.link ? `<span class="tag tag-anexo"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
+    
+    // Tag visual para diferenciar na leitura se for Hotel
+    let hospTag = isHosp ? `<span class="tag tag-hospedagem"><span class="material-symbols-rounded" style="font-size:14px">hotel</span>Hotel</span>` : '';
 
     html += `
-      <div class="activity-card" onclick="openDetail(${item._i})">
+      <div class="activity-card" onclick="openDetail(${item._i}, ${isHosp})">
         <div class="card-time"><span class="hour">${esc(item.hora||'--')}</span></div>
         <div class="card-body">
           <div class="card-title">${esc(item.atividade||'Sem título')}</div>
           <div class="card-meta">
             ${cityHtml}
+            ${hospTag}
             ${catHtml}
             ${anexoHtml}
           </div>
@@ -671,15 +660,15 @@ function renderItinerary(items) {
 }
 
 // ===== MODAL DE DETALHES =====
-function openDetail(idx) {
-  let item = activeTripData.find(d => d._i === idx);
+function openDetail(idx, isHosp) {
+  let item = isHosp ? activeHospedagens.find(d => d._i === idx) : activeRoteiro.find(d => d._i === idx);
   if(!item) return;
 
   document.getElementById('modal-title').textContent = item.atividade;
   
   let grid = '';
   if(item.dia) grid += `<div class="modal-info-item"><div class="label">Data</div><div class="value">${esc(formatDayWithWeekday(item.dia))}</div></div>`;
-  if(item.hora) grid += `<div class="modal-info-item"><div class="label">Horário</div><div class="value">${esc(item.hora)}</div></div>`;
+  if(item.hora) grid += `<div class="modal-info-item"><div class="label">${isHosp ? 'Check-in/Horário' : 'Horário'}</div><div class="value">${esc(item.hora)}</div></div>`;
   if(item.cidade) grid += `<div class="modal-info-item"><div class="label">Cidade</div><div class="value">${esc(item.cidade)}</div></div>`;
   if(item.categoria) grid += `<div class="modal-info-item"><div class="label">Categoria</div><div class="value">${esc(item.categoria)}</div></div>`;
   document.getElementById('modal-info-grid').innerHTML = grid;
@@ -698,12 +687,14 @@ function openDetail(idx) {
       if(modalMap) { modalMap.remove(); modalMap = null; }
       modalMap = L.map('modal-map',{zoomControl:false, attributionControl:false}).setView([coords.lat, coords.lng], 16);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(modalMap);
-      let icon = L.divIcon({className:'', html:'<div class="map-marker-label" style="background:var(--accent);color:#fff;border-color:#fff;">📍</div>', iconSize:[30,30]});
+      
+      let iconHtml = isHosp ? '🏨' : '📍';
+      let bgColor = isHosp ? 'var(--hotel)' : 'var(--accent)';
+      
+      let icon = L.divIcon({className:'', html:`<div class="map-marker-label" style="background:${bgColor};color:#fff;border-color:#fff;font-size:14px">${iconHtml}</div>`, iconSize:[30,30]});
       L.marker([coords.lat, coords.lng], {icon}).addTo(modalMap);
     }, 250);
-  } else {
-    mapSec.style.display = 'none';
-  }
+  } else { mapSec.style.display = 'none'; }
 
   document.getElementById('modal').classList.add('open');
 }
@@ -726,24 +717,32 @@ function initMainMap() {
   }
 }
 
-function renderMapMarkers(items) {
+function renderMapMarkers(rotItems, hospItems) {
   if(!mainMap) return;
   mapMarkers.forEach(m => mainMap.removeLayer(m));
   mapMarkers = [];
   let bounds = [], count = 0;
   
-  items.forEach(item => {
-    let coords = extractCoords(item.google_maps);
-    if(!coords) return;
+  // Plota Hospedagens Primeiro (Para ficarem por baixo na contagem, mas destacadas)
+  hospItems.forEach(item => {
+    let coords = extractCoords(item.google_maps); if(!coords) return;
+    let icon = L.divIcon({className:'', html:`<div class="map-marker-hotel">🏨</div>`, iconSize:[34,34], iconAnchor:[17,17]});
+    let marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
+    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span></div>`);
+    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
+  });
+
+  // Plota Roteiro Sequencial
+  rotItems.forEach(item => {
+    let coords = extractCoords(item.google_maps); if(!coords) return;
     count++;
     let icon = L.divIcon({className:'', html:`<div class="map-marker-label">${count}</div>`, iconSize:[28,28]});
     let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
     marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span></div>`);
-    mapMarkers.push(marker);
-    bounds.push([coords.lat, coords.lng]);
+    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
   });
   
-  if(bounds.length > 0) mainMap.fitBounds(bounds, {padding:[40,40], maxZoom:15});
+  if(bounds.length > 0) mainMap.fitBounds(bounds, {padding:[50,50], maxZoom:15});
 }
 </script>
 </body>
