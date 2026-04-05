@@ -310,7 +310,7 @@ function navigate(tab) {
     setTimeout(() => {
       if(!mainMap) initMainMap();
       else mainMap.invalidateSize();
-      applyFilters('map'); // Renderiza aplicando os filtros sincronizados
+      applyFilters('map');
     }, 200);
   } else if (tab === 'itinerary') {
     applyFilters('itinerary');
@@ -346,14 +346,13 @@ function changeActiveTrip(tripId, skipNav = false) {
     return parseTimeMin(a.hora) - parseTimeMin(b.hora);
   });
   
-  // Reseta todos os selects em ambas as abas
   ['filter-city','filter-day','filter-category','filter-atividade',
    'filter-city-map','filter-day-map','filter-category-map','filter-atividade-map'].forEach(id => {
     let el = document.getElementById(id);
     if(el) { el.value = ''; el.closest('.filter-chip').classList.remove('active'); }
   });
 
-  updateCascadingFilters(activeTripData, {}); // Preenche tudo inicial
+  updateCascadingFilters(activeTripData, {});
   
   if(!skipNav) {
     let currentActive = document.querySelector('.nav-item.active').id;
@@ -396,9 +395,7 @@ function renameTrip(e, id) {
   let newName = prompt("Digite o novo nome para a viagem:", trip.title);
   if(newName && newName.trim() !== "") {
     trip.title = newName.trim();
-    saveTripsToStorage();
-    renderHomeTrips();
-    updateTopSelector();
+    saveTripsToStorage(); renderHomeTrips(); updateTopSelector();
   }
 }
 function deleteTrip(e, id) {
@@ -407,8 +404,7 @@ function deleteTrip(e, id) {
     savedTrips = savedTrips.filter(t => t.id !== id);
     saveTripsToStorage();
     if(activeTripId === id) { activeTripId = null; activeTripData = []; }
-    renderHomeTrips();
-    updateTopSelector();
+    renderHomeTrips(); updateTopSelector();
     if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
   }
 }
@@ -483,13 +479,27 @@ function parseTimeMin(t) {
   return m ? parseInt(m[1])*60 + parseInt(m[2]) : 9999;
 }
 
-// Regex validado para coordenadas padrão Maps
+// Regex validado para coordenadas padrão Maps (Hierarquia de Precisão)
 function extractCoords(url) {
   if (!url) return null;
-  let m = url.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/);
+  let m;
+  
+  // 1. Prioridade Máxima: O pino exato do local (escondido nos parâmetros !3d e !4d)
+  m = url.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/);
   if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  m = url.match(/[?&]q=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/);
+  
+  // 2. Prioridade Secundária: Link de busca direta ou coordenadas puras (q=lat,lng ou ll=lat,lng)
+  m = url.match(/[?&](?:q|ll)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
   if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+
+  // 3. Prioridade Terciária: Destino de Rota (dir/pontoA/pontoB/lat,lng)
+  m = url.match(/\/dir\/.*?\/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
+  if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  
+  // 4. Último Recurso: O Viewport do mapa (@lat,lng,zoom)
+  m = url.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
+  if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  
   return null;
 }
 
@@ -497,7 +507,6 @@ function extractCoords(url) {
 function applyFilters(sourceTab) {
   if(activeTripData.length === 0) return;
 
-  // Lógica para saber de onde ler e pra onde espelhar
   let srcSuffix = sourceTab === 'map' ? '-map' : '';
   let destSuffix = sourceTab === 'map' ? '' : '-map';
 
@@ -506,7 +515,6 @@ function applyFilters(sourceTab) {
   let cat = document.getElementById('filter-category'+srcSuffix).value;
   let atv = document.getElementById('filter-atividade'+srcSuffix).value;
 
-  // Sincroniza o DOM da aba inativa para manter consistência
   if(document.getElementById('filter-city'+destSuffix)) document.getElementById('filter-city'+destSuffix).value = city;
   if(document.getElementById('filter-day'+destSuffix)) document.getElementById('filter-day'+destSuffix).value = day;
   if(document.getElementById('filter-category'+destSuffix)) document.getElementById('filter-category'+destSuffix).value = cat;
@@ -520,10 +528,8 @@ function applyFilters(sourceTab) {
     return true;
   });
 
-  // Atualiza as opções em cascata de ambos os menus simultaneamente
   updateCascadingFilters(filtered, { city, day, cat, atv });
 
-  // Sempre renderiza os dois, assim a transição de telas fica instantânea
   renderItinerary(filtered);
   renderMapMarkers(filtered);
 }
@@ -546,7 +552,7 @@ function updateCascadingFilters(dataset, current = {}) {
   cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
   days.sort((a,b) => parseDayNum(a) - parseDayNum(b));
   cats.sort();
-  atvs.sort((a,b) => a.localeCompare(b)); // Ordem Alfabética
+  atvs.sort((a,b) => a.localeCompare(b));
 
   const fillBothTabs = (idBase, items, label, selectedVal) => {
     let finalVal = items.includes(selectedVal) ? selectedVal : '';
@@ -584,7 +590,6 @@ function renderItinerary(items) {
       currentDay = formattedDay;
     }
     
-    // Novas formatações dos Cards
     let catHtml = item.categoria ? `<span class="tag tag-category"><span class="material-symbols-rounded" style="font-size:14px">label</span>${esc(item.categoria)}</span>` : '';
     let mapsHtml = item.google_maps ? `<span class="tag maps-link"><span class="material-symbols-rounded" style="font-size:14px">navigation</span>Maps</span>` : '';
     let anexoHtml = item.link ? `<span class="tag"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
