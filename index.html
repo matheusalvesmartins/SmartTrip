@@ -481,7 +481,6 @@ function parseGviz(data) {
   let parsed = [];
   data.table.rows.forEach((row) => {
     let r = row.c; if(!r) return;
-    // Geração de ID alfanumérico seguro para evitar problemas de precisão no clique do HTML
     let item = { _id: 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) };
     Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
     if(item.atividade || item.cidade || item.dia) parsed.push(item);
@@ -646,9 +645,10 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
     let anexoHtml = item.link ? `<span class="tag tag-anexo"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
     let hospTag = isHosp ? `<span class="tag tag-hospedagem"><span class="material-symbols-rounded" style="font-size:14px">hotel</span>Hotel</span>` : '';
 
-    // Uso do ID em formato String no onClick
+    // Uso do fallback (_id ou _i) para não quebrar viagens do cache legado
+    let safeId = item._id || item._i;
     html += `
-      <div class="activity-card" onclick="openDetail('${item._id}', ${isHosp})">
+      <div class="activity-card" onclick="openDetail('${safeId}', ${isHosp})">
         <div class="card-time"><span class="hour">${esc(item.hora||'--')}</span></div>
         <div class="card-body">
           <div class="card-title">${esc(item.atividade||'Sem título')}</div>
@@ -674,7 +674,11 @@ function openFromMap(id, isHosp) {
 
 // ===== MODAL DE DETALHES =====
 function openDetail(id, isHosp) {
-  let item = isHosp ? activeHospedagens.find(d => d._id === id) : activeRoteiro.find(d => d._id === id);
+  // Converte ambos para string para garantir a comparação segura (legado vs novo)
+  let item = isHosp 
+    ? activeHospedagens.find(d => String(d._id || d._i) === String(id)) 
+    : activeRoteiro.find(d => String(d._id || d._i) === String(id));
+    
   if(!item) return;
 
   document.getElementById('modal-title').textContent = item.atividade;
@@ -692,7 +696,8 @@ function openDetail(id, isHosp) {
   
   let coords = extractCoords(item.google_maps);
   if(coords || item.google_maps) {
-    let dirLink = coords ? `https://www.google.com/maps/dir/?api=1&destination=$${coords.lat},${coords.lng}` : item.google_maps;
+    // Rota oficial da API do Google
+    let dirLink = coords ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}` : item.google_maps;
     let mapsLink = item.google_maps || dirLink;
     
     sec += `<div class="modal-section"><div class="section-title">Localização e Rotas</div>
@@ -764,10 +769,11 @@ function renderMapMarkers(rotItems, hospItems) {
   
   hospItems.forEach(item => {
     let coords = extractCoords(item.google_maps); if(!coords) return;
+    let safeId = item._id || item._i;
     let icon = L.divIcon({className:'', html:`<div class="map-marker-hotel">🏨</div>`, iconSize:[34,34], iconAnchor:[17,17]});
     let marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
     
-    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${item._id}', true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
     marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
     
     mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
@@ -776,10 +782,11 @@ function renderMapMarkers(rotItems, hospItems) {
   rotItems.forEach(item => {
     let coords = extractCoords(item.google_maps); if(!coords) return;
     count++;
+    let safeId = item._id || item._i;
     let icon = L.divIcon({className:'', html:`<div class="map-marker-label">${count}</div>`, iconSize:[28,28]});
     let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
     
-    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${item._id}', false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
     marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
     
     mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
