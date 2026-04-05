@@ -19,7 +19,7 @@
   --text: #FFFFFF;
   --text-secondary: #A0A0A0;
   --text-muted: #666666;
-  --accent: #0D89E0; /* Azul */
+  --accent: #0D89E0;
   --accent-light: #53A9E8;
   --accent-bg: rgba(13, 137, 224, 0.15);
   --accent-bg-strong: rgba(13, 137, 224, 0.25);
@@ -47,7 +47,7 @@ body.light-theme {
   --text: #1A1D20;
   --text-secondary: #5A6268;
   --text-muted: #8B949E;
-  --accent: #0A6EBA; /* Azul ligeiramente mais escuro para contraste */
+  --accent: #0A6EBA; 
   --accent-bg: rgba(10, 110, 186, 0.1);
   --accent-bg-strong: rgba(10, 110, 186, 0.2);
   --shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -85,8 +85,6 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:var(--radius-sm); font-family:var(--font-body); font-size:14px; font-weight:600; border:none; cursor:pointer; transition:all var(--transition); }
 .btn-primary { background:var(--accent); color:var(--white); width:100%; }
 .btn-primary:hover { background:var(--accent-light); box-shadow:0 4px 12px var(--accent-bg-strong); }
-.btn-secondary { background:var(--bg-elevated); color:var(--text); border:1px solid var(--border); width:100%; }
-.btn-secondary:hover { background:var(--bg-card-hover); border-color:var(--text-muted); }
 .input-field { width:100%; padding:12px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; outline:none; transition:border var(--transition); }
 .input-field:focus { border-color:var(--accent); }
 
@@ -107,11 +105,8 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .filters-bar::-webkit-scrollbar { display:none; }
 .filter-chip { display:flex; align-items:center; gap:4px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; font-size:13px; color:var(--text-secondary); flex-shrink:0; }
 .filter-chip.active { background:var(--accent-bg-strong); border-color:var(--accent); color:var(--accent); }
-.filter-chip select { background:transparent; border:none; color:inherit; font-size:13px; outline:none; cursor:pointer; padding-right:2px; font-family:var(--font-body); }
+.filter-chip select { background:transparent; border:none; color:inherit; font-size:13px; outline:none; cursor:pointer; padding-right:2px; font-family:var(--font-body); max-width: 140px; text-overflow: ellipsis; }
 .filter-chip select option { background:var(--bg-card); color:var(--text); }
-.search-wrap { flex:1; min-width:140px; position:relative; }
-.search-wrap .material-symbols-rounded { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--text-muted); }
-.search-wrap input { width:100%; padding:6px 10px 6px 30px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; color:var(--text); font-size:13px; outline:none; }
 
 /* ROTEIRO (ITINERARY) */
 .itinerary-list { flex:1; overflow-y:auto; padding:8px 16px 24px; }
@@ -127,6 +122,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .card-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
 .tag { display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--text-secondary); background:var(--bg-elevated); padding:4px 8px; border-radius:4px; font-weight:500; }
 .tag-city { color:var(--white); background:#2C3E50; }
+.tag-category { color:var(--white); background:var(--accent); }
 body.light-theme .tag-city { color:var(--white); background:#34495E; }
 .maps-link { color:var(--accent); background:var(--accent-bg); text-decoration:none; }
 
@@ -189,7 +185,6 @@ body.light-theme .tag-city { color:var(--white); background:#34495E; }
 <div class="main-content">
   <div class="screen active" id="home-screen">
     <div style="max-width:600px; margin:0 auto; width:100%;">
-      
       <div style="background:var(--bg-card); padding:24px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:32px;">
         <h2 style="font-size:18px; margin-bottom:8px; font-family:var(--font-display);">Nova Viagem</h2>
         <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Cole o link público da sua planilha do Google Sheets.</p>
@@ -200,19 +195,14 @@ body.light-theme .tag-city { color:var(--white); background:#34495E; }
           </button>
         </div>
       </div>
-
       <div class="section-title">Minhas Viagens</div>
       <div id="trips-list"></div>
-
     </div>
   </div>
 
   <div class="screen" id="itinerary-screen">
     <div class="filters-bar">
-      <div class="search-wrap">
-        <span class="material-symbols-rounded">search</span>
-        <input type="text" id="search-text" placeholder="Buscar..." oninput="applyFilters('itinerary')">
-      </div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade" onchange="applyFilters('itinerary')"><option value="">Atividade</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city" onchange="applyFilters('itinerary')"><option value="">Cidade</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day" onchange="applyFilters('itinerary')"><option value="">Dia</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category" onchange="applyFilters('itinerary')"><option value="">Categoria</option></select></div>
@@ -222,6 +212,7 @@ body.light-theme .tag-city { color:var(--white); background:#34495E; }
 
   <div class="screen" id="map-screen">
     <div class="filters-bar">
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade-map" onchange="applyFilters('map')"><option value="">Atividade</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city-map" onchange="applyFilters('map')"><option value="">Cidade</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day-map" onchange="applyFilters('map')"><option value="">Dia</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category-map" onchange="applyFilters('map')"><option value="">Categoria</option></select></div>
@@ -281,10 +272,7 @@ window.onload = () => {
   loadTripsFromStorage();
   renderHomeTrips();
   updateTopSelector();
-  
-  if(savedTrips.length > 0) {
-    changeActiveTrip(savedTrips[0].id, true);
-  }
+  if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
 };
 
 // ===== TEMA (DARK/LIGHT) =====
@@ -294,8 +282,7 @@ function toggleTheme() {
   document.getElementById('theme-btn').innerHTML = `<span class="material-symbols-rounded">${isLight ? 'dark_mode' : 'light_mode'}</span>`;
 }
 function loadTheme() {
-  let theme = localStorage.getItem('smartTripTheme');
-  if(theme === 'light') {
+  if(localStorage.getItem('smartTripTheme') === 'light') {
     document.body.classList.add('light-theme');
     document.getElementById('theme-btn').innerHTML = `<span class="material-symbols-rounded">dark_mode</span>`;
   }
@@ -311,7 +298,7 @@ function showLoading(msg) { document.getElementById('loading-text').textContent 
 function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
 function esc(s) { let d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
 
-// Navegação do Menu Inferior
+// Navegação
 function navigate(tab) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -323,7 +310,7 @@ function navigate(tab) {
     setTimeout(() => {
       if(!mainMap) initMainMap();
       else mainMap.invalidateSize();
-      applyFilters('map');
+      applyFilters('map'); // Renderiza aplicando os filtros sincronizados
     }, 200);
   } else if (tab === 'itinerary') {
     applyFilters('itinerary');
@@ -331,12 +318,8 @@ function navigate(tab) {
 }
 
 // ===== GERENCIAMENTO DE DADOS =====
-function loadTripsFromStorage() {
-  savedTrips = JSON.parse(localStorage.getItem('smartTrips') || '[]');
-}
-function saveTripsToStorage() {
-  localStorage.setItem('smartTrips', JSON.stringify(savedTrips));
-}
+function loadTripsFromStorage() { savedTrips = JSON.parse(localStorage.getItem('smartTrips') || '[]'); }
+function saveTripsToStorage() { localStorage.setItem('smartTrips', JSON.stringify(savedTrips)); }
 
 function updateTopSelector() {
   let sel = document.getElementById('global-trip-selector');
@@ -357,22 +340,22 @@ function changeActiveTrip(tripId, skipNav = false) {
   activeTripId = tripId;
   document.getElementById('global-trip-selector').value = tripId;
   
-  // Ordenação base (Dia + Hora)
   activeTripData = trip.data.sort((a,b) => {
     let da = parseDayNum(a.dia), db = parseDayNum(b.dia);
     if (da !== db) return da - db;
     return parseTimeMin(a.hora) - parseTimeMin(b.hora);
   });
   
-  // Limpa filtros
-  ['filter-city','filter-day','filter-category','filter-city-map','filter-day-map','filter-category-map'].forEach(id => { document.getElementById(id).value = ''; });
-  document.getElementById('search-text').value = '';
+  // Reseta todos os selects em ambas as abas
+  ['filter-city','filter-day','filter-category','filter-atividade',
+   'filter-city-map','filter-day-map','filter-category-map','filter-atividade-map'].forEach(id => {
+    let el = document.getElementById(id);
+    if(el) { el.value = ''; el.closest('.filter-chip').classList.remove('active'); }
+  });
 
-  updateCascadingFilters(activeTripData, 'itinerary');
-  updateCascadingFilters(activeTripData, 'map');
+  updateCascadingFilters(activeTripData, {}); // Preenche tudo inicial
   
   if(!skipNav) {
-    // Se mudou pelo select e estava na home, vai pro roteiro. Senão, mantém a tela e atualiza os dados.
     let currentActive = document.querySelector('.nav-item.active').id;
     if(currentActive === 'nav-home') navigate('itinerary');
     else if (currentActive === 'nav-itinerary') applyFilters('itinerary');
@@ -380,7 +363,7 @@ function changeActiveTrip(tripId, skipNav = false) {
   }
 }
 
-// ===== FUNÇÕES DE EDIÇÃO DA HOME =====
+// ===== TELA INICIAL (DASHBOARD) =====
 function renderHomeTrips() {
   let list = document.getElementById('trips-list');
   if(savedTrips.length === 0) {
@@ -418,36 +401,28 @@ function renameTrip(e, id) {
     updateTopSelector();
   }
 }
-
 function deleteTrip(e, id) {
   e.stopPropagation();
   if(confirm("Tem certeza que deseja excluir esta viagem do app?")) {
     savedTrips = savedTrips.filter(t => t.id !== id);
     saveTripsToStorage();
-    if(activeTripId === id) {
-      activeTripId = null;
-      activeTripData = [];
-    }
+    if(activeTripId === id) { activeTripId = null; activeTripData = []; }
     renderHomeTrips();
     updateTopSelector();
     if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
   }
 }
 
-// ===== LÓGICA DE IMPORTAÇÃO (JSONP) =====
+// ===== IMPORTAÇÃO (GOOGLE SHEETS) =====
 function importTrip() {
   let url = document.getElementById('new-sheet-url').value.trim();
   let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
   if (!m) { showToast('Cole um link válido do Google Sheets.'); return; }
-  let sheetId = m[1];
-  let gidMatch = url.match(/[#&?]gid=(\d+)/);
-  let gid = gidMatch ? gidMatch[1] : '0';
-
   showLoading('Analisando planilha...');
   let script = document.createElement('script');
   script.id = 'gviz-script';
-  script.src = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:_gvizCallback&headers=1&gid=${gid}`;
-  script.onerror = () => { hideLoading(); showToast('Erro. A planilha está "Pública para qualquer pessoa com o link"?'); };
+  script.src = `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=responseHandler:_gvizCallback&headers=1&gid=${(url.match(/[#&?]gid=(\d+)/)||[])[1]||'0'}`;
+  script.onerror = () => { hideLoading(); showToast('Erro. A planilha está pública?'); };
   document.body.appendChild(script);
 }
 
@@ -456,10 +431,7 @@ function _gvizCallback(data) {
   let old = document.getElementById('gviz-script'); if(old) old.remove();
   
   try {
-    let table = data.table;
-    let headers = table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
-    
-    // Mapeamento automático de colunas
+    let headers = data.table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
     let map = {
       cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')),
       dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
@@ -471,115 +443,100 @@ function _gvizCallback(data) {
       link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps'))
     };
 
-    let tripDataParsed = [];
-    for(let i=0; i<table.rows.length; i++) {
-      let r = table.rows[i].c;
-      if(!r) continue;
+    let parsed = [];
+    for(let i=0; i<data.table.rows.length; i++) {
+      let r = data.table.rows[i].c; if(!r) continue;
       let item = { _i: i };
-      Object.keys(map).forEach(k => {
-        if(map[k] !== -1 && r[map[k]]) {
-          let cell = r[map[k]];
-          item[k] = String(cell.f || cell.v || '');
-        }
-      });
-      if(item.atividade || item.cidade || item.dia) tripDataParsed.push(item);
+      Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
+      if(item.atividade || item.cidade || item.dia) parsed.push(item);
     }
+    if(parsed.length === 0) throw new Error();
 
-    if(tripDataParsed.length === 0) throw new Error("Nenhuma atividade encontrada.");
-
-    let newTrip = {
-      id: 'trip_' + Date.now(),
-      title: 'Minha Viagem (' + (tripDataParsed[0].cidade || 'Nova') + ')',
-      data: tripDataParsed
-    };
-    
-    savedTrips.push(newTrip);
-    saveTripsToStorage();
+    let newTrip = { id: 'trip_' + Date.now(), title: 'Viagem (' + (parsed[0].cidade || 'Nova') + ')', data: parsed };
+    savedTrips.push(newTrip); saveTripsToStorage();
     
     document.getElementById('new-sheet-url').value = '';
-    renderHomeTrips();
-    updateTopSelector();
-    changeActiveTrip(newTrip.id);
+    renderHomeTrips(); updateTopSelector(); changeActiveTrip(newTrip.id);
     showToast('Viagem importada com sucesso!');
-
   } catch(e) { showToast('Erro na estrutura da planilha.'); }
 }
 
-// ===== PARSERS E FORMATADORES =====
+// ===== PARSERS (DATA/HORA/MAPS) =====
 function formatDayWithWeekday(dStr) {
   if (!dStr) return "Sem data";
   let parts = String(dStr).split(/[\/\-]/);
   if (parts.length >= 2) {
-    let d = parseInt(parts[0]), m = parseInt(parts[1]) - 1;
-    let y = parts.length === 3 && parts[2].length === 4 ? parseInt(parts[2]) : new Date().getFullYear();
+    let d = parseInt(parts[0]), m = parseInt(parts[1]) - 1, y = parts.length === 3 && parts[2].length === 4 ? parseInt(parts[2]) : new Date().getFullYear();
     let dateObj = new Date(y, m, d);
-    if (!isNaN(dateObj)) {
-      let days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
-      return `${dStr} - ${days[dateObj.getDay()]}`;
-    }
+    if (!isNaN(dateObj)) return `${dStr} - ${['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'][dateObj.getDay()]}`;
   }
   return dStr;
 }
 function parseDayNum(dStr) {
   if (!dStr) return 99999999;
   let parts = String(dStr).split(/[\/\-]/);
-  if(parts.length >= 2) {
-      let d = parts[0].padStart(2,'0'), m = parts[1].padStart(2,'0');
-      let y = parts.length === 3 ? parts[2].substring(0,4) : "2024";
-      return parseInt(y+m+d);
-  }
+  if(parts.length >= 2) return parseInt((parts.length===3?parts[2].substring(0,4):"2024") + parts[1].padStart(2,'0') + parts[0].padStart(2,'0'));
   return parseInt(String(dStr).replace(/\D/g, '')) || 9999;
 }
 function parseTimeMin(t) {
-  if(!t) return 9999;
-  let m = String(t).match(/(\d{1,2})[:\.](\d{2})/);
-  if (m) return parseInt(m[1]) * 60 + parseInt(m[2]);
-  return 9999;
+  let m = String(t||'').match(/(\d{1,2})[:\.](\d{2})/);
+  return m ? parseInt(m[1])*60 + parseInt(m[2]) : 9999;
 }
+
+// Regex validado para coordenadas padrão Maps
 function extractCoords(url) {
   if (!url) return null;
-  let m = url.match(/@(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})/);
+  let m = url.match(/@(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/);
   if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  m = url.match(/[?&]q=(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})/);
+  m = url.match(/[?&]q=(-?\d{1,2}\.\d+),(-?\d{1,3}\.\d+)/);
   if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
   return null;
 }
 
-// ===== FILTROS =====
-function applyFilters(context) {
-  if(activeTripData.length === 0) {
-    if(context === 'itinerary') document.getElementById('itinerary-list').innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">list_alt</span><p>Selecione uma viagem no menu.</p></div>`;
-    return;
-  }
+// ===== FILTROS E SINCRONIZAÇÃO =====
+function applyFilters(sourceTab) {
+  if(activeTripData.length === 0) return;
 
-  let suffix = context === 'map' ? '-map' : '';
-  let city = document.getElementById('filter-city'+suffix).value;
-  let day = document.getElementById('filter-day'+suffix).value;
-  let cat = document.getElementById('filter-category'+suffix).value;
-  let search = context === 'itinerary' ? document.getElementById('search-text').value.toLowerCase() : '';
+  // Lógica para saber de onde ler e pra onde espelhar
+  let srcSuffix = sourceTab === 'map' ? '-map' : '';
+  let destSuffix = sourceTab === 'map' ? '' : '-map';
+
+  let city = document.getElementById('filter-city'+srcSuffix).value;
+  let day = document.getElementById('filter-day'+srcSuffix).value;
+  let cat = document.getElementById('filter-category'+srcSuffix).value;
+  let atv = document.getElementById('filter-atividade'+srcSuffix).value;
+
+  // Sincroniza o DOM da aba inativa para manter consistência
+  if(document.getElementById('filter-city'+destSuffix)) document.getElementById('filter-city'+destSuffix).value = city;
+  if(document.getElementById('filter-day'+destSuffix)) document.getElementById('filter-day'+destSuffix).value = day;
+  if(document.getElementById('filter-category'+destSuffix)) document.getElementById('filter-category'+destSuffix).value = cat;
+  if(document.getElementById('filter-atividade'+destSuffix)) document.getElementById('filter-atividade'+destSuffix).value = atv;
 
   let filtered = activeTripData.filter(d => {
     if (city && d.cidade !== city) return false;
     if (day && d.dia !== day) return false;
     if (cat && d.categoria !== cat) return false;
-    if (search && (d.atividade||'').toLowerCase().indexOf(search) === -1) return false;
+    if (atv && d.atividade !== atv) return false;
     return true;
   });
 
-  updateCascadingFilters(filtered, context, { city, day, cat });
+  // Atualiza as opções em cascata de ambos os menus simultaneamente
+  updateCascadingFilters(filtered, { city, day, cat, atv });
 
-  if(context === 'itinerary') renderItinerary(filtered);
-  else renderMapMarkers(filtered);
+  // Sempre renderiza os dois, assim a transição de telas fica instantânea
+  renderItinerary(filtered);
+  renderMapMarkers(filtered);
 }
 
-function updateCascadingFilters(dataset, context, current = {}) {
-  let suffix = context === 'map' ? '-map' : '';
-  let cities=[], days=[], cats=[], cityEarliest={};
+function updateCascadingFilters(dataset, current = {}) {
+  let cities=[], days=[], cats=[], atvs=[], cityEarliest={};
   
   dataset.forEach(d => {
     if(d.cidade && !cities.includes(d.cidade)) cities.push(d.cidade);
     if(d.dia && !days.includes(d.dia)) days.push(d.dia);
     if(d.categoria && !cats.includes(d.categoria)) cats.push(d.categoria);
+    if(d.atividade && !atvs.includes(d.atividade)) atvs.push(d.atividade);
+
     if(d.cidade && d.dia) {
       let dNum = parseDayNum(d.dia);
       if(!cityEarliest[d.cidade] || dNum < cityEarliest[d.cidade]) cityEarliest[d.cidade] = dNum;
@@ -589,26 +546,33 @@ function updateCascadingFilters(dataset, context, current = {}) {
   cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
   days.sort((a,b) => parseDayNum(a) - parseDayNum(b));
   cats.sort();
+  atvs.sort((a,b) => a.localeCompare(b)); // Ordem Alfabética
 
-  const fill = (id, items, label, selectedVal) => {
-    let el = document.getElementById(id);
-    if(!el) return;
+  const fillBothTabs = (idBase, items, label, selectedVal) => {
     let finalVal = items.includes(selectedVal) ? selectedVal : '';
-    el.innerHTML = `<option value="">${label}</option>` + items.map(v => `<option value="${esc(v)}" ${v===finalVal ? 'selected':''}>${esc(v)}</option>`).join('');
-    if(finalVal) el.closest('.filter-chip').classList.add('active');
-    else el.closest('.filter-chip').classList.remove('active');
+    let htmlOptions = `<option value="">${label}</option>` + items.map(v => `<option value="${esc(v)}" ${v===finalVal ? 'selected':''}>${esc(v)}</option>`).join('');
+    
+    ['', '-map'].forEach(suffix => {
+      let el = document.getElementById(idBase + suffix);
+      if(el) {
+        el.innerHTML = htmlOptions;
+        if(finalVal) el.closest('.filter-chip').classList.add('active');
+        else el.closest('.filter-chip').classList.remove('active');
+      }
+    });
   };
 
-  fill('filter-city'+suffix, cities, 'Cidade', current.city);
-  fill('filter-day'+suffix, days, 'Dia', current.day);
-  fill('filter-category'+suffix, cats, 'Categoria', current.cat);
+  fillBothTabs('filter-city', cities, 'Cidade', current.city);
+  fillBothTabs('filter-day', days, 'Dia', current.day);
+  fillBothTabs('filter-category', cats, 'Categoria', current.cat);
+  fillBothTabs('filter-atividade', atvs, 'Atividade', current.atv);
 }
 
-// ===== RENDERIZAÇÃO DO ROTEIRO =====
+// ===== RENDERIZAÇÃO: ROTEIRO =====
 function renderItinerary(items) {
   let container = document.getElementById('itinerary-list');
   if(items.length === 0) {
-    container.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">search_off</span><p>Nenhuma atividade encontrada para estes filtros.</p></div>`;
+    container.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">search_off</span><p>Nenhuma atividade encontrada.</p></div>`;
     return;
   }
 
@@ -620,6 +584,11 @@ function renderItinerary(items) {
       currentDay = formattedDay;
     }
     
+    // Novas formatações dos Cards
+    let catHtml = item.categoria ? `<span class="tag tag-category"><span class="material-symbols-rounded" style="font-size:14px">label</span>${esc(item.categoria)}</span>` : '';
+    let mapsHtml = item.google_maps ? `<span class="tag maps-link"><span class="material-symbols-rounded" style="font-size:14px">navigation</span>Maps</span>` : '';
+    let anexoHtml = item.link ? `<span class="tag"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
+
     html += `
       <div class="activity-card" onclick="openDetail(${item._i})">
         <div class="card-time"><span class="hour">${esc(item.hora||'--')}</span></div>
@@ -627,7 +596,9 @@ function renderItinerary(items) {
           <div class="card-title">${esc(item.atividade||'Sem título')}</div>
           <div class="card-meta">
             ${item.cidade ? `<span class="tag tag-city"><span class="material-symbols-rounded" style="font-size:14px">location_on</span>${esc(item.cidade)}</span>` : ''}
-            ${item.google_maps ? `<span class="tag maps-link"><span class="material-symbols-rounded" style="font-size:14px">link</span>Maps</span>` : ''}
+            ${catHtml}
+            ${mapsHtml}
+            ${anexoHtml}
           </div>
         </div>
       </div>`;
@@ -651,7 +622,7 @@ function openDetail(idx) {
 
   let sec = '';
   if(item.observacoes) sec += `<div class="modal-section"><div class="section-title">Observações</div><div class="section-body">${esc(item.observacoes).replace(/\n/g,'<br>')}</div></div>`;
-  if(item.link) sec += `<div class="modal-section"><div class="section-title">Anexos</div><div class="section-body"><a href="${esc(item.link)}" target="_blank"><span class="material-symbols-rounded">open_in_new</span> Visualizar Link/Anexo</a></div></div>`;
+  if(item.link) sec += `<div class="modal-section"><div class="section-title">Anexos</div><div class="section-body"><a href="${esc(item.link)}" target="_blank"><span class="material-symbols-rounded">attach_file</span> Visualizar Anexo/Link</a></div></div>`;
   if(item.google_maps) sec += `<div class="modal-section"><div class="section-title">Navegação</div><div class="section-body"><a href="${esc(item.google_maps)}" target="_blank"><span class="material-symbols-rounded">navigation</span> Abrir no App do Maps</a></div></div>`;
   document.getElementById('modal-sections').innerHTML = sec;
 
@@ -674,9 +645,9 @@ function openDetail(idx) {
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-// ===== MAPA PRINCIPAL =====
+// ===== RENDERIZAÇÃO: MAPA =====
 function initMainMap() {
-  mainMap = L.map('main-map', {zoomControl:false, attributionControl:false}).setView([-15.77,-47.93], 4);
+  mainMap = L.map('main-map', {zoomControl:false, attributionControl:false}).setView([0,0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
   L.control.zoom({position: 'topright'}).addTo(mainMap);
   
