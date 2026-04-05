@@ -25,7 +25,7 @@
   --accent-bg-strong: rgba(13, 137, 224, 0.25);
   --danger: #C45050;
   --success: #5CAA6E;
-  --hotel: #E64A19; /* Laranja escuro para hotéis */
+  --hotel: #E64A19;
   --white: #FFFFFF;
   --black: #000000;
   --radius: 12px;
@@ -83,9 +83,13 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .screen.active { opacity:1; pointer-events:all; z-index:10; }
 
 /* ELEMENTOS REUSÁVEIS */
-.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:var(--radius-sm); font-family:var(--font-body); font-size:14px; font-weight:600; border:none; cursor:pointer; transition:all var(--transition); }
-.btn-primary { background:var(--accent); color:var(--white); width:100%; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:var(--radius-sm); font-family:var(--font-body); font-size:14px; font-weight:600; border:none; cursor:pointer; transition:all var(--transition); text-decoration:none; }
+.btn-primary { background:var(--accent); color:var(--white); }
 .btn-primary:hover { background:var(--accent-light); box-shadow:0 4px 12px var(--accent-bg-strong); }
+.btn-success { background:var(--success); color:var(--white); width:100%; margin-bottom:12px; }
+.btn-success:hover { filter:brightness(1.1); box-shadow:0 4px 12px rgba(92,170,110,0.3); }
+.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+.btn-outline:hover { background:var(--bg-elevated); border-color:var(--text-muted); }
 .input-field { width:100%; padding:12px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; outline:none; transition:border var(--transition); }
 .input-field:focus { border-color:var(--accent); }
 
@@ -112,7 +116,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .btn-clear:hover { background:var(--bg-elevated); color:var(--text); }
 
 /* LISTAS (ROTEIRO & HOSPEDAGEM) */
-.itinerary-list { flex:1; overflow-y:auto; padding:8px 16px 24px; }
+.itinerary-list { flex:1; overflow-y:auto; padding:12px 16px 24px; }
 .day-header { display:flex; align-items:center; gap:10px; padding:12px 0 8px; margin-bottom:4px; position:sticky; top:0; z-index:5; background:var(--bg); }
 .day-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--bg); background:var(--text); padding:4px 12px; border-radius:20px; }
 .day-header::after { content:''; flex:1; height:1px; background:var(--border); }
@@ -135,6 +139,9 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .map-marker-hotel { display:flex; align-items:center; justify-content:center; width:34px; height:34px; background:var(--white); border-radius:50%; font-size:18px; border:3px solid var(--hotel); box-shadow:0 2px 10px rgba(0,0,0,.8); z-index: 1000 !important; }
 .map-marker-user { width:16px; height:16px; background:var(--accent-light); border:3px solid var(--white); border-radius:50%; box-shadow:0 0 0 6px rgba(13,137,224,.3); animation:pulse 2s infinite; }
 @keyframes pulse { 0%,100%{box-shadow:0 0 0 6px rgba(13,137,224,.3)} 50%{box-shadow:0 0 0 12px rgba(13,137,224,.1)} }
+.btn-gps { position:absolute; bottom:20px; right:20px; z-index:400; width:48px; height:48px; border-radius:50%; background:var(--bg-card); color:var(--text); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:var(--shadow); transition:all var(--transition); }
+.btn-gps:hover { background:var(--bg-elevated); color:var(--accent); }
+.btn-gps .material-symbols-rounded { font-size:24px; }
 
 /* MODAL DE DETALHES */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:500; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s ease; }
@@ -150,10 +157,10 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .modal-info-item .label { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px; }
 .modal-info-item .value { font-size:13px; font-weight:500; color:var(--text); }
 .modal-section { margin-bottom:16px; background:var(--bg); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border); }
-.modal-section .section-title { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+.modal-section .section-title { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
 .modal-section .section-body { font-size:14px; line-height:1.6; color:var(--text-secondary); }
 .modal-section a { color:var(--text); text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:500; }
-.modal-map { width:100%; height:180px; border-radius:var(--radius-sm); overflow:hidden; margin-top:8px; border:1px solid var(--border); }
+.modal-map { width:100%; height:160px; border-radius:var(--radius-sm); overflow:hidden; margin-top:8px; border:1px solid var(--border); }
 
 /* UTILITÁRIOS */
 .toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:13px; font-weight:600; z-index:2000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
@@ -234,6 +241,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
     </div>
     <div class="map-container">
       <div id="main-map"></div>
+      <button class="btn-gps" onclick="centerOnUser()" title="Localização Atual"><span class="material-symbols-rounded">my_location</span></button>
     </div>
   </div>
 </div>
@@ -263,10 +271,6 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
       </div>
       <div class="modal-info-grid" id="modal-info-grid"></div>
       <div id="modal-sections"></div>
-      <div class="modal-section" id="modal-map-section" style="display:none">
-        <div class="section-title">Localização Exata</div>
-        <div class="modal-map" id="modal-map"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -281,6 +285,7 @@ let mapMarkers = [];
 let mainMap = null;
 let modalMap = null;
 let userMarker = null;
+let lastKnownUserPos = null;
 
 // Controle de Importação Paralela
 let importContext = null;
@@ -360,7 +365,6 @@ function changeActiveTrip(tripId, skipNav = false) {
   activeTripId = tripId;
   document.getElementById('global-trip-selector').value = tripId;
   
-  // Suporte a legado (viagens antigas que só tinham "data") e novas (roteiro e hospedagens)
   let rotData = trip.roteiro || trip.data || [];
   let hospData = trip.hospedagens || [];
 
@@ -370,7 +374,7 @@ function changeActiveTrip(tripId, skipNav = false) {
   });
   activeHospedagens = hospData.sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
   
-  clearFilters(null, true); // Limpa selects mas não chama applyFilters ainda
+  clearFilters(null, true);
   updateCascadingFilters(activeRoteiro, activeHospedagens, {});
   
   if(!skipNav) {
@@ -424,7 +428,7 @@ function deleteTrip(e, id) {
   }
 }
 
-// ===== IMPORTAÇÃO PARALELA =====
+// ===== IMPORTAÇÃO =====
 function injectScript(id, url) {
   let old = document.getElementById(id); if(old) old.remove();
   let script = document.createElement('script'); script.id = id; script.src = url;
@@ -440,10 +444,7 @@ function initImport() {
 
 function updateTrip(e, id) {
   e.stopPropagation(); let trip = savedTrips.find(t => t.id === id);
-  if (!trip.sheetUrl) {
-    showToast('Viagem legada. Por favor, exclua e importe o link novamente para ativar a atualização 1-clique.');
-    return;
-  }
+  if (!trip.sheetUrl) { showToast('Viagem antiga. Por favor, exclua e importe novamente para ativar atualização rápida.'); return; }
   executeImport(trip.sheetUrl, id);
 }
 
@@ -480,7 +481,7 @@ function parseGviz(data) {
   let parsed = [];
   data.table.rows.forEach((row, i) => {
     let r = row.c; if(!r) return;
-    let item = { _i: i + Math.random() }; // Random para ID único global
+    let item = { _i: i + Math.random() };
     Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
     if(item.atividade || item.cidade || item.dia) parsed.push(item);
   });
@@ -491,10 +492,8 @@ function checkImportStatus() {
   if(importContext.rotDone && importContext.hospDone) {
     hideLoading();
     if(importContext.errors > 0 || (importContext.roteiro.length === 0 && importContext.hospedagens.length === 0)) {
-      showToast('Erro ao ler dados. Certifique-se que a planilha está pública e tem as abas corretas.');
-      return;
+      showToast('Erro ao ler dados. Verifique as abas da planilha.'); return;
     }
-    
     if (importContext.updateId) {
       let trip = savedTrips.find(t => t.id === importContext.updateId);
       trip.roteiro = importContext.roteiro; trip.hospedagens = importContext.hospedagens;
@@ -528,9 +527,8 @@ function parseDayNum(dStr) {
   if(parts.length >= 2) return parseInt((parts.length===3?parts[2].substring(0,4):"2024") + parts[1].padStart(2,'0') + parts[0].padStart(2,'0'));
   return parseInt(String(dStr).replace(/\D/g, '')) || 9999;
 }
-function parseTimeMin(t) {
-  let m = String(t||'').match(/(\d{1,2})[:\.](\d{2})/); return m ? parseInt(m[1])*60 + parseInt(m[2]) : 9999;
-}
+function parseTimeMin(t) { let m = String(t||'').match(/(\d{1,2})[:\.](\d{2})/); return m ? parseInt(m[1])*60 + parseInt(m[2]) : 9999; }
+
 function extractCoords(url) {
   if (!url) return null; let m;
   m = url.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
@@ -551,7 +549,6 @@ function clearFilters(context, preventApply = false) {
 function applyFilters(sourceTab) {
   if(activeRoteiro.length === 0 && activeHospedagens.length === 0) return;
 
-  // Descobre de onde ler o estado atual
   let srcSuffix = sourceTab === 'hospedagens' ? '-hosp' : (sourceTab === 'map' ? '-map' : '');
   
   let city = document.getElementById('filter-city'+srcSuffix).value;
@@ -559,7 +556,6 @@ function applyFilters(sourceTab) {
   let cat = document.getElementById('filter-category'+srcSuffix).value;
   let atv = document.getElementById('filter-atividade'+srcSuffix).value;
 
-  // Sincroniza visualmente em todas as abas
   ['', '-hosp', '-map'].forEach(suf => {
     if(document.getElementById('filter-city'+suf)) document.getElementById('filter-city'+suf).value = city;
     if(document.getElementById('filter-day'+suf)) document.getElementById('filter-day'+suf).value = day;
@@ -567,24 +563,19 @@ function applyFilters(sourceTab) {
     if(document.getElementById('filter-atividade'+suf)) document.getElementById('filter-atividade'+suf).value = atv;
   });
 
-  // Filtra Roteiros
   let filRot = activeRoteiro.filter(d => {
     if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
-    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false;
-    return true;
+    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
   });
 
-  // Filtra Hospedagens (Atividade/Hospedagem unificados)
   let filHosp = activeHospedagens.filter(d => {
     if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
-    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false;
-    return true;
+    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
   });
 
   updateCascadingFilters(filRot, filHosp, { city, day, cat, atv });
 
-  // Renderiza tudo
-  renderList('itinerary-list', filRot, false);
+  renderList('itinerary-list', filRot, false, day); // Passo o 'day' para o botão Rota do Dia
   renderList('hospedagens-list', filHosp, true);
   renderMapMarkers(filRot, filHosp);
 }
@@ -620,8 +611,8 @@ function updateCascadingFilters(dsRot, dsHosp, current = {}) {
   fill('filter-atividade', atvs, 'Atividade/Local', current.atv);
 }
 
-// ===== RENDERIZAÇÃO: LISTAS =====
-function renderList(containerId, items, isHosp) {
+// ===== RENDERIZAÇÃO: LISTAS E BOTÃO ROTA DO DIA =====
+function renderList(containerId, items, isHosp, filteredDay = null) {
   let container = document.getElementById(containerId);
   if(!container) return;
   if(items.length === 0) {
@@ -629,7 +620,23 @@ function renderList(containerId, items, isHosp) {
     return;
   }
 
-  let html = '', currentDay = null;
+  let html = '';
+
+  // Lógica da ROTA DO DIA (Múltiplas Paradas)
+  if (!isHosp && filteredDay && items.length > 1) {
+    let routePoints = items.filter(d => extractCoords(d.google_maps)).map(d => extractCoords(d.google_maps));
+    if (routePoints.length >= 2) {
+      // Limite do Google: Origem, Destino e até 9 paradas (slice até 9)
+      let origin = `${routePoints[0].lat},${routePoints[0].lng}`;
+      let dest = `${routePoints[routePoints.length-1].lat},${routePoints[routePoints.length-1].lng}`;
+      let waypoints = routePoints.slice(1, -1).slice(0, 9).map(p => `${p.lat},${p.lng}`).join('|');
+      let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}` + (waypoints ? `&waypoints=${waypoints}` : '');
+      
+      html += `<button class="btn btn-success" onclick="window.open('${mapsUrl}', '_blank')"><span class="material-symbols-rounded">route</span> Traçar Rota do Dia (Google Maps)</button>`;
+    }
+  }
+
+  let currentDay = null;
   items.forEach(item => {
     let formattedDay = formatDayWithWeekday(item.dia);
     if(formattedDay !== currentDay) { html += `<div class="day-header"><span class="day-label">${esc(formattedDay)}</span></div>`; currentDay = formattedDay; }
@@ -638,8 +645,6 @@ function renderList(containerId, items, isHosp) {
     let catHtml = item.categoria ? `<span class="tag" style="background:${catColor}; color:#fff;"><span class="material-symbols-rounded" style="font-size:14px">label</span>${esc(item.categoria)}</span>` : '';
     let cityHtml = item.cidade ? `<span class="tag" style="background:${cityColor}; color:#fff;"><span class="material-symbols-rounded" style="font-size:14px">location_on</span>${esc(item.cidade)}</span>` : '';
     let anexoHtml = item.link ? `<span class="tag tag-anexo"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
-    
-    // Tag visual para diferenciar na leitura se for Hotel
     let hospTag = isHosp ? `<span class="tag tag-hospedagem"><span class="material-symbols-rounded" style="font-size:14px">hotel</span>Hotel</span>` : '';
 
     html += `
@@ -659,6 +664,14 @@ function renderList(containerId, items, isHosp) {
   container.innerHTML = html;
 }
 
+// ===== ABERTURA DE DETALHES VIA MAPA =====
+function openFromMap(idx, isHosp) {
+  closeModal();
+  if(mainMap) mainMap.closePopup();
+  navigate(isHosp ? 'hospedagens' : 'itinerary');
+  setTimeout(() => openDetail(idx, isHosp), 200); // Aguarda a transição da tela
+}
+
 // ===== MODAL DE DETALHES =====
 function openDetail(idx, isHosp) {
   let item = isHosp ? activeHospedagens.find(d => d._i === idx) : activeRoteiro.find(d => d._i === idx);
@@ -676,11 +689,25 @@ function openDetail(idx, isHosp) {
   let sec = '';
   if(item.observacoes) sec += `<div class="modal-section"><div class="section-title">Observações</div><div class="section-body">${esc(item.observacoes).replace(/\n/g,'<br>')}</div></div>`;
   if(item.link) sec += `<div class="modal-section"><div class="section-title">Anexos</div><div class="section-body"><a href="${esc(item.link)}" target="_blank"><span class="material-symbols-rounded">attach_file</span> Visualizar Anexo/Link</a></div></div>`;
-  if(item.google_maps) sec += `<div class="modal-section"><div class="section-title">Navegação</div><div class="section-body"><a href="${esc(item.google_maps)}" target="_blank"><span class="material-symbols-rounded">navigation</span> Abrir no App do Maps</a></div></div>`;
+  
+  // NOVA SEÇÃO: NAVEGAÇÃO E COMO CHEGAR
+  let coords = extractCoords(item.google_maps);
+  if(coords || item.google_maps) {
+    let dirLink = coords ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}` : item.google_maps;
+    let mapsLink = item.google_maps || dirLink;
+    
+    sec += `<div class="modal-section"><div class="section-title">Localização e Rotas</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+        <a href="${dirLink}" target="_blank" class="btn btn-primary" style="flex:1; min-width:140px; text-decoration:none;"><span class="material-symbols-rounded">directions_car</span> Traçar Rota</a>
+        <a href="${mapsLink}" target="_blank" class="btn btn-outline" style="flex:1; min-width:140px; text-decoration:none;"><span class="material-symbols-rounded">pin_drop</span> Ver no Google</a>
+      </div>
+    </div>`;
+  }
+
   document.getElementById('modal-sections').innerHTML = sec;
 
+  // MINI-MAPA DO MODAL
   let mapSec = document.getElementById('modal-map-section');
-  let coords = extractCoords(item.google_maps);
   if(coords) {
     mapSec.style.display = 'block';
     setTimeout(() => {
@@ -690,7 +717,6 @@ function openDetail(idx, isHosp) {
       
       let iconHtml = isHosp ? '🏨' : '📍';
       let bgColor = isHosp ? 'var(--hotel)' : 'var(--accent)';
-      
       let icon = L.divIcon({className:'', html:`<div class="map-marker-label" style="background:${bgColor};color:#fff;border-color:#fff;font-size:14px">${iconHtml}</div>`, iconSize:[30,30]});
       L.marker([coords.lat, coords.lng], {icon}).addTo(modalMap);
     }, 250);
@@ -700,7 +726,7 @@ function openDetail(idx, isHosp) {
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-// ===== RENDERIZAÇÃO: MAPA =====
+// ===== RENDERIZAÇÃO E GPS DO MAPA PRINCIPAL =====
 function initMainMap() {
   mainMap = L.map('main-map', {zoomControl:false, attributionControl:false}).setView([0,0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
@@ -708,12 +734,27 @@ function initMainMap() {
   
   if ('geolocation' in navigator) {
     navigator.geolocation.watchPosition(pos => {
-      if(userMarker) userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
+      lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude];
+      if(userMarker) userMarker.setLatLng(lastKnownUserPos);
       else {
         let icon = L.divIcon({className:'', html:'<div class="map-marker-user"></div>', iconSize:[16,16]});
-        userMarker = L.marker([pos.coords.latitude, pos.coords.longitude],{icon, zIndexOffset:1000}).addTo(mainMap);
+        userMarker = L.marker(lastKnownUserPos,{icon, zIndexOffset:1000}).addTo(mainMap);
       }
     }, () => {}, {enableHighAccuracy:true, maximumAge:30000});
+  }
+}
+
+function centerOnUser() {
+  if (lastKnownUserPos && mainMap) {
+    mainMap.setView(lastKnownUserPos, 15);
+  } else {
+    showToast("Buscando sua localização... Certifique-se que o GPS está ativado e permitido.");
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude];
+        mainMap.setView(lastKnownUserPos, 15);
+      }, () => showToast("Não foi possível acessar a localização."));
+    }
   }
 }
 
@@ -723,12 +764,16 @@ function renderMapMarkers(rotItems, hospItems) {
   mapMarkers = [];
   let bounds = [], count = 0;
   
-  // Plota Hospedagens Primeiro (Para ficarem por baixo na contagem, mas destacadas)
+  // Plota Hospedagens
   hospItems.forEach(item => {
     let coords = extractCoords(item.google_maps); if(!coords) return;
     let icon = L.divIcon({className:'', html:`<div class="map-marker-hotel">🏨</div>`, iconSize:[34,34], iconAnchor:[17,17]});
     let marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
-    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span></div>`);
+    
+    // NOVO: Botão Ver Detalhes (Vai para a aba Hospedagem)
+    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap(${item._i}, true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
+    
     mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
   });
 
@@ -738,7 +783,11 @@ function renderMapMarkers(rotItems, hospItems) {
     count++;
     let icon = L.divIcon({className:'', html:`<div class="map-marker-label">${count}</div>`, iconSize:[28,28]});
     let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
-    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span></div>`);
+    
+    // NOVO: Botão Ver Detalhes (Vai para a aba Roteiro)
+    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap(${item._i}, false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
+    
     mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
   });
   
