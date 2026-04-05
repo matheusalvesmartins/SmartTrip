@@ -65,7 +65,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:60px; transition:all var(--transition); }
 .brand { display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:20px; color:var(--accent); font-weight:600; flex-shrink:0; }
 .global-trip-select { flex:1; appearance:none; background:var(--bg-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; font-family:var(--font-body); padding:8px 32px 8px 12px; outline:none; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
-.btn-icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); background:transparent; border:none; color:var(--text-secondary); cursor:pointer; flex-shrink:0; }
+.btn-icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); background:transparent; border:none; color:var(--text-secondary); cursor:pointer; flex-shrink:0; transition:all var(--transition);}
 .btn-icon:hover { background:var(--bg-elevated); color:var(--text); }
 
 .main-content { flex:1; position:relative; overflow:hidden; }
@@ -98,15 +98,17 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .trip-card .info { flex:1; min-width:0; }
 .trip-card .title { font-weight:600; font-size:16px; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text); }
 .trip-card .meta { font-size:12px; color:var(--text-secondary); }
-.trip-actions { display:flex; gap:4px; }
+.trip-actions { display:flex; gap:2px; }
 
 /* ROTEIRO & MAPA COMUM */
-.filters-bar { padding:10px 16px; display:flex; gap:8px; overflow-x:auto; flex-shrink:0; border-bottom:1px solid var(--border); scrollbar-width:none; background:var(--bg); }
+.filters-bar { padding:10px 16px; display:flex; align-items:center; gap:8px; overflow-x:auto; flex-shrink:0; border-bottom:1px solid var(--border); scrollbar-width:none; background:var(--bg); }
 .filters-bar::-webkit-scrollbar { display:none; }
-.filter-chip { display:flex; align-items:center; gap:4px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; font-size:13px; color:var(--text-secondary); flex-shrink:0; }
+.filter-chip { display:flex; align-items:center; gap:4px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; font-size:13px; color:var(--text-secondary); flex-shrink:0; transition:all var(--transition);}
 .filter-chip.active { background:var(--accent-bg-strong); border-color:var(--accent); color:var(--accent); }
 .filter-chip select { background:transparent; border:none; color:inherit; font-size:13px; outline:none; cursor:pointer; padding-right:2px; font-family:var(--font-body); max-width: 140px; text-overflow: ellipsis; }
 .filter-chip select option { background:var(--bg-card); color:var(--text); }
+.btn-clear { display:flex; align-items:center; gap:4px; font-size:12px; font-family:var(--font-body); background:transparent; border:1px solid var(--border); color:var(--text-muted); border-radius:20px; padding:6px 12px; cursor:pointer; flex-shrink:0; transition:all var(--transition); }
+.btn-clear:hover { background:var(--bg-elevated); color:var(--text); }
 
 /* ROTEIRO (ITINERARY) */
 .itinerary-list { flex:1; overflow-y:auto; padding:8px 16px 24px; }
@@ -114,17 +116,14 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .day-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--bg); background:var(--text); padding:4px 12px; border-radius:20px; }
 .day-header::after { content:''; flex:1; height:1px; background:var(--border); }
 .activity-card { display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; cursor:pointer; transition:all var(--transition); box-shadow:var(--shadow); }
-.activity-card:hover { border-color:var(--accent); transform:translateX(3px); }
+.activity-card:hover { border-color:var(--text-muted); transform:translateX(3px); }
 .card-time { display:flex; flex-direction:column; align-items:center; min-width:48px; padding-top:2px; color:var(--text); }
 .card-time .hour { font-size:16px; font-weight:700; }
 .card-body { flex:1; min-width:0; }
 .card-body .card-title { font-size:15px; font-weight:600; margin-bottom:8px; line-height:1.3; color:var(--text); }
 .card-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-.tag { display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--text-secondary); background:var(--bg-elevated); padding:4px 8px; border-radius:4px; font-weight:500; }
-.tag-city { color:var(--white); background:#2C3E50; }
-.tag-category { color:var(--white); background:var(--accent); }
-body.light-theme .tag-city { color:var(--white); background:#34495E; }
-.maps-link { color:var(--accent); background:var(--accent-bg); text-decoration:none; }
+.tag { display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:4px 8px; border-radius:4px; font-weight:600; }
+.tag-anexo { background:var(--bg-elevated); color:var(--text-secondary); border:1px solid var(--border); }
 
 /* MAPA */
 .map-container { flex:1; position:relative; }
@@ -190,7 +189,7 @@ body.light-theme .tag-city { color:var(--white); background:#34495E; }
         <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Cole o link público da sua planilha do Google Sheets.</p>
         <div style="display:flex; flex-direction:column; gap:12px;">
           <input type="text" id="new-sheet-url" class="input-field" placeholder="https://docs.google.com/spreadsheets/d/...">
-          <button class="btn btn-primary" onclick="importTrip()">
+          <button class="btn btn-primary" onclick="initImport()">
             <span class="material-symbols-rounded">download</span> Importar Dados
           </button>
         </div>
@@ -202,20 +201,22 @@ body.light-theme .tag-city { color:var(--white); background:#34495E; }
 
   <div class="screen" id="itinerary-screen">
     <div class="filters-bar">
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade" onchange="applyFilters('itinerary')"><option value="">Atividade</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city" onchange="applyFilters('itinerary')"><option value="">Cidade</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day" onchange="applyFilters('itinerary')"><option value="">Dia</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category" onchange="applyFilters('itinerary')"><option value="">Categoria</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade" onchange="applyFilters('itinerary')"><option value="">Atividade</option></select></div>
+      <button class="btn-clear" onclick="clearFilters('itinerary')"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
     </div>
     <div class="itinerary-list" id="itinerary-list"></div>
   </div>
 
   <div class="screen" id="map-screen">
     <div class="filters-bar">
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade-map" onchange="applyFilters('map')"><option value="">Atividade</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city-map" onchange="applyFilters('map')"><option value="">Cidade</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day-map" onchange="applyFilters('map')"><option value="">Dia</option></select></div>
       <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category-map" onchange="applyFilters('map')"><option value="">Categoria</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade-map" onchange="applyFilters('map')"><option value="">Atividade</option></select></div>
+      <button class="btn-clear" onclick="clearFilters('map')"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
     </div>
     <div class="map-container">
       <div id="main-map"></div>
@@ -265,6 +266,19 @@ let mapMarkers = [];
 let mainMap = null;
 let modalMap = null;
 let userMarker = null;
+let pendingImportInfo = null; // Controla se a importação é nova ou atualização
+
+// Paleta de cores vibrantes para as tags
+const COLOR_PALETTE = ['#D32F2F', '#C2185B', '#7B1FA2', '#512DA8', '#303F9F', '#1976D2', '#0288D1', '#0097A7', '#00796B', '#388E3C', '#689F38', '#F57C00', '#E64A19', '#5D4037'];
+
+function getDynamicColor(str) {
+  if(!str) return '#555';
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+      hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length];
+}
 
 // ===== INICIALIZAÇÃO =====
 window.onload = () => {
@@ -378,6 +392,9 @@ function renderHomeTrips() {
         <div class="meta">${trip.data.length} atividades</div>
       </div>
       <div class="trip-actions">
+        <button class="btn-icon" onclick="updateTrip(event, '${trip.id}')" title="Atualizar dados da planilha">
+          <span class="material-symbols-rounded" style="font-size:20px; color:var(--accent);">sync</span>
+        </button>
         <button class="btn-icon" onclick="renameTrip(event, '${trip.id}')" title="Renomear">
           <span class="material-symbols-rounded" style="font-size:20px">edit</span>
         </button>
@@ -409,16 +426,37 @@ function deleteTrip(e, id) {
   }
 }
 
-// ===== IMPORTAÇÃO (GOOGLE SHEETS) =====
-function importTrip() {
+// ===== IMPORTAÇÃO E ATUALIZAÇÃO (GOOGLE SHEETS) =====
+function initImport() {
   let url = document.getElementById('new-sheet-url').value.trim();
+  if (!url) { showToast('Cole um link do Google Sheets.'); return; }
+  executeImport(url, null);
+}
+
+function updateTrip(e, id) {
+  e.stopPropagation();
+  let trip = savedTrips.find(t => t.id === id);
+  let url = trip.sheetUrl;
+  
+  // Tratativa para viagens antigas criadas antes de implementarmos o salvamento da URL
+  if (!url) {
+    url = prompt("Para atualizar esta viagem antiga, precisamos da URL da planilha pela última vez. Cole a URL aqui:");
+    if(!url || !url.trim()) return;
+  }
+  executeImport(url, id);
+}
+
+function executeImport(url, updateId) {
   let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (!m) { showToast('Cole um link válido do Google Sheets.'); return; }
-  showLoading('Analisando planilha...');
+  if (!m) { showToast('Link inválido do Google Sheets.'); return; }
+  
+  pendingImportInfo = { sheetUrl: url, updateId: updateId };
+  showLoading(updateId ? 'Atualizando roteiro...' : 'Analisando planilha...');
+  
   let script = document.createElement('script');
   script.id = 'gviz-script';
   script.src = `https://docs.google.com/spreadsheets/d/${m[1]}/gviz/tq?tqx=responseHandler:_gvizCallback&headers=1&gid=${(url.match(/[#&?]gid=(\d+)/)||[])[1]||'0'}`;
-  script.onerror = () => { hideLoading(); showToast('Erro. A planilha está pública?'); };
+  script.onerror = () => { hideLoading(); showToast('Erro de acesso. A planilha está pública?'); };
   document.body.appendChild(script);
 }
 
@@ -448,12 +486,31 @@ function _gvizCallback(data) {
     }
     if(parsed.length === 0) throw new Error();
 
-    let newTrip = { id: 'trip_' + Date.now(), title: 'Viagem (' + (parsed[0].cidade || 'Nova') + ')', data: parsed };
-    savedTrips.push(newTrip); saveTripsToStorage();
-    
-    document.getElementById('new-sheet-url').value = '';
-    renderHomeTrips(); updateTopSelector(); changeActiveTrip(newTrip.id);
-    showToast('Viagem importada com sucesso!');
+    if (pendingImportInfo && pendingImportInfo.updateId) {
+      // É uma atualização
+      let trip = savedTrips.find(t => t.id === pendingImportInfo.updateId);
+      trip.data = parsed;
+      trip.sheetUrl = pendingImportInfo.sheetUrl; // Salva a URL para o futuro
+      saveTripsToStorage();
+      renderHomeTrips();
+      if(activeTripId === trip.id) changeActiveTrip(trip.id, true);
+      showToast('Viagem atualizada com sucesso!');
+    } else {
+      // É uma nova viagem
+      let newTrip = { 
+        id: 'trip_' + Date.now(), 
+        title: 'Viagem (' + (parsed[0].cidade || 'Nova') + ')', 
+        data: parsed,
+        sheetUrl: pendingImportInfo.sheetUrl
+      };
+      savedTrips.push(newTrip); 
+      saveTripsToStorage();
+      document.getElementById('new-sheet-url').value = '';
+      renderHomeTrips(); 
+      updateTopSelector(); 
+      changeActiveTrip(newTrip.id);
+      showToast('Viagem importada com sucesso!');
+    }
   } catch(e) { showToast('Erro na estrutura da planilha.'); }
 }
 
@@ -479,31 +536,30 @@ function parseTimeMin(t) {
   return m ? parseInt(m[1])*60 + parseInt(m[2]) : 9999;
 }
 
-// Regex validado para coordenadas padrão Maps (Hierarquia de Precisão)
 function extractCoords(url) {
   if (!url) return null;
   let m;
-  
-  // 1. Prioridade Máxima: O pino exato do local (escondido nos parâmetros !3d e !4d)
   m = url.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/);
   if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  
-  // 2. Prioridade Secundária: Link de busca direta ou coordenadas puras (q=lat,lng ou ll=lat,lng)
   m = url.match(/[?&](?:q|ll)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
   if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-
-  // 3. Prioridade Terciária: Destino de Rota (dir/pontoA/pontoB/lat,lng)
   m = url.match(/\/dir\/.*?\/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
   if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  
-  // 4. Último Recurso: O Viewport do mapa (@lat,lng,zoom)
   m = url.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
   if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  
   return null;
 }
 
 // ===== FILTROS E SINCRONIZAÇÃO =====
+function clearFilters(context) {
+  let destSuffix = context === 'map' ? '-map' : '';
+  ['filter-city', 'filter-day', 'filter-category', 'filter-atividade'].forEach(baseId => {
+    let el = document.getElementById(baseId + destSuffix);
+    if(el) { el.value = ''; el.closest('.filter-chip').classList.remove('active'); }
+  });
+  applyFilters(context);
+}
+
 function applyFilters(sourceTab) {
   if(activeTripData.length === 0) return;
 
@@ -590,9 +646,13 @@ function renderItinerary(items) {
       currentDay = formattedDay;
     }
     
-    let catHtml = item.categoria ? `<span class="tag tag-category"><span class="material-symbols-rounded" style="font-size:14px">label</span>${esc(item.categoria)}</span>` : '';
-    let mapsHtml = item.google_maps ? `<span class="tag maps-link"><span class="material-symbols-rounded" style="font-size:14px">navigation</span>Maps</span>` : '';
-    let anexoHtml = item.link ? `<span class="tag"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
+    // Cores Dinâmicas
+    let catColor = getDynamicColor(item.categoria);
+    let cityColor = getDynamicColor(item.cidade);
+    
+    let catHtml = item.categoria ? `<span class="tag" style="background:${catColor}; color:#fff;"><span class="material-symbols-rounded" style="font-size:14px">label</span>${esc(item.categoria)}</span>` : '';
+    let cityHtml = item.cidade ? `<span class="tag" style="background:${cityColor}; color:#fff;"><span class="material-symbols-rounded" style="font-size:14px">location_on</span>${esc(item.cidade)}</span>` : '';
+    let anexoHtml = item.link ? `<span class="tag tag-anexo"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
 
     html += `
       <div class="activity-card" onclick="openDetail(${item._i})">
@@ -600,9 +660,8 @@ function renderItinerary(items) {
         <div class="card-body">
           <div class="card-title">${esc(item.atividade||'Sem título')}</div>
           <div class="card-meta">
-            ${item.cidade ? `<span class="tag tag-city"><span class="material-symbols-rounded" style="font-size:14px">location_on</span>${esc(item.cidade)}</span>` : ''}
+            ${cityHtml}
             ${catHtml}
-            ${mapsHtml}
             ${anexoHtml}
           </div>
         </div>
