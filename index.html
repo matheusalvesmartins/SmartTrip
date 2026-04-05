@@ -479,9 +479,10 @@ function parseGviz(data) {
   };
 
   let parsed = [];
-  data.table.rows.forEach((row, i) => {
+  data.table.rows.forEach((row) => {
     let r = row.c; if(!r) return;
-    let item = { _i: i + Math.random() };
+    // Geração de ID alfanumérico seguro para evitar problemas de precisão no clique do HTML
+    let item = { _id: 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) };
     Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
     if(item.atividade || item.cidade || item.dia) parsed.push(item);
   });
@@ -575,7 +576,7 @@ function applyFilters(sourceTab) {
 
   updateCascadingFilters(filRot, filHosp, { city, day, cat, atv });
 
-  renderList('itinerary-list', filRot, false, day); // Passo o 'day' para o botão Rota do Dia
+  renderList('itinerary-list', filRot, false, day); 
   renderList('hospedagens-list', filHosp, true);
   renderMapMarkers(filRot, filHosp);
 }
@@ -622,11 +623,9 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
 
   let html = '';
 
-  // Lógica da ROTA DO DIA (Múltiplas Paradas)
   if (!isHosp && filteredDay && items.length > 1) {
     let routePoints = items.filter(d => extractCoords(d.google_maps)).map(d => extractCoords(d.google_maps));
     if (routePoints.length >= 2) {
-      // Limite do Google: Origem, Destino e até 9 paradas (slice até 9)
       let origin = `${routePoints[0].lat},${routePoints[0].lng}`;
       let dest = `${routePoints[routePoints.length-1].lat},${routePoints[routePoints.length-1].lng}`;
       let waypoints = routePoints.slice(1, -1).slice(0, 9).map(p => `${p.lat},${p.lng}`).join('|');
@@ -647,8 +646,9 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
     let anexoHtml = item.link ? `<span class="tag tag-anexo"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
     let hospTag = isHosp ? `<span class="tag tag-hospedagem"><span class="material-symbols-rounded" style="font-size:14px">hotel</span>Hotel</span>` : '';
 
+    // Uso do ID em formato String no onClick
     html += `
-      <div class="activity-card" onclick="openDetail(${item._i}, ${isHosp})">
+      <div class="activity-card" onclick="openDetail('${item._id}', ${isHosp})">
         <div class="card-time"><span class="hour">${esc(item.hora||'--')}</span></div>
         <div class="card-body">
           <div class="card-title">${esc(item.atividade||'Sem título')}</div>
@@ -665,16 +665,16 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
 }
 
 // ===== ABERTURA DE DETALHES VIA MAPA =====
-function openFromMap(idx, isHosp) {
+function openFromMap(id, isHosp) {
   closeModal();
   if(mainMap) mainMap.closePopup();
   navigate(isHosp ? 'hospedagens' : 'itinerary');
-  setTimeout(() => openDetail(idx, isHosp), 200); // Aguarda a transição da tela
+  setTimeout(() => openDetail(id, isHosp), 300); // Aguarda a transição da tela
 }
 
 // ===== MODAL DE DETALHES =====
-function openDetail(idx, isHosp) {
-  let item = isHosp ? activeHospedagens.find(d => d._i === idx) : activeRoteiro.find(d => d._i === idx);
+function openDetail(id, isHosp) {
+  let item = isHosp ? activeHospedagens.find(d => d._id === id) : activeRoteiro.find(d => d._id === id);
   if(!item) return;
 
   document.getElementById('modal-title').textContent = item.atividade;
@@ -690,10 +690,9 @@ function openDetail(idx, isHosp) {
   if(item.observacoes) sec += `<div class="modal-section"><div class="section-title">Observações</div><div class="section-body">${esc(item.observacoes).replace(/\n/g,'<br>')}</div></div>`;
   if(item.link) sec += `<div class="modal-section"><div class="section-title">Anexos</div><div class="section-body"><a href="${esc(item.link)}" target="_blank"><span class="material-symbols-rounded">attach_file</span> Visualizar Anexo/Link</a></div></div>`;
   
-  // NOVA SEÇÃO: NAVEGAÇÃO E COMO CHEGAR
   let coords = extractCoords(item.google_maps);
   if(coords || item.google_maps) {
-    let dirLink = coords ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}` : item.google_maps;
+    let dirLink = coords ? `https://www.google.com/maps/dir/?api=1&destination=$${coords.lat},${coords.lng}` : item.google_maps;
     let mapsLink = item.google_maps || dirLink;
     
     sec += `<div class="modal-section"><div class="section-title">Localização e Rotas</div>
@@ -706,7 +705,6 @@ function openDetail(idx, isHosp) {
 
   document.getElementById('modal-sections').innerHTML = sec;
 
-  // MINI-MAPA DO MODAL
   let mapSec = document.getElementById('modal-map-section');
   if(coords) {
     mapSec.style.display = 'block';
@@ -764,28 +762,24 @@ function renderMapMarkers(rotItems, hospItems) {
   mapMarkers = [];
   let bounds = [], count = 0;
   
-  // Plota Hospedagens
   hospItems.forEach(item => {
     let coords = extractCoords(item.google_maps); if(!coords) return;
     let icon = L.divIcon({className:'', html:`<div class="map-marker-hotel">🏨</div>`, iconSize:[34,34], iconAnchor:[17,17]});
     let marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
     
-    // NOVO: Botão Ver Detalhes (Vai para a aba Hospedagem)
-    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap(${item._i}, true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${item._id}', true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
     marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
     
     mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
   });
 
-  // Plota Roteiro Sequencial
   rotItems.forEach(item => {
     let coords = extractCoords(item.google_maps); if(!coords) return;
     count++;
     let icon = L.divIcon({className:'', html:`<div class="map-marker-label">${count}</div>`, iconSize:[28,28]});
     let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
     
-    // NOVO: Botão Ver Detalhes (Vai para a aba Roteiro)
-    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap(${item._i}, false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${item._id}', false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
     marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
     
     mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
