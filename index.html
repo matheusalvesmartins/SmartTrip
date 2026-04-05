@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Smart Trip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* TEMA ESCURO (Padrão) */
+:root {
+  --bg: #050505;
+  --bg-card: #121212;
+  --bg-card-hover: #1A1A1A;
+  --bg-elevated: #1F1F1F;
+  --border: #2A2A2A;
+  --text: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --text-muted: #666666;
+  --accent: #0D89E0; /* Azul */
+  --accent-light: #53A9E8;
+  --accent-bg: rgba(13, 137, 224, 0.15);
+  --accent-bg-strong: rgba(13, 137, 224, 0.25);
+  --danger: #C45050;
+  --success: #5CAA6E;
+  --white: #FFFFFF;
+  --black: #000000;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.4);
+  --map-filter: brightness(0.6) saturate(0.6) contrast(1.2) sepia(0.3) hue-rotate(180deg);
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', -apple-system, sans-serif;
+  --transition: 0.25s ease;
+}
+
+/* TEMA CLARO */
+body.light-theme {
+  --bg: #F4F6F8;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F0F4F8;
+  --bg-elevated: #E9ECEF;
+  --border: #D1D9E0;
+  --text: #1A1D20;
+  --text-secondary: #5A6268;
+  --text-muted: #8B949E;
+  --accent: #0A6EBA; /* Azul ligeiramente mais escuro para contraste */
+  --accent-bg: rgba(10, 110, 186, 0.1);
+  --accent-bg-strong: rgba(10, 110, 186, 0.2);
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --white: #FFFFFF;
+  --black: #000000;
+  --map-filter: brightness(0.95) saturate(1.1) contrast(1.05);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); }
+.material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
+.filled { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+
+/* LAYOUT PRINCIPAL */
+.topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:60px; transition:all var(--transition); }
+.brand { display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:20px; color:var(--accent); font-weight:600; flex-shrink:0; }
+.global-trip-select { flex:1; appearance:none; background:var(--bg-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; font-family:var(--font-body); padding:8px 32px 8px 12px; outline:none; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
+.btn-icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); background:transparent; border:none; color:var(--text-secondary); cursor:pointer; flex-shrink:0; }
+.btn-icon:hover { background:var(--bg-elevated); color:var(--text); }
+
+.main-content { flex:1; position:relative; overflow:hidden; }
+
+.bottom-nav { display:flex; justify-content:space-around; align-items:center; background:var(--bg); border-top:1px solid var(--border); height:64px; flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:100; }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-muted); cursor:pointer; height:100%; transition:color var(--transition); }
+.nav-item .material-symbols-rounded { font-size:24px; transition:transform var(--transition); }
+.nav-item span:last-child { font-size:11px; font-weight:500; }
+.nav-item.active { color:var(--accent); }
+.nav-item.active .material-symbols-rounded { font-variation-settings:'FILL' 1; transform:translateY(-2px); }
+
+/* SCREENS */
+.screen { position:absolute; inset:0; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .3s ease; overflow:hidden; z-index:1; }
+.screen.active { opacity:1; pointer-events:all; z-index:10; }
+
+/* ELEMENTOS REUSÁVEIS */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:var(--radius-sm); font-family:var(--font-body); font-size:14px; font-weight:600; border:none; cursor:pointer; transition:all var(--transition); }
+.btn-primary { background:var(--accent); color:var(--white); width:100%; }
+.btn-primary:hover { background:var(--accent-light); box-shadow:0 4px 12px var(--accent-bg-strong); }
+.btn-secondary { background:var(--bg-elevated); color:var(--text); border:1px solid var(--border); width:100%; }
+.btn-secondary:hover { background:var(--bg-card-hover); border-color:var(--text-muted); }
+.input-field { width:100%; padding:12px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; outline:none; transition:border var(--transition); }
+.input-field:focus { border-color:var(--accent); }
+
+/* INÍCIO (HOME) */
+#home-screen { padding:20px; overflow-y:auto; }
+.section-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-secondary); margin-bottom:12px; margin-top:24px; }
+.trip-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:all var(--transition); box-shadow:var(--shadow); }
+.trip-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.trip-card .icon { background:var(--accent-bg); color:var(--accent); width:48px; height:48px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.trip-card .icon .material-symbols-rounded { font-size:24px; }
+.trip-card .info { flex:1; min-width:0; }
+.trip-card .title { font-weight:600; font-size:16px; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text); }
+.trip-card .meta { font-size:12px; color:var(--text-secondary); }
+.trip-actions { display:flex; gap:4px; }
+
+/* ROTEIRO & MAPA COMUM */
+.filters-bar { padding:10px 16px; display:flex; gap:8px; overflow-x:auto; flex-shrink:0; border-bottom:1px solid var(--border); scrollbar-width:none; background:var(--bg); }
+.filters-bar::-webkit-scrollbar { display:none; }
+.filter-chip { display:flex; align-items:center; gap:4px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; font-size:13px; color:var(--text-secondary); flex-shrink:0; }
+.filter-chip.active { background:var(--accent-bg-strong); border-color:var(--accent); color:var(--accent); }
+.filter-chip select { background:transparent; border:none; color:inherit; font-size:13px; outline:none; cursor:pointer; padding-right:2px; font-family:var(--font-body); }
+.filter-chip select option { background:var(--bg-card); color:var(--text); }
+.search-wrap { flex:1; min-width:140px; position:relative; }
+.search-wrap .material-symbols-rounded { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--text-muted); }
+.search-wrap input { width:100%; padding:6px 10px 6px 30px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; color:var(--text); font-size:13px; outline:none; }
+
+/* ROTEIRO (ITINERARY) */
+.itinerary-list { flex:1; overflow-y:auto; padding:8px 16px 24px; }
+.day-header { display:flex; align-items:center; gap:10px; padding:12px 0 8px; margin-bottom:4px; position:sticky; top:0; z-index:5; background:var(--bg); }
+.day-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--bg); background:var(--text); padding:4px 12px; border-radius:20px; }
+.day-header::after { content:''; flex:1; height:1px; background:var(--border); }
+.activity-card { display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; cursor:pointer; transition:all var(--transition); box-shadow:var(--shadow); }
+.activity-card:hover { border-color:var(--accent); transform:translateX(3px); }
+.card-time { display:flex; flex-direction:column; align-items:center; min-width:48px; padding-top:2px; color:var(--text); }
+.card-time .hour { font-size:16px; font-weight:700; }
+.card-body { flex:1; min-width:0; }
+.card-body .card-title { font-size:15px; font-weight:600; margin-bottom:8px; line-height:1.3; color:var(--text); }
+.card-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.tag { display:inline-flex; align-items:center; gap:4px; font-size:11px; color:var(--text-secondary); background:var(--bg-elevated); padding:4px 8px; border-radius:4px; font-weight:500; }
+.tag-city { color:var(--white); background:#2C3E50; }
+body.light-theme .tag-city { color:var(--white); background:#34495E; }
+.maps-link { color:var(--accent); background:var(--accent-bg); text-decoration:none; }
+
+/* MAPA */
+.map-container { flex:1; position:relative; }
+#main-map { width:100%; height:100%; z-index:1; }
+.leaflet-tile-pane { filter:var(--map-filter); transition:filter 0.3s ease; }
+.map-marker-label { display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:var(--text); color:var(--bg); border-radius:50%; font-weight:700; font-size:12px; border:2px solid var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.6); }
+.map-marker-user { width:16px; height:16px; background:var(--accent-light); border:3px solid var(--white); border-radius:50%; box-shadow:0 0 0 6px rgba(13,137,224,.3); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 6px rgba(13,137,224,.3)} 50%{box-shadow:0 0 0 12px rgba(13,137,224,.1)} }
+
+/* MODAL DE DETALHES */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:500; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s ease; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal-sheet { background:var(--bg-card); border-radius:24px 24px 0 0; width:100%; max-width:540px; max-height:85vh; overflow-y:auto; transform:translateY(100%); transition:transform .3s cubic-bezier(0.1, 0.9, 0.2, 1); border-top:1px solid var(--border); box-shadow:0 -10px 40px rgba(0,0,0,0.5); }
+.modal-overlay.open .modal-sheet { transform:translateY(0); }
+.modal-handle { width:40px; height:5px; background:var(--border); border-radius:3px; margin:12px auto; }
+.modal-content { padding:8px 24px 32px; }
+.modal-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
+.modal-header h2 { font-family:var(--font-display); font-size:22px; flex:1; color:var(--text); line-height:1.2; padding-right:12px; }
+.modal-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
+.modal-info-item { padding:12px; background:var(--bg); border-radius:var(--radius-sm); border:1px solid var(--border); }
+.modal-info-item .label { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px; }
+.modal-info-item .value { font-size:13px; font-weight:500; color:var(--text); }
+.modal-section { margin-bottom:16px; background:var(--bg); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border); }
+.modal-section .section-title { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--accent); margin-bottom:8px; }
+.modal-section .section-body { font-size:14px; line-height:1.6; color:var(--text-secondary); }
+.modal-section a { color:var(--text); text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:500; }
+.modal-map { width:100%; height:180px; border-radius:var(--radius-sm); overflow:hidden; margin-top:8px; border:1px solid var(--border); }
+
+/* UTILITÁRIOS */
+.toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:13px; font-weight:600; z-index:2000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
+.toast.visible { transform:translateX(-50%) translateY(0); opacity:1; }
+.loading-overlay { position:fixed; inset:0; z-index:1000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
+.loading-overlay.hidden { opacity:0; pointer-events:none; }
+.spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
+.empty-state .material-symbols-rounded { font-size:48px; margin-bottom:12px; opacity:0.5; }
+</style>
+</head>
+<body>
+
+<div class="loading-overlay hidden" id="loading">
+  <div class="spinner"></div>
+  <p style="color:var(--text-secondary);font-size:14px" id="loading-text">Carregando...</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<header class="topbar">
+  <div class="brand"><span class="material-symbols-rounded filled">explore</span></div>
+  <select class="global-trip-select" id="global-trip-selector" onchange="changeActiveTrip(this.value)">
+    <option value="">Selecione uma viagem...</option>
+  </select>
+  <button class="btn-icon" onclick="toggleTheme()" id="theme-btn">
+    <span class="material-symbols-rounded">light_mode</span>
+  </button>
+</header>
+
+<div class="main-content">
+  <div class="screen active" id="home-screen">
+    <div style="max-width:600px; margin:0 auto; width:100%;">
+      
+      <div style="background:var(--bg-card); padding:24px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:32px;">
+        <h2 style="font-size:18px; margin-bottom:8px; font-family:var(--font-display);">Nova Viagem</h2>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Cole o link público da sua planilha do Google Sheets.</p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <input type="text" id="new-sheet-url" class="input-field" placeholder="https://docs.google.com/spreadsheets/d/...">
+          <button class="btn btn-primary" onclick="importTrip()">
+            <span class="material-symbols-rounded">download</span> Importar Dados
+          </button>
+        </div>
+      </div>
+
+      <div class="section-title">Minhas Viagens</div>
+      <div id="trips-list"></div>
+
+    </div>
+  </div>
+
+  <div class="screen" id="itinerary-screen">
+    <div class="filters-bar">
+      <div class="search-wrap">
+        <span class="material-symbols-rounded">search</span>
+        <input type="text" id="search-text" placeholder="Buscar..." oninput="applyFilters('itinerary')">
+      </div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city" onchange="applyFilters('itinerary')"><option value="">Cidade</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day" onchange="applyFilters('itinerary')"><option value="">Dia</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category" onchange="applyFilters('itinerary')"><option value="">Categoria</option></select></div>
+    </div>
+    <div class="itinerary-list" id="itinerary-list"></div>
+  </div>
+
+  <div class="screen" id="map-screen">
+    <div class="filters-bar">
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city-map" onchange="applyFilters('map')"><option value="">Cidade</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day-map" onchange="applyFilters('map')"><option value="">Dia</option></select></div>
+      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category-map" onchange="applyFilters('map')"><option value="">Categoria</option></select></div>
+    </div>
+    <div class="map-container">
+      <div id="main-map"></div>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-home" onclick="navigate('home')">
+    <span class="material-symbols-rounded">home</span>
+    <span>Início</span>
+  </div>
+  <div class="nav-item" id="nav-itinerary" onclick="navigate('itinerary')">
+    <span class="material-symbols-rounded">view_list</span>
+    <span>Roteiro</span>
+  </div>
+  <div class="nav-item" id="nav-map" onclick="navigate('map')">
+    <span class="material-symbols-rounded">map</span>
+    <span>Mapa</span>
+  </div>
+</nav>
+
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modal-title"></h2>
+        <button class="btn-icon" onclick="closeModal()" style="background:var(--bg-elevated); border-radius:50%;"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-info-grid" id="modal-info-grid"></div>
+      <div id="modal-sections"></div>
+      <div class="modal-section" id="modal-map-section" style="display:none">
+        <div class="section-title">Localização Exata</div>
+        <div class="modal-map" id="modal-map"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== ESTADO GLOBAL =====
+let savedTrips = []; 
+let activeTripId = null;
+let activeTripData = [];
+let mapMarkers = [];
+let mainMap = null;
+let modalMap = null;
+let userMarker = null;
+
+// ===== INICIALIZAÇÃO =====
+window.onload = () => {
+  loadTheme();
+  loadTripsFromStorage();
+  renderHomeTrips();
+  updateTopSelector();
+  
+  if(savedTrips.length > 0) {
+    changeActiveTrip(savedTrips[0].id, true);
+  }
+};
+
+// ===== TEMA (DARK/LIGHT) =====
+function toggleTheme() {
+  let isLight = document.body.classList.toggle('light-theme');
+  localStorage.setItem('smartTripTheme', isLight ? 'light' : 'dark');
+  document.getElementById('theme-btn').innerHTML = `<span class="material-symbols-rounded">${isLight ? 'dark_mode' : 'light_mode'}</span>`;
+}
+function loadTheme() {
+  let theme = localStorage.getItem('smartTripTheme');
+  if(theme === 'light') {
+    document.body.classList.add('light-theme');
+    document.getElementById('theme-btn').innerHTML = `<span class="material-symbols-rounded">dark_mode</span>`;
+  }
+}
+
+// ===== UTILITÁRIOS E UI =====
+function showToast(msg) {
+  let t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 3000);
+}
+function showLoading(msg) { document.getElementById('loading-text').textContent = msg; document.getElementById('loading').classList.remove('hidden'); }
+function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
+function esc(s) { let d = document.createElement('div'); d.textContent = s||''; return d.innerHTML; }
+
+// Navegação do Menu Inferior
+function navigate(tab) {
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  
+  document.getElementById(`nav-${tab}`).classList.add('active');
+  document.getElementById(`${tab}-screen`).classList.add('active');
+
+  if(tab === 'map') {
+    setTimeout(() => {
+      if(!mainMap) initMainMap();
+      else mainMap.invalidateSize();
+      applyFilters('map');
+    }, 200);
+  } else if (tab === 'itinerary') {
+    applyFilters('itinerary');
+  }
+}
+
+// ===== GERENCIAMENTO DE DADOS =====
+function loadTripsFromStorage() {
+  savedTrips = JSON.parse(localStorage.getItem('smartTrips') || '[]');
+}
+function saveTripsToStorage() {
+  localStorage.setItem('smartTrips', JSON.stringify(savedTrips));
+}
+
+function updateTopSelector() {
+  let sel = document.getElementById('global-trip-selector');
+  if(savedTrips.length === 0) {
+    sel.innerHTML = `<option value="">Nenhuma viagem cadastrada</option>`;
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = savedTrips.map(t => `<option value="${t.id}" ${t.id === activeTripId ? 'selected':''}>${esc(t.title)}</option>`).join('');
+}
+
+function changeActiveTrip(tripId, skipNav = false) {
+  if(!tripId) return;
+  let trip = savedTrips.find(t => t.id === tripId);
+  if(!trip) return;
+
+  activeTripId = tripId;
+  document.getElementById('global-trip-selector').value = tripId;
+  
+  // Ordenação base (Dia + Hora)
+  activeTripData = trip.data.sort((a,b) => {
+    let da = parseDayNum(a.dia), db = parseDayNum(b.dia);
+    if (da !== db) return da - db;
+    return parseTimeMin(a.hora) - parseTimeMin(b.hora);
+  });
+  
+  // Limpa filtros
+  ['filter-city','filter-day','filter-category','filter-city-map','filter-day-map','filter-category-map'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('search-text').value = '';
+
+  updateCascadingFilters(activeTripData, 'itinerary');
+  updateCascadingFilters(activeTripData, 'map');
+  
+  if(!skipNav) {
+    // Se mudou pelo select e estava na home, vai pro roteiro. Senão, mantém a tela e atualiza os dados.
+    let currentActive = document.querySelector('.nav-item.active').id;
+    if(currentActive === 'nav-home') navigate('itinerary');
+    else if (currentActive === 'nav-itinerary') applyFilters('itinerary');
+    else if (currentActive === 'nav-map') applyFilters('map');
+  }
+}
+
+// ===== FUNÇÕES DE EDIÇÃO DA HOME =====
+function renderHomeTrips() {
+  let list = document.getElementById('trips-list');
+  if(savedTrips.length === 0) {
+    list.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">flight_takeoff</span><p>Você ainda não tem viagens.<br>Importe sua planilha acima.</p></div>`;
+    return;
+  }
+  
+  list.innerHTML = savedTrips.map(trip => `
+    <div class="trip-card" onclick="changeActiveTrip('${trip.id}')">
+      <div class="icon"><span class="material-symbols-rounded">map</span></div>
+      <div class="info">
+        <div class="title">${esc(trip.title)}</div>
+        <div class="meta">${trip.data.length} atividades</div>
+      </div>
+      <div class="trip-actions">
+        <button class="btn-icon" onclick="renameTrip(event, '${trip.id}')" title="Renomear">
+          <span class="material-symbols-rounded" style="font-size:20px">edit</span>
+        </button>
+        <button class="btn-icon" onclick="deleteTrip(event, '${trip.id}')" title="Excluir" style="color:var(--danger)">
+          <span class="material-symbols-rounded" style="font-size:20px">delete</span>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renameTrip(e, id) {
+  e.stopPropagation();
+  let trip = savedTrips.find(t => t.id === id);
+  let newName = prompt("Digite o novo nome para a viagem:", trip.title);
+  if(newName && newName.trim() !== "") {
+    trip.title = newName.trim();
+    saveTripsToStorage();
+    renderHomeTrips();
+    updateTopSelector();
+  }
+}
+
+function deleteTrip(e, id) {
+  e.stopPropagation();
+  if(confirm("Tem certeza que deseja excluir esta viagem do app?")) {
+    savedTrips = savedTrips.filter(t => t.id !== id);
+    saveTripsToStorage();
+    if(activeTripId === id) {
+      activeTripId = null;
+      activeTripData = [];
+    }
+    renderHomeTrips();
+    updateTopSelector();
+    if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
+  }
+}
+
+// ===== LÓGICA DE IMPORTAÇÃO (JSONP) =====
+function importTrip() {
+  let url = document.getElementById('new-sheet-url').value.trim();
+  let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (!m) { showToast('Cole um link válido do Google Sheets.'); return; }
+  let sheetId = m[1];
+  let gidMatch = url.match(/[#&?]gid=(\d+)/);
+  let gid = gidMatch ? gidMatch[1] : '0';
+
+  showLoading('Analisando planilha...');
+  let script = document.createElement('script');
+  script.id = 'gviz-script';
+  script.src = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=responseHandler:_gvizCallback&headers=1&gid=${gid}`;
+  script.onerror = () => { hideLoading(); showToast('Erro. A planilha está "Pública para qualquer pessoa com o link"?'); };
+  document.body.appendChild(script);
+}
+
+function _gvizCallback(data) {
+  hideLoading();
+  let old = document.getElementById('gviz-script'); if(old) old.remove();
+  
+  try {
+    let table = data.table;
+    let headers = table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+    
+    // Mapeamento automático de colunas
+    let map = {
+      cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')),
+      dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
+      hora: headers.findIndex(h => h.includes('hora')||h.includes('time')),
+      categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
+      atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')),
+      google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
+      observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')),
+      link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps'))
+    };
+
+    let tripDataParsed = [];
+    for(let i=0; i<table.rows.length; i++) {
+      let r = table.rows[i].c;
+      if(!r) continue;
+      let item = { _i: i };
+      Object.keys(map).forEach(k => {
+        if(map[k] !== -1 && r[map[k]]) {
+          let cell = r[map[k]];
+          item[k] = String(cell.f || cell.v || '');
+        }
+      });
+      if(item.atividade || item.cidade || item.dia) tripDataParsed.push(item);
+    }
+
+    if(tripDataParsed.length === 0) throw new Error("Nenhuma atividade encontrada.");
+
+    let newTrip = {
+      id: 'trip_' + Date.now(),
+      title: 'Minha Viagem (' + (tripDataParsed[0].cidade || 'Nova') + ')',
+      data: tripDataParsed
+    };
+    
+    savedTrips.push(newTrip);
+    saveTripsToStorage();
+    
+    document.getElementById('new-sheet-url').value = '';
+    renderHomeTrips();
+    updateTopSelector();
+    changeActiveTrip(newTrip.id);
+    showToast('Viagem importada com sucesso!');
+
+  } catch(e) { showToast('Erro na estrutura da planilha.'); }
+}
+
+// ===== PARSERS E FORMATADORES =====
+function formatDayWithWeekday(dStr) {
+  if (!dStr) return "Sem data";
+  let parts = String(dStr).split(/[\/\-]/);
+  if (parts.length >= 2) {
+    let d = parseInt(parts[0]), m = parseInt(parts[1]) - 1;
+    let y = parts.length === 3 && parts[2].length === 4 ? parseInt(parts[2]) : new Date().getFullYear();
+    let dateObj = new Date(y, m, d);
+    if (!isNaN(dateObj)) {
+      let days = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
+      return `${dStr} - ${days[dateObj.getDay()]}`;
+    }
+  }
+  return dStr;
+}
+function parseDayNum(dStr) {
+  if (!dStr) return 99999999;
+  let parts = String(dStr).split(/[\/\-]/);
+  if(parts.length >= 2) {
+      let d = parts[0].padStart(2,'0'), m = parts[1].padStart(2,'0');
+      let y = parts.length === 3 ? parts[2].substring(0,4) : "2024";
+      return parseInt(y+m+d);
+  }
+  return parseInt(String(dStr).replace(/\D/g, '')) || 9999;
+}
+function parseTimeMin(t) {
+  if(!t) return 9999;
+  let m = String(t).match(/(\d{1,2})[:\.](\d{2})/);
+  if (m) return parseInt(m[1]) * 60 + parseInt(m[2]);
+  return 9999;
+}
+function extractCoords(url) {
+  if (!url) return null;
+  let m = url.match(/@(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})/);
+  if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  m = url.match(/[?&]q=(-?\d{1,2}\.\d{4,}),(-?\d{1,3}\.\d{4,})/);
+  if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  return null;
+}
+
+// ===== FILTROS =====
+function applyFilters(context) {
+  if(activeTripData.length === 0) {
+    if(context === 'itinerary') document.getElementById('itinerary-list').innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">list_alt</span><p>Selecione uma viagem no menu.</p></div>`;
+    return;
+  }
+
+  let suffix = context === 'map' ? '-map' : '';
+  let city = document.getElementById('filter-city'+suffix).value;
+  let day = document.getElementById('filter-day'+suffix).value;
+  let cat = document.getElementById('filter-category'+suffix).value;
+  let search = context === 'itinerary' ? document.getElementById('search-text').value.toLowerCase() : '';
+
+  let filtered = activeTripData.filter(d => {
+    if (city && d.cidade !== city) return false;
+    if (day && d.dia !== day) return false;
+    if (cat && d.categoria !== cat) return false;
+    if (search && (d.atividade||'').toLowerCase().indexOf(search) === -1) return false;
+    return true;
+  });
+
+  updateCascadingFilters(filtered, context, { city, day, cat });
+
+  if(context === 'itinerary') renderItinerary(filtered);
+  else renderMapMarkers(filtered);
+}
+
+function updateCascadingFilters(dataset, context, current = {}) {
+  let suffix = context === 'map' ? '-map' : '';
+  let cities=[], days=[], cats=[], cityEarliest={};
+  
+  dataset.forEach(d => {
+    if(d.cidade && !cities.includes(d.cidade)) cities.push(d.cidade);
+    if(d.dia && !days.includes(d.dia)) days.push(d.dia);
+    if(d.categoria && !cats.includes(d.categoria)) cats.push(d.categoria);
+    if(d.cidade && d.dia) {
+      let dNum = parseDayNum(d.dia);
+      if(!cityEarliest[d.cidade] || dNum < cityEarliest[d.cidade]) cityEarliest[d.cidade] = dNum;
+    }
+  });
+
+  cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
+  days.sort((a,b) => parseDayNum(a) - parseDayNum(b));
+  cats.sort();
+
+  const fill = (id, items, label, selectedVal) => {
+    let el = document.getElementById(id);
+    if(!el) return;
+    let finalVal = items.includes(selectedVal) ? selectedVal : '';
+    el.innerHTML = `<option value="">${label}</option>` + items.map(v => `<option value="${esc(v)}" ${v===finalVal ? 'selected':''}>${esc(v)}</option>`).join('');
+    if(finalVal) el.closest('.filter-chip').classList.add('active');
+    else el.closest('.filter-chip').classList.remove('active');
+  };
+
+  fill('filter-city'+suffix, cities, 'Cidade', current.city);
+  fill('filter-day'+suffix, days, 'Dia', current.day);
+  fill('filter-category'+suffix, cats, 'Categoria', current.cat);
+}
+
+// ===== RENDERIZAÇÃO DO ROTEIRO =====
+function renderItinerary(items) {
+  let container = document.getElementById('itinerary-list');
+  if(items.length === 0) {
+    container.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">search_off</span><p>Nenhuma atividade encontrada para estes filtros.</p></div>`;
+    return;
+  }
+
+  let html = '', currentDay = null;
+  items.forEach(item => {
+    let formattedDay = formatDayWithWeekday(item.dia);
+    if(formattedDay !== currentDay) {
+      html += `<div class="day-header"><span class="day-label">${esc(formattedDay)}</span></div>`;
+      currentDay = formattedDay;
+    }
+    
+    html += `
+      <div class="activity-card" onclick="openDetail(${item._i})">
+        <div class="card-time"><span class="hour">${esc(item.hora||'--')}</span></div>
+        <div class="card-body">
+          <div class="card-title">${esc(item.atividade||'Sem título')}</div>
+          <div class="card-meta">
+            ${item.cidade ? `<span class="tag tag-city"><span class="material-symbols-rounded" style="font-size:14px">location_on</span>${esc(item.cidade)}</span>` : ''}
+            ${item.google_maps ? `<span class="tag maps-link"><span class="material-symbols-rounded" style="font-size:14px">link</span>Maps</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+// ===== MODAL DE DETALHES =====
+function openDetail(idx) {
+  let item = activeTripData.find(d => d._i === idx);
+  if(!item) return;
+
+  document.getElementById('modal-title').textContent = item.atividade;
+  
+  let grid = '';
+  if(item.dia) grid += `<div class="modal-info-item"><div class="label">Data</div><div class="value">${esc(formatDayWithWeekday(item.dia))}</div></div>`;
+  if(item.hora) grid += `<div class="modal-info-item"><div class="label">Horário</div><div class="value">${esc(item.hora)}</div></div>`;
+  if(item.cidade) grid += `<div class="modal-info-item"><div class="label">Cidade</div><div class="value">${esc(item.cidade)}</div></div>`;
+  if(item.categoria) grid += `<div class="modal-info-item"><div class="label">Categoria</div><div class="value">${esc(item.categoria)}</div></div>`;
+  document.getElementById('modal-info-grid').innerHTML = grid;
+
+  let sec = '';
+  if(item.observacoes) sec += `<div class="modal-section"><div class="section-title">Observações</div><div class="section-body">${esc(item.observacoes).replace(/\n/g,'<br>')}</div></div>`;
+  if(item.link) sec += `<div class="modal-section"><div class="section-title">Anexos</div><div class="section-body"><a href="${esc(item.link)}" target="_blank"><span class="material-symbols-rounded">open_in_new</span> Visualizar Link/Anexo</a></div></div>`;
+  if(item.google_maps) sec += `<div class="modal-section"><div class="section-title">Navegação</div><div class="section-body"><a href="${esc(item.google_maps)}" target="_blank"><span class="material-symbols-rounded">navigation</span> Abrir no App do Maps</a></div></div>`;
+  document.getElementById('modal-sections').innerHTML = sec;
+
+  let mapSec = document.getElementById('modal-map-section');
+  let coords = extractCoords(item.google_maps);
+  if(coords) {
+    mapSec.style.display = 'block';
+    setTimeout(() => {
+      if(modalMap) { modalMap.remove(); modalMap = null; }
+      modalMap = L.map('modal-map',{zoomControl:false, attributionControl:false}).setView([coords.lat, coords.lng], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(modalMap);
+      let icon = L.divIcon({className:'', html:'<div class="map-marker-label" style="background:var(--accent);color:#fff;border-color:#fff;">📍</div>', iconSize:[30,30]});
+      L.marker([coords.lat, coords.lng], {icon}).addTo(modalMap);
+    }, 250);
+  } else {
+    mapSec.style.display = 'none';
+  }
+
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+// ===== MAPA PRINCIPAL =====
+function initMainMap() {
+  mainMap = L.map('main-map', {zoomControl:false, attributionControl:false}).setView([-15.77,-47.93], 4);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
+  L.control.zoom({position: 'topright'}).addTo(mainMap);
+  
+  if ('geolocation' in navigator) {
+    navigator.geolocation.watchPosition(pos => {
+      if(userMarker) userMarker.setLatLng([pos.coords.latitude, pos.coords.longitude]);
+      else {
+        let icon = L.divIcon({className:'', html:'<div class="map-marker-user"></div>', iconSize:[16,16]});
+        userMarker = L.marker([pos.coords.latitude, pos.coords.longitude],{icon, zIndexOffset:1000}).addTo(mainMap);
+      }
+    }, () => {}, {enableHighAccuracy:true, maximumAge:30000});
+  }
+}
+
+function renderMapMarkers(items) {
+  if(!mainMap) return;
+  mapMarkers.forEach(m => mainMap.removeLayer(m));
+  mapMarkers = [];
+  let bounds = [], count = 0;
+  
+  items.forEach(item => {
+    let coords = extractCoords(item.google_maps);
+    if(!coords) return;
+    count++;
+    let icon = L.divIcon({className:'', html:`<div class="map-marker-label">${count}</div>`, iconSize:[28,28]});
+    let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
+    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span></div>`);
+    mapMarkers.push(marker);
+    bounds.push([coords.lat, coords.lng]);
+  });
+  
+  if(bounds.length > 0) mainMap.fitBounds(bounds, {padding:[40,40], maxZoom:15});
+}
+</script>
+</body>
+</html>
