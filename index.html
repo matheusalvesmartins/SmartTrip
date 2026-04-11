@@ -22,7 +22,7 @@
   --text-muted: #8896a4;
   --shadow: 0 4px 6px rgba(0,0,0,0.05);
   --map-filter: none;
-  --pattern-opacity: 0.12; /* Ajustado para revelar o detalhe verde */
+  --pattern-opacity: 0.05; /* Ajustado para ficar BEM mais suave no modo claro */
   
   --primary: #2596be;
   --primary-dark: #15556c;
@@ -58,7 +58,7 @@ body.dark-theme {
   --text-muted: #5a6a77;
   --shadow: 0 4px 12px rgba(0,0,0,0.3);
   --map-filter: brightness(0.6) saturate(0.8) contrast(1.1) hue-rotate(180deg) invert(100%);
-  --pattern-opacity: 0.04; /* Mais discreto no escuro */
+  --pattern-opacity: 0.04; /* Mantido como estava no escuro */
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -669,7 +669,7 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
   container.innerHTML = html;
 }
 
-/* ================= FILTROS E SINCRONIZAÇÃO ================= */
+/* ================= FILTROS ================= */
 function clearFilters(context, preventApply = false) {
   ['filter-city', 'filter-day', 'filter-category', 'filter-atividade'].forEach(baseId => {
     ['', '-hosp', '-map'].forEach(suf => { let el = document.getElementById(baseId + suf); if(el) el.value = ''; });
@@ -744,7 +744,7 @@ function applyFilters(sourceTab) {
   renderList('itinerary-list', filRot, false, day); renderList('hospedagens-list', filHosp, true); renderMapMarkers(filRot, filHosp);
 }
 
-/* ================= DADOS E GERAL ================= */
+/* ================= DADOS ================= */
 function loadTripsFromStorage() { savedTrips = JSON.parse(localStorage.getItem('smartTrips') || '[]'); }
 function saveTripsToStorage() { localStorage.setItem('smartTrips', JSON.stringify(savedTrips)); }
 function updateTopSelector() {
@@ -849,19 +849,9 @@ function openDetail(id, isHosp) {
 
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-/* ================= MAPA PRINCIPAL & NAVEGAÇÃO ================= */
+/* ================= MAPA PRINCIPAL E NAVEGAÇÃO INTEGRADAS ================= */
 function openFromMap(id, isHosp) {
   closeModal(); if(mainMap) mainMap.closePopup(); navigate(isHosp ? 'hospedagens' : 'itinerary'); setTimeout(() => openDetail(id, isHosp), 300);
-}
-
-function syncNavToMarker(safeId) {
-    let idx = mapNavItems.findIndex(n => (n.item._id || n.item._i) === safeId);
-    if(idx !== -1) {
-        currentNavIndex = idx;
-        isNavMode = true;
-        updateMapNavUI();
-        document.getElementById('map-nav-text').textContent = mapNavItems[idx].title;
-    }
 }
 
 function initMainMap() {
@@ -921,8 +911,16 @@ function renderMapMarkers(rotItems, hospItems) {
         marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${rotCount}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
     }
     
-    // Inicia a navegação sincronizada ao clicar no pino
-    marker.on('click', () => syncNavToMarker(safeId));
+    // Integrando clique no marker com o painel de navegação
+    marker.on('click', () => {
+        let idx = mapNavItems.findIndex(n => (n.item._id || n.item._i) === safeId);
+        if(idx !== -1) {
+            currentNavIndex = idx;
+            isNavMode = true;
+            updateMapNavUI();
+            document.getElementById('map-nav-text').textContent = mapNavItems[idx].title;
+        }
+    });
 
     mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
     mapNavItems.push({ item: item, marker: marker, title: item.atividade });
