@@ -22,7 +22,7 @@
   --text-muted: #8896a4;
   --shadow: 0 4px 6px rgba(0,0,0,0.05);
   --map-filter: none;
-  --pattern-opacity: 0.08; /* Opacidade dos círculos concêntricos */
+  --pattern-opacity: 0.12; /* Ajustado para revelar o detalhe verde */
   
   --primary: #2596be;
   --primary-dark: #15556c;
@@ -58,20 +58,24 @@ body.dark-theme {
   --text-muted: #5a6a77;
   --shadow: 0 4px 12px rgba(0,0,0,0.3);
   --map-filter: brightness(0.6) saturate(0.8) contrast(1.1) hue-rotate(180deg) invert(100%);
-  --pattern-opacity: 0.04; /* Círculos mais sutis no modo escuro */
+  --pattern-opacity: 0.04; /* Mais discreto no escuro */
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); position: relative; }
 
-/* BRAND PATTERN: Círculos Concêntricos (Muted Sky Radar) Fiel ao Brandbook */
+/* BRAND PATTERN: Bússolas Distribuídas (Muted Sky Radar) Fiel ao Brandbook */
 .pattern-bg {
   position: fixed;
-  inset: -50%; /* Estendido para garantir que cubra qualquer redimensionamento de tela */
+  inset: 0;
   pointer-events: none;
   z-index: 0;
-  /* Círculos concêntricos expandindo a partir do centro da tela */
-  background-image: repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 70px, var(--primary) 70px, var(--primary) 71px);
+  /* SVG embutido gerando o mosaico da logo (Círculos concêntricos Ciano + Agulha Verde) */
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='56' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='56' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-position: 0 0, 80px 80px;
+  background-size: 160px 160px;
   opacity: var(--pattern-opacity);
   transition: opacity var(--transition);
 }
@@ -144,7 +148,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .modal-section .section-body { font-size: var(--text-base); line-height: 1.6; color: var(--text-secondary); }
 .modal-section a { color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 
-/* OPÇÕES DE ÍCONE */
+/* OPÇÕES DE ÍCONE DO NOVO MODAL */
 .icon-option-label { display: inline-flex; cursor: pointer; flex-shrink: 0; }
 .icon-option-label input { display: none; }
 .icon-option-label span { display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: var(--bg-card); color: var(--text-secondary); border: 2px solid var(--border); transition: all var(--transition); font-size: 22px;}
@@ -665,7 +669,7 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
   container.innerHTML = html;
 }
 
-/* ================= FILTROS ================= */
+/* ================= FILTROS E SINCRONIZAÇÃO ================= */
 function clearFilters(context, preventApply = false) {
   ['filter-city', 'filter-day', 'filter-category', 'filter-atividade'].forEach(baseId => {
     ['', '-hosp', '-map'].forEach(suf => { let el = document.getElementById(baseId + suf); if(el) el.value = ''; });
@@ -865,7 +869,7 @@ function initMainMap() {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
   L.control.zoom({position: 'topright'}).addTo(mainMap);
   
-  mainMap.on('click', function() { exitNavMode(); }); // Saída fácil do modo de navegação
+  mainMap.on('click', function() { exitNavMode(); }); 
   
   if ('geolocation' in navigator) {
     navigator.geolocation.watchPosition(pos => {
@@ -999,7 +1003,7 @@ function centerOnUser() {
     showToast("Buscando localização...");
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(pos => { lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude]; mainMap.setView(lastKnownUserPos, 15);
-      }, () => showToast("Não foi possível acessar."));
+      }, () => showToast("Não foi possível acessar a localização."));
     }
   }
 }
