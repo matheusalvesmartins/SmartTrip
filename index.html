@@ -22,7 +22,7 @@
   --text-muted: #8896a4;
   --shadow: 0 4px 6px rgba(0,0,0,0.05);
   --map-filter: none;
-  --pattern-opacity: 0.04; /* Opacidade do pattern no modo claro */
+  --pattern-opacity: 0.1; /* Pattern mais visível */
   
   --primary: #2596be;
   --primary-dark: #15556c;
@@ -58,20 +58,19 @@ body.dark-theme {
   --text-muted: #5a6a77;
   --shadow: 0 4px 12px rgba(0,0,0,0.3);
   --map-filter: brightness(0.6) saturate(0.8) contrast(1.1) hue-rotate(180deg) invert(100%);
-  --pattern-opacity: 0.02; /* Opacidade menor no modo escuro */
+  --pattern-opacity: 0.05; /* Pattern mais suave no escuro */
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); position: relative;}
+html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); position: relative; }
 
 /* BRAND PATTERN (Marca d'água Tech/Map Grid) */
-body::before {
-  content: '';
-  position: absolute;
+.pattern-bg {
+  position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: radial-gradient(var(--primary) 1px, transparent 1px), radial-gradient(var(--primary) 1px, transparent 1px);
+  background-image: radial-gradient(var(--primary) 1.5px, transparent 1.5px), radial-gradient(var(--primary) 1.5px, transparent 1.5px);
   background-size: 32px 32px;
   background-position: 0 0, 16px 16px;
   opacity: var(--pattern-opacity);
@@ -135,10 +134,10 @@ body::before {
 /* MODAL GERAL */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:500; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s ease; }
 .modal-overlay.open { opacity:1; pointer-events:all; }
-.modal-sheet { background:var(--bg-card); border-radius:24px 24px 0 0; border-top: 1px solid var(--border); width: 100%; max-width: 600px; transform:translateY(100%); transition:transform .3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+.modal-sheet { background:var(--bg-card); border-radius:24px 24px 0 0; border-top: 1px solid var(--border); width: 100%; max-width: 600px; transform:translateY(100%); transition:transform .3s cubic-bezier(0.1, 0.9, 0.2, 1); display:flex; flex-direction:column; max-height:90vh; }
 .modal-overlay.open .modal-sheet { transform:translateY(0); }
-.modal-handle { width:40px; height:5px; background:var(--primary); opacity: 0.3; border-radius:3px; margin:12px auto; }
-.modal-content { padding:8px 24px 32px; max-height:85vh; overflow-y:auto; }
+.modal-handle { width:40px; height:5px; background:var(--primary); opacity: 0.3; border-radius:3px; margin:12px auto; flex-shrink:0;}
+.modal-content { padding:8px 24px 32px; overflow-y:auto; flex:1; }
 .modal-info-item { background:var(--bg); border:1px solid var(--border); border-radius: var(--radius); padding: 12px; }
 .modal-info-item .label { color:var(--text-muted); font-weight: 700; font-size: var(--text-xs); text-transform: uppercase; margin-bottom: 4px; }
 .modal-section { margin-bottom: 16px; background: var(--bg); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
@@ -149,7 +148,7 @@ body::before {
 /* OPÇÕES DE ÍCONE DO NOVO MODAL */
 .icon-option-label { display: inline-flex; cursor: pointer; flex-shrink: 0; }
 .icon-option-label input { display: none; }
-.icon-option-label span { display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: var(--bg-card); color: var(--text-secondary); border: 2px solid var(--border); transition: all var(--transition); font-size: 24px;}
+.icon-option-label span { display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: var(--bg-card); color: var(--text-secondary); border: 2px solid var(--border); transition: all var(--transition); font-size: 22px;}
 .icon-option-label input:checked + span { background: rgba(37, 150, 190, 0.1); color: var(--primary); border-color: var(--primary); }
 
 /* UTILS */
@@ -164,6 +163,8 @@ body::before {
 </style>
 </head>
 <body>
+
+<div class="pattern-bg"></div>
 
 <div class="loading-overlay hidden" id="loading">
   <div class="spinner"></div>
@@ -319,29 +320,20 @@ body::before {
           <input type="text" id="new-trip-url" class="input-field" placeholder="https://docs.google.com/spreadsheets/d/...">
         </div>
         <div>
-          <label class="form-label">Ícone da Viagem</label>
-          <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none;" id="icon-selector-container">
-            <label class="icon-option-label" title="Voo"><input type="radio" name="new-trip-icon" value="flight_takeoff" checked><span><span class="material-symbols-rounded">flight_takeoff</span></span></label>
-            <label class="icon-option-label" title="Carro"><input type="radio" name="new-trip-icon" value="directions_car"><span><span class="material-symbols-rounded">directions_car</span></span></label>
-            <label class="icon-option-label" title="Barco/Cruzeiro"><input type="radio" name="new-trip-icon" value="directions_boat"><span><span class="material-symbols-rounded">directions_boat</span></span></label>
-            <label class="icon-option-label" title="Trem"><input type="radio" name="new-trip-icon" value="train"><span><span class="material-symbols-rounded">train</span></span></label>
-            <label class="icon-option-label" title="Natureza"><input type="radio" name="new-trip-icon" value="landscape"><span><span class="material-symbols-rounded">landscape</span></span></label>
-            <label class="icon-option-label" title="Cidade"><input type="radio" name="new-trip-icon" value="location_city"><span><span class="material-symbols-rounded">location_city</span></span></label>
-            <label class="icon-option-label" title="Praia"><input type="radio" name="new-trip-icon" value="beach_access"><span><span class="material-symbols-rounded">beach_access</span></span></label>
-            <label class="icon-option-label" title="Bagagem"><input type="radio" name="new-trip-icon" value="luggage"><span><span class="material-symbols-rounded">luggage</span></span></label>
-            <label class="icon-option-label" title="Trilha"><input type="radio" name="new-trip-icon" value="hiking"><span><span class="material-symbols-rounded">hiking</span></span></label>
-            <label class="icon-option-label" title="Acampamento"><input type="radio" name="new-trip-icon" value="camping"><span><span class="material-symbols-rounded">camping</span></span></label>
-            <label class="icon-option-label" title="Neve/Ski"><input type="radio" name="new-trip-icon" value="downhill_skiing"><span><span class="material-symbols-rounded">downhill_skiing</span></span></label>
-            <label class="icon-option-label" title="Negócios"><input type="radio" name="new-trip-icon" value="business_center"><span><span class="material-symbols-rounded">business_center</span></span></label>
-            <label class="icon-option-label" title="Show/Festival"><input type="radio" name="new-trip-icon" value="festival"><span><span class="material-symbols-rounded">festival</span></span></label>
-            <label class="icon-option-label" title="Esportes"><input type="radio" name="new-trip-icon" value="stadium"><span><span class="material-symbols-rounded">stadium</span></span></label>
-          </div>
+          <label class="form-label">Ícone da Viagem (Símbolos e Emojis)</label>
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap:8px; max-height:160px; overflow-y:auto; padding:4px; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg-elevated);" id="icon-selector-container">
+            </div>
         </div>
       </div>
 
       <div style="display:flex; gap: 12px;">
         <button class="btn btn-outline" style="flex:1;" onclick="closeNewTripModal()">Cancelar</button>
-        <button class="btn btn-primary" style="flex:1;" onclick="submitNewTrip()">Aplicar Roteiro</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="submitNewTrip()">Aplicar / Salvar</button>
+      </div>
+
+      <div id="edit-actions-section" style="display:none; flex-direction:row; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid var(--border);">
+        <button class="btn btn-outline" style="flex:1; color:var(--primary); font-size:var(--text-sm);" onclick="syncCurrentEditingTrip()"><span class="material-symbols-rounded">sync</span> Sincronizar Dados</button>
+        <button class="btn btn-outline" style="flex:1; color:#ef4444; border-color:#ef4444; font-size:var(--text-sm);" onclick="deleteCurrentEditingTrip()"><span class="material-symbols-rounded">delete</span> Excluir Viagem</button>
       </div>
     </div>
   </div>
@@ -360,31 +352,67 @@ let lastKnownUserPos = null;
 let importContext = null;
 let editingTripId = null; 
 
-// Tema Claro como Padrão
+// Tema Claro como Padrão inicial
 let userSettings = JSON.parse(localStorage.getItem('smartTripSettings') || '{"name":"Viajante", "theme":"light", "fontSize":"1"}');
 
-// Paleta de cores exclusiva para Categorias
+// Super Biblioteca de Ícones
+const ICON_OPTIONS = [
+  { val: 'mat:flight_takeoff', label: 'Voo' }, { val: 'mat:directions_car', label: 'Carro' },
+  { val: 'mat:directions_boat', label: 'Barco' }, { val: 'mat:train', label: 'Trem' },
+  { val: 'mat:landscape', label: 'Natureza' }, { val: 'mat:location_city', label: 'Cidade' },
+  { val: 'mat:beach_access', label: 'Praia' }, { val: 'mat:luggage', label: 'Bagagem' },
+  { val: 'mat:hiking', label: 'Trilha' }, { val: 'mat:camping', label: 'Camping' },
+  { val: 'mat:downhill_skiing', label: 'Neve' }, { val: 'mat:business_center', label: 'Negócios' },
+  { val: 'mat:festival', label: 'Festival' }, { val: 'mat:stadium', label: 'Estádio' },
+  { val: 'mat:restaurant', label: 'Gastronomia' }, { val: 'mat:local_cafe', label: 'Café' },
+  { val: 'mat:shopping_bag', label: 'Compras' }, { val: 'mat:museum', label: 'Cultura' },
+  { val: 'mat:nightlife', label: 'Festa' }, { val: 'mat:pets', label: 'Pet' },
+  // Emojis de Viagem
+  { val: 'emo:✈️', label: 'Avião' }, { val: 'emo:🚗', label: 'Carro' },
+  { val: 'emo:🛳️', label: 'Cruzeiro' }, { val: 'emo:🚆', label: 'Trem' },
+  { val: 'emo:🌍', label: 'Mundo' }, { val: 'emo:🗼', label: 'Torre' },
+  { val: 'emo:🗽', label: 'Estátua' }, { val: 'emo:🏔️', label: 'Montanha' },
+  { val: 'emo:🏖️', label: 'Praia' }, { val: 'emo:🏕️', label: 'Camping' },
+  { val: 'emo:🎒', label: 'Mochilão' }, { val: 'emo:💼', label: 'Trabalho' },
+  { val: 'emo:🍷', label: 'Vinho' }, { val: 'emo:🍕', label: 'Pizza' },
+  { val: 'emo:📸', label: 'Fotos' }
+];
+
 const BRAND_COLORS = [
-  { bg: '#2596be', text: '#ffffff' }, 
-  { bg: '#15556c', text: '#ffffff' }, 
-  { bg: '#B8D430', text: '#15556c' }, 
-  { bg: '#8EA622', text: '#ffffff' }, 
-  { bg: '#1a2a33', text: '#ffffff' }
+  { bg: '#2596be', text: '#ffffff' }, { bg: '#15556c', text: '#ffffff' }, 
+  { bg: '#B8D430', text: '#15556c' }, { bg: '#8EA622', text: '#ffffff' }, { bg: '#1a2a33', text: '#ffffff' }
 ];
 
 window.onload = () => {
   applyGlobalSettings();
+  renderIconOptions();
   loadTripsFromStorage();
   renderHomeTrips();
   updateTopSelector();
   if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
 };
 
-/* ================= CONFIGURAÇÕES E TEMA ================= */
+/* ================= ÍCONES, CONFIG E TEMA ================= */
+function renderIconOptions() {
+  let html = '';
+  ICON_OPTIONS.forEach(opt => {
+    let isEmo = opt.val.startsWith('emo:');
+    let display = isEmo ? opt.val.substring(4) : `<span class="material-symbols-rounded">${opt.val.substring(4)}</span>`;
+    let sizeStyle = isEmo ? 'font-size: 24px;' : '';
+    html += `<label class="icon-option-label" title="${opt.label}"><input type="radio" name="new-trip-icon" value="${opt.val}"><span style="${sizeStyle}">${display}</span></label>`;
+  });
+  document.getElementById('icon-selector-container').innerHTML = html;
+}
+
+function renderIconHtml(iconVal) {
+  if(!iconVal) iconVal = 'mat:flight_takeoff';
+  if (!iconVal.startsWith('mat:') && !iconVal.startsWith('emo:')) iconVal = 'mat:' + iconVal;
+  return iconVal.startsWith('emo:') ? `<div style="font-size:24px;">${iconVal.substring(4)}</div>` : `<span class="material-symbols-rounded">${iconVal.substring(4)}</span>`;
+}
+
 function applyGlobalSettings() {
   if (userSettings.theme === 'dark') document.body.classList.add('dark-theme');
   else document.body.classList.remove('dark-theme');
-  
   document.documentElement.style.setProperty('--font-scale', userSettings.fontSize);
   let greeting = document.getElementById('greeting-name');
   if(greeting) greeting.textContent = `Olá, ${userSettings.name}!`;
@@ -415,53 +443,41 @@ function esc(s) { let d = document.createElement('div'); d.textContent = s||''; 
 function navigate(tab) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-  
   if (document.getElementById(`nav-${tab}`)) document.getElementById(`nav-${tab}`).classList.add('active');
   if (document.getElementById(`${tab}-screen`)) document.getElementById(`${tab}-screen`).classList.add('active');
   
   let selector = document.getElementById('global-trip-selector');
   let settingsBtn = document.getElementById('settings-btn');
-  
-  if (tab === 'home') {
-    selector.style.display = 'none';
-    settingsBtn.style.display = 'flex';
-  } else if (tab === 'settings') {
-    selector.style.display = 'none';
-    settingsBtn.style.display = 'none';
-  } else {
-    selector.style.display = 'block';
-    settingsBtn.style.display = 'none';
-  }
+  if (tab === 'home') { selector.style.display = 'none'; settingsBtn.style.display = 'flex'; } 
+  else if (tab === 'settings') { selector.style.display = 'none'; settingsBtn.style.display = 'none'; } 
+  else { selector.style.display = 'block'; settingsBtn.style.display = 'none'; }
 
   if(tab === 'map') { setTimeout(() => { if(!mainMap) initMainMap(); else mainMap.invalidateSize(); applyFilters('map'); }, 200); }
   else if (tab === 'itinerary' || tab === 'hospedagens') { applyFilters(tab); }
 }
 
-/* ================= HOME & AÇÕES ================= */
+/* ================= HOME & AÇÕES DE VIAGEM ================= */
 function renderHomeTrips() {
   let list = document.getElementById('trips-list');
   let html = '';
 
   if(savedTrips.length > 0) {
     html += savedTrips.map(trip => {
-      // Contagem distinta de hotéis
       let distinctHotels = new Set((trip.hospedagens||[]).map(h => h.google_maps || h.atividade)).size;
-      let iconName = trip.icon || 'flight_takeoff';
-
       return `
-      <div class="activity-card" onclick="changeActiveTrip('${trip.id}')" style="align-items: center;">
-        <div style="background:var(--bg-elevated); color:var(--primary); width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-          <span class="material-symbols-rounded">${iconName}</span>
+      <div class="activity-card" style="display:block; position:relative; padding:16px; padding-bottom:16px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:16px; width:100%; cursor:pointer;" onclick="changeActiveTrip('${trip.id}')">
+          <div style="background:var(--bg-elevated); color:var(--primary); width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            ${renderIconHtml(trip.icon)}
+          </div>
+          <div style="flex:1; min-width:0; padding-right: 30px;">
+            <div style="font-weight:700; font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${esc(trip.title)}</div>
+            <div style="font-size:var(--text-sm); color:var(--text-secondary); font-weight:500; margin-top:2px;">${(trip.roteiro||[]).length} atividades • ${distinctHotels} hotéis</div>
+          </div>
         </div>
-        <div style="flex:1; min-width:0; margin-right: 2px;">
-          <div style="font-weight:700; font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(trip.title)}</div>
-          <div style="font-size:var(--text-sm); color:var(--text-secondary); font-weight:500;">${(trip.roteiro||[]).length} atividades • ${distinctHotels} hotéis</div>
-        </div>
-        <div style="display:flex; gap:0px; flex-shrink:0;" onclick="event.stopPropagation()">
-          <button class="btn-icon" onclick="updateTrip(event, '${trip.id}')" title="Sincronizar" style="color:var(--primary)"><span class="material-symbols-rounded" style="font-size:var(--text-xl);">sync</span></button>
-          <button class="btn-icon" onclick="editTrip(event, '${trip.id}')" title="Editar" style="color:var(--text-secondary)"><span class="material-symbols-rounded" style="font-size:var(--text-xl);">edit</span></button>
-          <button class="btn-icon" onclick="deleteTrip(event, '${trip.id}')" title="Excluir" style="color:var(--text-muted)"><span class="material-symbols-rounded" style="font-size:var(--text-xl);">delete</span></button>
-        </div>
+        <button class="btn-icon" onclick="editTrip(event, '${trip.id}')" title="Configurar Viagem" style="position:absolute; bottom:12px; right:12px; width:32px; height:32px; color:var(--text-secondary); background:transparent; z-index:2;">
+           <span class="material-symbols-rounded" style="font-size:20px;">tune</span>
+        </button>
       </div>
     `}).join('');
   }
@@ -476,10 +492,14 @@ function renderHomeTrips() {
   list.innerHTML = html;
 }
 
-function updateTrip(e, id) {
-  e.stopPropagation(); let trip = savedTrips.find(t => t.id === id);
-  if (!trip.sheetUrl) { showToast('Planilha não possui link salvo. Edite e insira o link.'); return; }
-  executeImport(trip.sheetUrl, id, trip.title, trip.icon);
+function openNewTripModal() {
+  editingTripId = null;
+  document.getElementById('trip-modal-title').textContent = "Novo Roteiro";
+  document.getElementById('new-trip-name').value = '';
+  document.getElementById('new-trip-url').value = '';
+  document.getElementsByName('new-trip-icon')[0].checked = true;
+  document.getElementById('edit-actions-section').style.display = 'none';
+  document.getElementById('new-trip-modal').classList.add('open');
 }
 
 function editTrip(e, id) {
@@ -491,35 +511,17 @@ function editTrip(e, id) {
   document.getElementById('new-trip-name').value = trip.title;
   document.getElementById('new-trip-url').value = trip.sheetUrl || "";
   
-  let iconRadios = document.getElementsByName('new-trip-icon');
-  for (let r of iconRadios) { r.checked = (r.value === (trip.icon || 'flight_takeoff')); }
+  let iconVal = trip.icon || 'mat:flight_takeoff';
+  if (!iconVal.startsWith('mat:') && !iconVal.startsWith('emo:')) iconVal = 'mat:' + iconVal;
   
+  let iconRadios = document.getElementsByName('new-trip-icon');
+  for (let r of iconRadios) { r.checked = (r.value === iconVal); }
+  
+  document.getElementById('edit-actions-section').style.display = 'flex';
   document.getElementById('new-trip-modal').classList.add('open');
 }
 
-function deleteTrip(e, id) {
-  e.stopPropagation(); if(confirm("Excluir viagem definitivamente?")) {
-    savedTrips = savedTrips.filter(t => t.id !== id); saveTripsToStorage(); 
-    if (activeTripId === id) { activeRoteiro = []; activeHospedagens = []; activeTripId = null; }
-    renderHomeTrips(); updateTopSelector();
-    if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
-    else clearFilters(null, true);
-  }
-}
-
-/* ================= IMPORTAÇÃO ================= */
-function openNewTripModal() {
-  editingTripId = null;
-  document.getElementById('trip-modal-title').textContent = "Novo Roteiro";
-  document.getElementById('new-trip-name').value = '';
-  document.getElementById('new-trip-url').value = '';
-  document.getElementsByName('new-trip-icon')[0].checked = true; // Padrão
-  document.getElementById('new-trip-modal').classList.add('open');
-}
-
-function closeNewTripModal() {
-  document.getElementById('new-trip-modal').classList.remove('open');
-}
+function closeNewTripModal() { document.getElementById('new-trip-modal').classList.remove('open'); }
 
 function submitNewTrip() {
   let name = document.getElementById('new-trip-name').value.trim();
@@ -528,9 +530,42 @@ function submitNewTrip() {
   
   if (!name) { showToast('O nome da viagem é obrigatório.'); return; }
   if (!url) { showToast('O link da planilha é obrigatório.'); return; }
+
+  if (editingTripId) {
+    let trip = savedTrips.find(t => t.id === editingTripId);
+    if (trip) {
+      trip.title = name;
+      trip.sheetUrl = url;
+      trip.icon = selectedIcon;
+      saveTripsToStorage(); renderHomeTrips(); updateTopSelector();
+      closeNewTripModal(); showToast('Alterações salvas!');
+    }
+  } else {
+    executeImport(url, null, name, selectedIcon);
+  }
+}
+
+function syncCurrentEditingTrip() {
+  let name = document.getElementById('new-trip-name').value.trim();
+  let url = document.getElementById('new-trip-url').value.trim();
+  let selectedIcon = document.querySelector('input[name="new-trip-icon"]:checked').value;
+  if (!url) { showToast('Link obrigatório para sincronizar.'); return; }
   executeImport(url, editingTripId, name, selectedIcon);
 }
 
+function deleteCurrentEditingTrip() {
+  if (!editingTripId) return;
+  if(confirm("Excluir viagem definitivamente?")) {
+    savedTrips = savedTrips.filter(t => t.id !== editingTripId); saveTripsToStorage(); 
+    if (activeTripId === editingTripId) { activeRoteiro = []; activeHospedagens = []; activeTripId = null; }
+    renderHomeTrips(); updateTopSelector();
+    if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
+    else clearFilters(null, true);
+    closeNewTripModal();
+  }
+}
+
+/* ================= IMPORTAÇÃO GViz ================= */
 function executeImport(url, updateId, customName, customIcon) {
   let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); 
   if (!m) { showToast('Link do Google Sheets inválido.'); return; }
@@ -538,7 +573,6 @@ function executeImport(url, updateId, customName, customIcon) {
   closeNewTripModal();
   showLoading(updateId ? 'Sincronizando dados...' : 'Buscando roteiro...');
   importContext = { url: url, customName: customName, customIcon: customIcon, updateId: updateId, rotDone: false, hospDone: false, roteiro: [], hospedagens: [] };
-  
   injectScript('gviz-rot', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Roteiro&tqx=responseHandler:_cbRoteiro`);
   injectScript('gviz-hosp', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Hospedagens&tqx=responseHandler:_cbHospedagens`);
 }
@@ -551,16 +585,11 @@ function parseGviz(data) {
   if(!data || !data.table) return [];
   let headers = data.table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
   let map = {
-    cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')),
-    dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
-    hora: headers.findIndex(h => h.includes('hora')||h.includes('time')),
-    categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
-    atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')),
-    google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
-    observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')),
-    link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps'))
+    cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')), dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
+    hora: headers.findIndex(h => h.includes('hora')||h.includes('time')), categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
+    atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')), google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
+    observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')), link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps'))
   };
-
   return data.table.rows.map(row => {
     let r = row.c; let item = { _id: 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) };
     Object.keys(map).forEach(k => { if(map[k] !== -1 && r && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
@@ -573,34 +602,23 @@ function checkImportStatus() {
     hideLoading(); 
     if (importContext.updateId) {
       let trip = savedTrips.find(t => t.id === importContext.updateId);
-      trip.roteiro = importContext.roteiro; 
-      trip.hospedagens = importContext.hospedagens;
-      if (importContext.customName) trip.title = importContext.customName;
-      if (importContext.url) trip.sheetUrl = importContext.url;
-      if (importContext.customIcon) trip.icon = importContext.customIcon;
+      trip.roteiro = importContext.roteiro; trip.hospedagens = importContext.hospedagens;
+      trip.title = importContext.customName; trip.sheetUrl = importContext.url; trip.icon = importContext.customIcon;
       saveTripsToStorage(); renderHomeTrips(); updateTopSelector();
       if(activeTripId === trip.id) changeActiveTrip(trip.id, true);
       showToast('Sincronização concluída!');
     } else {
-      let newTrip = { 
-          id: 'trip_' + Date.now(), 
-          title: importContext.customName || 'Nova Viagem', 
-          roteiro: importContext.roteiro, 
-          hospedagens: importContext.hospedagens,
-          sheetUrl: importContext.url,
-          icon: importContext.customIcon || 'flight_takeoff'
-      };
+      let newTrip = { id: 'trip_' + Date.now(), title: importContext.customName || 'Nova Viagem', roteiro: importContext.roteiro, hospedagens: importContext.hospedagens, sheetUrl: importContext.url, icon: importContext.customIcon || 'mat:flight_takeoff' };
       savedTrips.push(newTrip); saveTripsToStorage(); renderHomeTrips(); updateTopSelector(); changeActiveTrip(newTrip.id);
       showToast('Roteiro importado com sucesso!');
     }
   }
 }
 
-/* ================= RENDER LISTAS & CORES DINÂMICAS ================= */
+/* ================= RENDER LISTAS ================= */
 function getDynamicBrandStyle(str) {
   if(!str) return BRAND_COLORS[0];
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
   return BRAND_COLORS[Math.abs(hash) % BRAND_COLORS.length];
 }
 
@@ -611,20 +629,16 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
     container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><span class="material-symbols-rounded" style="font-size:48px;">search_off</span><p style="margin-top:8px; font-weight:600; font-size:var(--text-base);">Nenhuma atividade encontrada.</p></div>`;
     return;
   }
-  
   let html = '';
-  
   if (!isHosp && filteredDay && items.length > 1) {
     let routePoints = items.filter(d => extractCoords(d.google_maps)).map(d => extractCoords(d.google_maps));
     if (routePoints.length >= 2) {
-      let origin = `${routePoints[0].lat},${routePoints[0].lng}`;
-      let dest = `${routePoints[routePoints.length-1].lat},${routePoints[routePoints.length-1].lng}`;
+      let origin = `${routePoints[0].lat},${routePoints[0].lng}`; let dest = `${routePoints[routePoints.length-1].lat},${routePoints[routePoints.length-1].lng}`;
       let waypoints = routePoints.slice(1, -1).slice(0, 9).map(p => `${p.lat},${p.lng}`).join('|');
       let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${waypoints ? '&waypoints='+waypoints : ''}`;
       html += `<button class="btn btn-success" onclick="window.open('${mapsUrl}', '_blank')"><span class="material-symbols-rounded">directions</span> Traçar Rota do Dia (Maps)</button>`;
     }
   }
-  
   let currentDay = null;
   items.forEach(item => {
     let formattedDay = formatDayWithWeekday(item.dia);
@@ -644,12 +658,7 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
         </div>
         <div style="flex:1; min-width:0;">
           <div style="font-weight:700; font-size:var(--text-md); margin-bottom:6px; line-height:1.3; color:var(--text);">${esc(item.atividade||'Sem título')}</div>
-          <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            ${cityHtml}
-            ${hospTag}
-            ${catHtml}
-            ${anexoHtml}
-          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">${cityHtml} ${hospTag} ${catHtml} ${anexoHtml}</div>
         </div>
       </div>`;
   });
@@ -679,30 +688,18 @@ function populateFilters(current = {}) {
   let cities = [...new Set(allItems.map(d => d.cidade).filter(Boolean))];
   cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
 
-  // Dias: filtrados pela Cidade/Cat/Atv.
-  let daysSet = new Set(allItems.filter(d => 
-    (!current.city || d.cidade === current.city) &&
-    (!current.cat || d.categoria === current.cat) &&
-    (!current.atv || d.atividade === current.atv)
-  ).map(d => d.dia).filter(Boolean));
-  if (current.day && allItems.some(d => d.dia === current.day)) daysSet.add(current.day);
+  // Dias: filtrados pela Cidade
+  let daysSet = new Set(allItems.filter(d => (!current.city || d.cidade === current.city)).map(d => d.dia).filter(Boolean));
+  if (current.day && allItems.some(d => d.dia === current.day)) daysSet.add(current.day); // Mantém opção selecionada
   let days = [...daysSet].sort((a,b) => parseDayNum(a) - parseDayNum(b));
 
-  // Categorias
-  let catsSet = new Set(allItems.filter(d => 
-    (!current.city || d.cidade === current.city) &&
-    (!current.day || d.dia === current.day) &&
-    (!current.atv || d.atividade === current.atv)
-  ).map(d => d.categoria).filter(Boolean));
+  // Categorias (filtrado por cidade e dia)
+  let catsSet = new Set(allItems.filter(d => (!current.city || d.cidade === current.city) && (!current.day || d.dia === current.day)).map(d => d.categoria).filter(Boolean));
   if (current.cat && allItems.some(d => d.categoria === current.cat)) catsSet.add(current.cat);
   let cats = [...catsSet].sort();
 
-  // Atividades
-  let atvsSet = new Set(allItems.filter(d => 
-    (!current.city || d.cidade === current.city) &&
-    (!current.day || d.dia === current.day) &&
-    (!current.cat || d.categoria === current.cat)
-  ).map(d => d.atividade).filter(Boolean));
+  // Atividades (filtrado por tudo)
+  let atvsSet = new Set(allItems.filter(d => (!current.city || d.cidade === current.city) && (!current.day || d.dia === current.day) && (!current.cat || d.categoria === current.cat)).map(d => d.atividade).filter(Boolean));
   if (current.atv && allItems.some(d => d.atividade === current.atv)) atvsSet.add(current.atv);
   let atvs = [...atvsSet].sort((a,b) => a.localeCompare(b));
 
@@ -710,23 +707,16 @@ function populateFilters(current = {}) {
     let html = `<option value="">${label}</option>` + items.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
     ['', '-hosp', '-map'].forEach(suf => {
       let el = document.getElementById(idBase + suf);
-      if(el) {
-        let currentVal = el.value;
-        el.innerHTML = html;
-        if(items.includes(currentVal)) el.value = currentVal;
-      }
+      if(el) { let currentVal = el.value; el.innerHTML = html; if(items.includes(currentVal)) el.value = currentVal; }
     });
   };
 
-  fill('filter-city', cities, 'Cidade');
-  fill('filter-day', days, 'Dia');
-  fill('filter-category', cats, 'Categoria');
-  fill('filter-atividade', atvs, 'Atividade/Local');
+  fill('filter-city', cities, 'Cidade'); fill('filter-day', days, 'Dia');
+  fill('filter-category', cats, 'Categoria'); fill('filter-atividade', atvs, 'Atividade');
 }
 
 function applyFilters(sourceTab) {
   if(activeRoteiro.length === 0 && activeHospedagens.length === 0) return;
-
   let srcSuffix = sourceTab === 'hospedagens' ? '-hosp' : (sourceTab === 'map' ? '-map' : '');
   let city = document.getElementById('filter-city'+srcSuffix) ? document.getElementById('filter-city'+srcSuffix).value : '';
   let day = document.getElementById('filter-day'+srcSuffix) ? document.getElementById('filter-day'+srcSuffix).value : '';
@@ -746,15 +736,12 @@ function applyFilters(sourceTab) {
     if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
     if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
   });
-
   let filHosp = activeHospedagens.filter(d => {
     if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
     if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
   });
 
-  renderList('itinerary-list', filRot, false, day); 
-  renderList('hospedagens-list', filHosp, true);
-  renderMapMarkers(filRot, filHosp);
+  renderList('itinerary-list', filRot, false, day); renderList('hospedagens-list', filHosp, true); renderMapMarkers(filRot, filHosp);
 }
 
 /* ================= DADOS E MODAL ================= */
@@ -768,18 +755,15 @@ function updateTopSelector() {
 
 function changeActiveTrip(tripId, skipNav = false) {
   if(!tripId) return; let trip = savedTrips.find(t => t.id === tripId); if(!trip) return;
-  activeTripId = tripId;
-  document.getElementById('global-trip-selector').value = tripId;
+  activeTripId = tripId; document.getElementById('global-trip-selector').value = tripId;
   activeRoteiro = (trip.roteiro || []).sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
   activeHospedagens = (trip.hospedagens || []).sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
   
-  clearFilters(null, true);
-  populateFilters();
+  clearFilters(null, true); populateFilters();
   
   if(!skipNav) {
     let currentActive = document.querySelector('.nav-item.active').id.replace('nav-', '');
-    if(currentActive === 'home' || currentActive === 'settings') navigate('itinerary');
-    else applyFilters(currentActive);
+    if(currentActive === 'home' || currentActive === 'settings') navigate('itinerary'); else applyFilters(currentActive);
   }
 }
 
@@ -847,9 +831,7 @@ function openDetail(id, isHosp) {
       modalMap = L.map('modal-map',{zoomControl:false, attributionControl:false}).setView([coords.lat, coords.lng], 16);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(modalMap);
       
-      let iconHtml = isHosp ? 'H' : '📍';
-      let bgColor = isHosp ? 'var(--accent)' : 'var(--primary)';
-      let txtColor = isHosp ? 'var(--primary-dark)' : 'white';
+      let iconHtml = isHosp ? 'H' : '📍'; let bgColor = isHosp ? 'var(--accent)' : 'var(--primary)'; let txtColor = isHosp ? 'var(--primary-dark)' : 'white';
       let icon = L.divIcon({className:'', html:`<div class="map-marker-label" style="background:${bgColor};color:${txtColor};">${iconHtml}</div>`, iconSize:[28,28]});
       L.marker([coords.lat, coords.lng], {icon}).addTo(modalMap);
     }, 250);
@@ -862,10 +844,7 @@ function closeModal() { document.getElementById('modal').classList.remove('open'
 
 /* ================= MAPA PRINCIPAL ================= */
 function openFromMap(id, isHosp) {
-  closeModal();
-  if(mainMap) mainMap.closePopup();
-  navigate(isHosp ? 'hospedagens' : 'itinerary');
-  setTimeout(() => openDetail(id, isHosp), 300);
+  closeModal(); if(mainMap) mainMap.closePopup(); navigate(isHosp ? 'hospedagens' : 'itinerary'); setTimeout(() => openDetail(id, isHosp), 300);
 }
 
 function initMainMap() {
@@ -890,8 +869,7 @@ function renderMapMarkers(rotItems, hospItems) {
   let bounds = [], count = 0;
   
   hospItems.forEach(item => {
-    let coords = extractCoords(item.google_maps); if(!coords) return;
-    let safeId = item._id || item._i;
+    let coords = extractCoords(item.google_maps); if(!coords) return; let safeId = item._id || item._i;
     let icon = L.divIcon({className:'map-marker-hotel', html:'H', iconSize:[30,30], iconAnchor:[15,15]});
     let marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
     let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
@@ -900,9 +878,7 @@ function renderMapMarkers(rotItems, hospItems) {
   });
 
   rotItems.forEach(item => {
-    let coords = extractCoords(item.google_maps); if(!coords) return;
-    count++;
-    let safeId = item._id || item._i;
+    let coords = extractCoords(item.google_maps); if(!coords) return; count++; let safeId = item._id || item._i;
     let icon = L.divIcon({className:'map-marker-label', html:count, iconSize:[28,28]});
     let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
     let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
@@ -913,14 +889,11 @@ function renderMapMarkers(rotItems, hospItems) {
 }
 
 function centerOnUser() {
-  if (lastKnownUserPos && mainMap) {
-    mainMap.setView(lastKnownUserPos, 15);
-  } else {
+  if (lastKnownUserPos && mainMap) mainMap.setView(lastKnownUserPos, 15);
+  else {
     showToast("Buscando sua localização...");
     if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude];
-        mainMap.setView(lastKnownUserPos, 15);
+      navigator.geolocation.getCurrentPosition(pos => { lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude]; mainMap.setView(lastKnownUserPos, 15);
       }, () => showToast("Não foi possível acessar a localização."));
     }
   }
