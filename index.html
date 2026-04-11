@@ -22,7 +22,7 @@
   --text-muted: #8896a4;
   --shadow: 0 4px 6px rgba(0,0,0,0.05);
   --map-filter: none;
-  --pattern-opacity: 0.1; /* Pattern mais visível */
+  --pattern-opacity: 0.08; /* Opacidade dos círculos concêntricos */
   
   --primary: #2596be;
   --primary-dark: #15556c;
@@ -58,21 +58,21 @@ body.dark-theme {
   --text-muted: #5a6a77;
   --shadow: 0 4px 12px rgba(0,0,0,0.3);
   --map-filter: brightness(0.6) saturate(0.8) contrast(1.1) hue-rotate(180deg) invert(100%);
-  --pattern-opacity: 0.05; /* Pattern mais suave no escuro */
+  --pattern-opacity: 0.03; /* Círculos mais sutis no modo escuro */
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); position: relative; }
 
-/* BRAND PATTERN (Marca d'água Tech/Map Grid) */
+/* BRAND PATTERN: Círculos Concêntricos (Muted Sky Radar) */
 .pattern-bg {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background-image: radial-gradient(var(--primary) 1.5px, transparent 1.5px), radial-gradient(var(--primary) 1.5px, transparent 1.5px);
-  background-size: 32px 32px;
-  background-position: 0 0, 16px 16px;
+  background-image: 
+    repeating-radial-gradient(circle at 0% 0%, transparent 0, transparent 60px, var(--primary) 60px, var(--primary) 61px),
+    repeating-radial-gradient(circle at 100% 100%, transparent 0, transparent 60px, var(--primary) 60px, var(--primary) 61px);
   opacity: var(--pattern-opacity);
   transition: opacity var(--transition);
 }
@@ -145,7 +145,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .modal-section .section-body { font-size: var(--text-base); line-height: 1.6; color: var(--text-secondary); }
 .modal-section a { color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 
-/* OPÇÕES DE ÍCONE DO NOVO MODAL */
+/* OPÇÕES DE ÍCONE */
 .icon-option-label { display: inline-flex; cursor: pointer; flex-shrink: 0; }
 .icon-option-label input { display: none; }
 .icon-option-label span { display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: var(--bg-card); color: var(--text-secondary); border: 2px solid var(--border); transition: all var(--transition); font-size: 22px;}
@@ -265,6 +265,13 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
     </div>
     <div class="map-container" style="flex:1; position:relative; z-index:2;">
       <div id="main-map" style="width: 100%; height: 100%;"></div>
+      
+      <div id="map-nav-panel" style="position:absolute; bottom:20px; left:20px; z-index:400; background:var(--bg-card); border:1px solid var(--border); border-radius:30px; box-shadow:var(--shadow); display:none; align-items:center; overflow:hidden; transition:all var(--transition);">
+         <button class="btn-icon" onclick="navPrevMap(event)" style="border-radius:0; width:36px; height:36px;"><span class="material-symbols-rounded" style="font-size:20px;">chevron_left</span></button>
+         <div id="map-nav-text" style="font-size:var(--text-xs); font-weight:700; padding:0 8px; cursor:pointer; min-width: 80px; max-width: 140px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color: var(--primary);" onclick="if(!isNavMode) startNavMode(event); else focusCurrentNav(event);">Iniciar Navegação</div>
+         <button class="btn-icon" onclick="navNextMap(event)" style="border-radius:0; width:36px; height:36px;"><span class="material-symbols-rounded" style="font-size:20px;">chevron_right</span></button>
+      </div>
+
       <button class="btn-gps" onclick="centerOnUser()" title="Localização Atual" style="position:absolute; bottom:20px; right:20px; z-index:400; width:48px; height:48px; border-radius:50%; background: var(--primary); color: white; border: none; box-shadow: var(--shadow); display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="material-symbols-rounded">my_location</span></button>
     </div>
   </div>
@@ -295,7 +302,6 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;" id="modal-info-grid"></div>
       <div id="modal-sections"></div>
-      
       <div class="modal-section" id="modal-map-section" style="display:none; padding:0; border:none; margin-top:8px;">
         <div class="section-title" style="margin-bottom: 8px;">Localização no Mapa</div>
         <div class="modal-map" id="modal-map" style="border-radius: var(--radius); height: 160px; width: 100%; border: 1px solid var(--border);"></div>
@@ -321,19 +327,18 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
         </div>
         <div>
           <label class="form-label">Ícone da Viagem (Símbolos e Emojis)</label>
-          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap:8px; max-height:160px; overflow-y:auto; padding:4px; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg-elevated);" id="icon-selector-container">
-            </div>
+          <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap:8px; max-height:160px; overflow-y:auto; padding:4px; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg-elevated);" id="icon-selector-container"></div>
         </div>
       </div>
 
       <div style="display:flex; gap: 12px;">
         <button class="btn btn-outline" style="flex:1;" onclick="closeNewTripModal()">Cancelar</button>
-        <button class="btn btn-primary" style="flex:1;" onclick="submitNewTrip()">Aplicar / Salvar</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="submitNewTrip()">Salvar</button>
       </div>
 
       <div id="edit-actions-section" style="display:none; flex-direction:row; gap:12px; margin-top:24px; padding-top:24px; border-top:1px solid var(--border);">
-        <button class="btn btn-outline" style="flex:1; color:var(--primary); font-size:var(--text-sm);" onclick="syncCurrentEditingTrip()"><span class="material-symbols-rounded">sync</span> Sincronizar Dados</button>
-        <button class="btn btn-outline" style="flex:1; color:#ef4444; border-color:#ef4444; font-size:var(--text-sm);" onclick="deleteCurrentEditingTrip()"><span class="material-symbols-rounded">delete</span> Excluir Viagem</button>
+        <button class="btn btn-outline" style="flex:1; color:var(--primary); font-size:var(--text-sm);" onclick="syncCurrentEditingTrip()"><span class="material-symbols-rounded">sync</span> Sincronizar</button>
+        <button class="btn btn-outline" style="flex:1; color:#ef4444; border-color:#ef4444; font-size:var(--text-sm);" onclick="deleteCurrentEditingTrip()"><span class="material-symbols-rounded">delete</span> Excluir</button>
       </div>
     </div>
   </div>
@@ -345,6 +350,10 @@ let activeTripId = null;
 let activeRoteiro = [];
 let activeHospedagens = [];
 let mapMarkers = [];
+let mapNavItems = []; // Itens ordenados para navegação
+let currentNavIndex = -1;
+let isNavMode = false;
+
 let mainMap = null;
 let modalMap = null;
 let userMarker = null;
@@ -352,10 +361,8 @@ let lastKnownUserPos = null;
 let importContext = null;
 let editingTripId = null; 
 
-// Tema Claro como Padrão inicial
 let userSettings = JSON.parse(localStorage.getItem('smartTripSettings') || '{"name":"Viajante", "theme":"light", "fontSize":"1"}');
 
-// Super Biblioteca de Ícones
 const ICON_OPTIONS = [
   { val: 'mat:flight_takeoff', label: 'Voo' }, { val: 'mat:directions_car', label: 'Carro' },
   { val: 'mat:directions_boat', label: 'Barco' }, { val: 'mat:train', label: 'Trem' },
@@ -367,7 +374,6 @@ const ICON_OPTIONS = [
   { val: 'mat:restaurant', label: 'Gastronomia' }, { val: 'mat:local_cafe', label: 'Café' },
   { val: 'mat:shopping_bag', label: 'Compras' }, { val: 'mat:museum', label: 'Cultura' },
   { val: 'mat:nightlife', label: 'Festa' }, { val: 'mat:pets', label: 'Pet' },
-  // Emojis de Viagem
   { val: 'emo:✈️', label: 'Avião' }, { val: 'emo:🚗', label: 'Carro' },
   { val: 'emo:🛳️', label: 'Cruzeiro' }, { val: 'emo:🚆', label: 'Trem' },
   { val: 'emo:🌍', label: 'Mundo' }, { val: 'emo:🗼', label: 'Torre' },
@@ -465,7 +471,7 @@ function renderHomeTrips() {
     html += savedTrips.map(trip => {
       let distinctHotels = new Set((trip.hospedagens||[]).map(h => h.google_maps || h.atividade)).size;
       return `
-      <div class="activity-card" style="display:block; position:relative; padding:16px; padding-bottom:16px; margin-bottom:16px;">
+      <div class="activity-card" style="display:block; position:relative; padding:16px; margin-bottom:16px;">
         <div style="display:flex; align-items:center; gap:16px; width:100%; cursor:pointer;" onclick="changeActiveTrip('${trip.id}')">
           <div style="background:var(--bg-elevated); color:var(--primary); width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
             ${renderIconHtml(trip.icon)}
@@ -475,7 +481,7 @@ function renderHomeTrips() {
             <div style="font-size:var(--text-sm); color:var(--text-secondary); font-weight:500; margin-top:2px;">${(trip.roteiro||[]).length} atividades • ${distinctHotels} hotéis</div>
           </div>
         </div>
-        <button class="btn-icon" onclick="editTrip(event, '${trip.id}')" title="Configurar Viagem" style="position:absolute; bottom:12px; right:12px; width:32px; height:32px; color:var(--text-secondary); background:transparent; z-index:2;">
+        <button class="btn-icon" onclick="editTrip(event, '${trip.id}')" title="Configurar" style="position:absolute; bottom:12px; right:12px; width:32px; height:32px; color:var(--text-secondary); background:transparent; z-index:2;">
            <span class="material-symbols-rounded" style="font-size:20px;">tune</span>
         </button>
       </div>
@@ -534,15 +540,11 @@ function submitNewTrip() {
   if (editingTripId) {
     let trip = savedTrips.find(t => t.id === editingTripId);
     if (trip) {
-      trip.title = name;
-      trip.sheetUrl = url;
-      trip.icon = selectedIcon;
+      trip.title = name; trip.sheetUrl = url; trip.icon = selectedIcon;
       saveTripsToStorage(); renderHomeTrips(); updateTopSelector();
       closeNewTripModal(); showToast('Alterações salvas!');
     }
-  } else {
-    executeImport(url, null, name, selectedIcon);
-  }
+  } else executeImport(url, null, name, selectedIcon);
 }
 
 function syncCurrentEditingTrip() {
@@ -570,8 +572,7 @@ function executeImport(url, updateId, customName, customIcon) {
   let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); 
   if (!m) { showToast('Link do Google Sheets inválido.'); return; }
   let sheetId = m[1]; 
-  closeNewTripModal();
-  showLoading(updateId ? 'Sincronizando dados...' : 'Buscando roteiro...');
+  closeNewTripModal(); showLoading(updateId ? 'Sincronizando dados...' : 'Buscando roteiro...');
   importContext = { url: url, customName: customName, customIcon: customIcon, updateId: updateId, rotDone: false, hospDone: false, roteiro: [], hospedagens: [] };
   injectScript('gviz-rot', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Roteiro&tqx=responseHandler:_cbRoteiro`);
   injectScript('gviz-hosp', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Hospedagens&tqx=responseHandler:_cbHospedagens`);
@@ -688,9 +689,9 @@ function populateFilters(current = {}) {
   let cities = [...new Set(allItems.map(d => d.cidade).filter(Boolean))];
   cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
 
-  // Dias: filtrados pela Cidade
+  // Dias: filtrados apenas pela Cidade
   let daysSet = new Set(allItems.filter(d => (!current.city || d.cidade === current.city)).map(d => d.dia).filter(Boolean));
-  if (current.day && allItems.some(d => d.dia === current.day)) daysSet.add(current.day); // Mantém opção selecionada
+  if (current.day && allItems.some(d => d.dia === current.day)) daysSet.add(current.day); 
   let days = [...daysSet].sort((a,b) => parseDayNum(a) - parseDayNum(b));
 
   // Categorias (filtrado por cidade e dia)
@@ -698,7 +699,7 @@ function populateFilters(current = {}) {
   if (current.cat && allItems.some(d => d.categoria === current.cat)) catsSet.add(current.cat);
   let cats = [...catsSet].sort();
 
-  // Atividades (filtrado por tudo)
+  // Atividades (filtrado por cidade, dia e categoria)
   let atvsSet = new Set(allItems.filter(d => (!current.city || d.cidade === current.city) && (!current.day || d.dia === current.day) && (!current.cat || d.categoria === current.cat)).map(d => d.atividade).filter(Boolean));
   if (current.atv && allItems.some(d => d.atividade === current.atv)) atvsSet.add(current.atv);
   let atvs = [...atvsSet].sort((a,b) => a.localeCompare(b));
@@ -741,10 +742,12 @@ function applyFilters(sourceTab) {
     if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
   });
 
-  renderList('itinerary-list', filRot, false, day); renderList('hospedagens-list', filHosp, true); renderMapMarkers(filRot, filHosp);
+  renderList('itinerary-list', filRot, false, day); 
+  renderList('hospedagens-list', filHosp, true); 
+  renderMapMarkers(filRot, filHosp);
 }
 
-/* ================= DADOS E MODAL ================= */
+/* ================= DADOS E GERAL ================= */
 function loadTripsFromStorage() { savedTrips = JSON.parse(localStorage.getItem('smartTrips') || '[]'); }
 function saveTripsToStorage() { localStorage.setItem('smartTrips', JSON.stringify(savedTrips)); }
 function updateTopSelector() {
@@ -782,6 +785,13 @@ function parseDayNum(dStr) {
   let parts = String(dStr).split(/[\/\-]/);
   if(parts.length >= 2) return parseInt((parts.length===3?parts[2].substring(0,4):"2024") + parts[1].padStart(2,'0') + parts[0].padStart(2,'0'));
   return parseInt(String(dStr).replace(/\D/g, '')) || 9999;
+}
+
+function parseTimeNum(tStr) {
+    if(!tStr) return 0;
+    let m = tStr.match(/(\d+):(\d+)/);
+    if(m) return parseInt(m[1])*60 + parseInt(m[2]);
+    return 0;
 }
 
 function extractCoords(url) {
@@ -842,7 +852,7 @@ function openDetail(id, isHosp) {
 
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
 
-/* ================= MAPA PRINCIPAL ================= */
+/* ================= MAPA PRINCIPAL & NAVEGAÇÃO ================= */
 function openFromMap(id, isHosp) {
   closeModal(); if(mainMap) mainMap.closePopup(); navigate(isHosp ? 'hospedagens' : 'itinerary'); setTimeout(() => openDetail(id, isHosp), 300);
 }
@@ -851,6 +861,11 @@ function initMainMap() {
   mainMap = L.map('main-map', {zoomControl:false, attributionControl:false}).setView([0,0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
   L.control.zoom({position: 'topright'}).addTo(mainMap);
+  
+  // Saída fácil do modo de navegação ao clicar no mapa
+  mainMap.on('click', function() {
+      exitNavMode();
+  });
   
   if ('geolocation' in navigator) {
     navigator.geolocation.watchPosition(pos => {
@@ -865,27 +880,135 @@ function initMainMap() {
 }
 
 function renderMapMarkers(rotItems, hospItems) {
-  if(!mainMap) return; mapMarkers.forEach(m => mainMap.removeLayer(m)); mapMarkers = [];
-  let bounds = [], count = 0;
+  if(!mainMap) return; 
+  mapMarkers.forEach(m => mainMap.removeLayer(m)); 
+  mapMarkers = [];
+  mapNavItems = []; // Reseta os itens de navegação
+  let bounds = [];
   
-  hospItems.forEach(item => {
-    let coords = extractCoords(item.google_maps); if(!coords) return; let safeId = item._id || item._i;
-    let icon = L.divIcon({className:'map-marker-hotel', html:'H', iconSize:[30,30], iconAnchor:[15,15]});
-    let marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
-    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
-    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
-    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
+  // Combina e ordena cronologicamente
+  let combined = [
+    ...hospItems.map(i => ({...i, isHosp:true})),
+    ...rotItems.map(i => ({...i, isHosp:false}))
+  ].filter(i => extractCoords(i.google_maps));
+
+  combined.sort((a, b) => {
+    let dA = parseDayNum(a.dia), dB = parseDayNum(b.dia);
+    if (dA !== dB) return dA - dB;
+    let tA = parseTimeNum(a.hora), tB = parseTimeNum(b.hora);
+    return tA - tB;
   });
 
-  rotItems.forEach(item => {
-    let coords = extractCoords(item.google_maps); if(!coords) return; count++; let safeId = item._id || item._i;
-    let icon = L.divIcon({className:'map-marker-label', html:count, iconSize:[28,28]});
-    let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
-    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
-    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
-    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
+  let rotCount = 0;
+
+  combined.forEach(item => {
+    let coords = extractCoords(item.google_maps);
+    let safeId = item._id || item._i;
+    let isHosp = item.isHosp;
+    let icon, marker;
+
+    if (isHosp) {
+        icon = L.divIcon({className:'map-marker-hotel', html:'H', iconSize:[30,30], iconAnchor:[15,15]});
+        marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
+        let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+        marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
+    } else {
+        rotCount++;
+        icon = L.divIcon({className:'map-marker-label', html:rotCount, iconSize:[28,28]});
+        marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
+        let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+        marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${rotCount}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
+    }
+    
+    mapMarkers.push(marker); 
+    bounds.push([coords.lat, coords.lng]);
+
+    // Guarda referência para a navegação sequencial
+    mapNavItems.push({ item: item, marker: marker, title: item.atividade });
   });
+
   if(bounds.length) mainMap.fitBounds(bounds, {padding:[50,50], maxZoom:15});
+  
+  updateMapNavUI();
+}
+
+function updateMapNavUI() {
+    let panel = document.getElementById('map-nav-panel');
+    if(mapNavItems.length === 0) {
+        panel.style.display = 'none';
+        isNavMode = false;
+        return;
+    }
+    panel.style.display = 'flex';
+    if(!isNavMode) {
+        document.getElementById('map-nav-text').textContent = "Iniciar Navegação";
+    }
+}
+
+function startNavMode(e) {
+    if(e) e.stopPropagation();
+    if(mapNavItems.length === 0) return;
+    
+    isNavMode = true;
+    let now = new Date();
+    let todayNum = now.getFullYear() * 10000 + (now.getMonth()+1) * 100 + now.getDate();
+    let nowTime = now.getHours() * 60 + now.getMinutes();
+
+    let foundIdx = -1;
+    // Encontra o item mais próximo do horário atual
+    for(let i=0; i<mapNavItems.length; i++) {
+        let dNum = parseDayNum(mapNavItems[i].item.dia);
+        let tNum = parseTimeNum(mapNavItems[i].item.hora);
+        if (dNum > todayNum || (dNum === todayNum && tNum >= nowTime)) {
+            foundIdx = i;
+            break;
+        }
+    }
+    
+    if (foundIdx === -1) foundIdx = mapNavItems.length - 1; // Se tudo já passou, seleciona o último
+    if (foundIdx === -1) foundIdx = 0; // Garantia
+    
+    currentNavIndex = Math.max(0, foundIdx);
+    focusCurrentNav();
+}
+
+function focusCurrentNav(e) {
+    if(e) e.stopPropagation();
+    if(currentNavIndex < 0 || currentNavIndex >= mapNavItems.length) return;
+    isNavMode = true;
+    let target = mapNavItems[currentNavIndex];
+    
+    document.getElementById('map-nav-text').textContent = target.title;
+    
+    // Centraliza com offset para não ficar embaixo dos modais
+    mainMap.panTo(target.marker.getLatLng(), {animate: true, duration: 0.5});
+    setTimeout(() => { target.marker.openPopup(); }, 500);
+}
+
+function navPrevMap(e) {
+    if(e) e.stopPropagation();
+    if(mapNavItems.length === 0) return;
+    if(!isNavMode) { startNavMode(); return; }
+    currentNavIndex--;
+    if(currentNavIndex < 0) currentNavIndex = mapNavItems.length - 1;
+    focusCurrentNav();
+}
+
+function navNextMap(e) {
+    if(e) e.stopPropagation();
+    if(mapNavItems.length === 0) return;
+    if(!isNavMode) { startNavMode(); return; }
+    currentNavIndex++;
+    if(currentNavIndex >= mapNavItems.length) currentNavIndex = 0;
+    focusCurrentNav();
+}
+
+function exitNavMode() {
+    if(isNavMode) {
+        isNavMode = false;
+        currentNavIndex = -1;
+        document.getElementById('map-nav-text').textContent = "Iniciar Navegação";
+    }
 }
 
 function centerOnUser() {
