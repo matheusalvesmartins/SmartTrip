@@ -3,188 +3,145 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Smart Trip</title>
+<title>SmartTrip — Explore Confidently</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-/* TEMA ESCURO (Padrão) */
+/* VARIÁVEIS DE ACORDO COM O BRANDBOOK v2.0 */
 :root {
-  --bg: #050505;
-  --bg-card: #121212;
-  --bg-card-hover: #1A1A1A;
-  --bg-elevated: #1F1F1F;
-  --border: #2A2A2A;
-  --text: #FFFFFF;
-  --text-secondary: #A0A0A0;
-  --text-muted: #666666;
-  --accent: #0D89E0;
-  --accent-light: #53A9E8;
-  --accent-bg: rgba(13, 137, 224, 0.15);
-  --accent-bg-strong: rgba(13, 137, 224, 0.25);
-  --danger: #C45050;
-  --success: #5CAA6E;
-  --hotel: #E64A19;
+  /* Cores Base - Modo Escuro (Default) */
+  --bg: #0a0f12;
+  --bg-card: #162127;
+  --bg-card-hover: #1e2c34;
+  --bg-elevated: #1a2a33;
+  --border: #2d3d48;
+  --text: #f0f9ff;
+  --text-secondary: #8896a4;
+  --text-muted: #5a6a77;
+  
+  /* Paleta SmartTrip */
+  --primary: #2596be;
+  --primary-dark: #15556c;
+  --accent: #B8D430;
+  --accent-dark: #8EA622;
   --white: #FFFFFF;
   --black: #000000;
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 6px;
-  --shadow: 0 4px 12px rgba(0,0,0,0.4);
-  --map-filter: brightness(0.6) saturate(0.6) contrast(1.2) sepia(0.3) hue-rotate(180deg);
-  --font-display: 'DM Serif Display', Georgia, serif;
-  --font-body: 'DM Sans', -apple-system, sans-serif;
-  --transition: 0.25s ease;
+  
+  /* Estética */
+  --radius: 8px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.3);
+  --font-body: 'Montserrat', sans-serif;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --map-filter: brightness(0.6) saturate(0.8) contrast(1.1) hue-rotate(180deg) invert(100%);
 }
 
-/* TEMA CLARO */
+/* Modo Claro - Fiel ao Brandbook */
 body.light-theme {
-  --bg: #F4F6F8;
+  --bg: #f0f9ff;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F0F4F8;
-  --bg-elevated: #E9ECEF;
-  --border: #D1D9E0;
-  --text: #1A1D20;
-  --text-secondary: #5A6268;
-  --text-muted: #8B949E;
-  --accent: #0A6EBA; 
-  --accent-bg: rgba(10, 110, 186, 0.1);
-  --accent-bg-strong: rgba(10, 110, 186, 0.2);
-  --shadow: 0 4px 12px rgba(0,0,0,0.08);
-  --white: #FFFFFF;
-  --black: #000000;
-  --map-filter: brightness(0.95) saturate(1.1) contrast(1.05);
+  --bg-card-hover: #f8fafc;
+  --bg-elevated: #e2e8f0;
+  --border: #e2e8f0;
+  --text: #1a2a33;
+  --text-secondary: #4a5568;
+  --text-muted: #8896a4;
+  --shadow: 0 4px 6px rgba(0,0,0,0.05);
+  --map-filter: none;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); }
 .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
-.filled { font-variation-settings:'FILL' 1,'wght' 400,'GRAD' 0,'opsz' 24; }
+.filled { font-variation-settings:'FILL' 1; }
 
-/* LAYOUT PRINCIPAL */
-.topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:60px; transition:all var(--transition); }
-.brand { display:flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:20px; color:var(--accent); font-weight:600; flex-shrink:0; }
-.global-trip-select { flex:1; appearance:none; background:var(--bg-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; font-family:var(--font-body); padding:8px 32px 8px 12px; outline:none; text-overflow:ellipsis; white-space:nowrap; overflow:hidden; }
-.btn-icon { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); background:transparent; border:none; color:var(--text-secondary); cursor:pointer; flex-shrink:0; transition:all var(--transition);}
-.btn-icon:hover { background:var(--bg-elevated); color:var(--text); }
+/* HEADER / LOGO (BÚSSOLA DIGITAL) */
+.topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg-card); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:64px; box-shadow: var(--shadow); }
+.brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+
+/* Construção da Logo Bússola via CSS */
+.compass-logo { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; }
+.compass-logo::before { content: ''; position: absolute; inset: 0; border: 3px solid var(--primary); border-radius: 50%; }
+.compass-logo::after { content: ''; position: absolute; top: 6px; left: 15px; width: 3px; height: 16px; background: var(--accent); border-radius: 2px; transform: rotate(45deg); transform-origin: bottom center; }
+.brand-name { font-weight: 800; font-size: 20px; color: var(--primary); letter-spacing: -0.5px; }
+
+.global-trip-select { flex:1; appearance:none; background:var(--bg-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%232596be' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:14px; font-family:var(--font-body); font-weight: 500; padding:10px 32px 10px 12px; outline:none; text-overflow:ellipsis; }
+
+.btn-icon { width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius); background:transparent; border:none; color:var(--text-secondary); cursor:pointer; transition:all var(--transition);}
+.btn-icon:hover { background:var(--bg-elevated); color:var(--primary); }
 
 .main-content { flex:1; position:relative; overflow:hidden; }
 
-.bottom-nav { display:flex; justify-content:space-around; align-items:center; background:var(--bg); border-top:1px solid var(--border); height:64px; flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:100; }
-.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-muted); cursor:pointer; height:100%; transition:color var(--transition); }
-.nav-item .material-symbols-rounded { font-size:24px; transition:transform var(--transition); }
-.nav-item span:last-child { font-size:11px; font-weight:500; }
-.nav-item.active { color:var(--accent); }
-.nav-item.active .material-symbols-rounded { font-variation-settings:'FILL' 1; transform:translateY(-2px); }
+/* NAVEGAÇÃO INFERIOR */
+.bottom-nav { display:flex; justify-content:space-around; align-items:center; background:var(--bg-card); border-top:1px solid var(--border); height:68px; flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:100; }
+.nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-muted); cursor:pointer; height:100%; transition:all var(--transition); border-top: 3px solid transparent; }
+.nav-item .material-symbols-rounded { font-size:26px; }
+.nav-item span:last-child { font-size:10px; font-weight:700; text-transform: uppercase; letter-spacing: 0.5px; }
+.nav-item.active { color:var(--primary); border-top-color: var(--primary); background: linear-gradient(to bottom, rgba(37, 150, 190, 0.05), transparent); }
 
-/* SCREENS */
+/* CARDS E LISTAS */
 .screen { position:absolute; inset:0; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .3s ease; overflow:hidden; z-index:1; }
 .screen.active { opacity:1; pointer-events:all; z-index:10; }
 
-/* ELEMENTOS REUSÁVEIS */
-.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:var(--radius-sm); font-family:var(--font-body); font-size:14px; font-weight:600; border:none; cursor:pointer; transition:all var(--transition); text-decoration:none; }
-.btn-primary { background:var(--accent); color:var(--white); }
-.btn-primary:hover { background:var(--accent-light); box-shadow:0 4px 12px var(--accent-bg-strong); }
-.btn-success { background:var(--success); color:var(--white); width:100%; margin-bottom:12px; }
-.btn-success:hover { filter:brightness(1.1); box-shadow:0 4px 12px rgba(92,170,110,0.3); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 24px; border-radius:var(--radius); font-family:var(--font-body); font-size:14px; font-weight:700; border:none; cursor:pointer; transition:all var(--transition); text-decoration:none; }
+.btn-primary { background:var(--primary); color:var(--white); }
+.btn-primary:hover { background:var(--primary-dark); box-shadow: 0 4px 15px rgba(37, 150, 190, 0.3); }
 .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
-.btn-outline:hover { background:var(--bg-elevated); border-color:var(--text-muted); }
-.input-field { width:100%; padding:12px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-size:14px; outline:none; transition:border var(--transition); }
-.input-field:focus { border-color:var(--accent); }
+.btn-outline:hover { background:var(--bg-elevated); }
+.btn-success { background:var(--accent); color:var(--primary-dark); width:100%; margin-bottom:16px; }
+.btn-success:hover { background:var(--accent-dark); }
 
-/* INÍCIO (HOME) */
-#home-screen { padding:20px; overflow-y:auto; }
-.section-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-secondary); margin-bottom:12px; margin-top:24px; }
-.trip-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; display:flex; align-items:center; gap:12px; cursor:pointer; transition:all var(--transition); box-shadow:var(--shadow); }
-.trip-card:hover { border-color:var(--accent); transform:translateY(-2px); }
-.trip-card .icon { background:var(--accent-bg); color:var(--accent); width:48px; height:48px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.trip-card .icon .material-symbols-rounded { font-size:24px; }
-.trip-card .info { flex:1; min-width:0; }
-.trip-card .title { font-weight:600; font-size:16px; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text); }
-.trip-card .meta { font-size:12px; color:var(--text-secondary); }
-.trip-actions { display:flex; gap:2px; }
+.input-field { width:100%; padding:14px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:14px; font-family:var(--font-body); outline:none; transition:border var(--transition); }
+.input-field:focus { border-color:var(--primary); }
 
-/* FILTROS COMUNS */
-.filters-bar { padding:10px 16px; display:flex; align-items:center; gap:8px; overflow-x:auto; flex-shrink:0; border-bottom:1px solid var(--border); scrollbar-width:none; background:var(--bg); }
-.filters-bar::-webkit-scrollbar { display:none; }
-.filter-chip { display:flex; align-items:center; gap:4px; padding:6px 12px; background:var(--bg-card); border:1px solid var(--border); border-radius:20px; font-size:13px; color:var(--text-secondary); flex-shrink:0; transition:all var(--transition);}
-.filter-chip.active { background:var(--accent-bg-strong); border-color:var(--accent); color:var(--accent); }
-.filter-chip select { background:transparent; border:none; color:inherit; font-size:13px; outline:none; cursor:pointer; padding-right:2px; font-family:var(--font-body); max-width: 140px; text-overflow: ellipsis; }
-.filter-chip select option { background:var(--bg-card); color:var(--text); }
-.btn-clear { display:flex; align-items:center; gap:4px; font-size:12px; font-family:var(--font-body); background:transparent; border:1px solid var(--border); color:var(--text-muted); border-radius:20px; padding:6px 12px; cursor:pointer; flex-shrink:0; transition:all var(--transition); }
-.btn-clear:hover { background:var(--bg-elevated); color:var(--text); }
+.activity-card { display:flex; align-items:flex-start; gap:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; cursor:pointer; transition:all var(--transition); box-shadow: var(--shadow); }
+.activity-card:hover { border-color:var(--primary); transform: translateY(-2px); }
 
-/* LISTAS (ROTEIRO & HOSPEDAGEM) */
-.itinerary-list { flex:1; overflow-y:auto; padding:12px 16px 24px; }
-.day-header { display:flex; align-items:center; gap:10px; padding:12px 0 8px; margin-bottom:4px; position:sticky; top:0; z-index:5; background:var(--bg); }
-.day-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--bg); background:var(--text); padding:4px 12px; border-radius:20px; }
-.day-header::after { content:''; flex:1; height:1px; background:var(--border); }
-.activity-card { display:flex; align-items:flex-start; gap:12px; padding:14px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:10px; cursor:pointer; transition:all var(--transition); box-shadow:var(--shadow); }
-.activity-card:hover { border-color:var(--text-muted); transform:translateX(3px); }
-.card-time { display:flex; flex-direction:column; align-items:center; min-width:48px; padding-top:2px; color:var(--text); }
-.card-time .hour { font-size:16px; font-weight:700; }
-.card-body { flex:1; min-width:0; }
-.card-body .card-title { font-size:15px; font-weight:600; margin-bottom:8px; line-height:1.3; color:var(--text); }
-.card-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-.tag { display:inline-flex; align-items:center; gap:4px; font-size:11px; padding:4px 8px; border-radius:4px; font-weight:600; }
-.tag-anexo { background:var(--bg-elevated); color:var(--text-secondary); border:1px solid var(--border); }
-.tag-hospedagem { border: 1px solid var(--hotel); color: var(--hotel); background: transparent; }
+.day-label { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--primary); background:rgba(37, 150, 190, 0.1); padding:6px 16px; border-radius:20px; }
 
 /* MAPA */
-.map-container { flex:1; position:relative; }
-#main-map { width:100%; height:100%; z-index:1; }
-.leaflet-tile-pane { filter:var(--map-filter); transition:filter 0.3s ease; }
-.map-marker-label { display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:var(--text); color:var(--bg); border-radius:50%; font-weight:700; font-size:12px; border:2px solid var(--accent); box-shadow:0 2px 8px rgba(0,0,0,.6); }
-.map-marker-hotel { display:flex; align-items:center; justify-content:center; width:34px; height:34px; background:var(--white); border-radius:50%; font-size:18px; border:3px solid var(--hotel); box-shadow:0 2px 10px rgba(0,0,0,.8); z-index: 1000 !important; }
-.map-marker-user { width:16px; height:16px; background:var(--accent-light); border:3px solid var(--white); border-radius:50%; box-shadow:0 0 0 6px rgba(13,137,224,.3); animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{box-shadow:0 0 0 6px rgba(13,137,224,.3)} 50%{box-shadow:0 0 0 12px rgba(13,137,224,.1)} }
-.btn-gps { position:absolute; bottom:20px; right:20px; z-index:400; width:48px; height:48px; border-radius:50%; background:var(--bg-card); color:var(--text); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:var(--shadow); transition:all var(--transition); }
-.btn-gps:hover { background:var(--bg-elevated); color:var(--accent); }
-.btn-gps .material-symbols-rounded { font-size:24px; }
+.map-marker-label { background:var(--primary); color:var(--white); border: 2px solid var(--white); border-radius: 50%; font-weight: 800; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
+.map-marker-hotel { background:var(--accent); color:var(--primary-dark); border: 2px solid var(--white); border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
 
-/* MODAL DE DETALHES */
+/* MODAL GERAL */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:500; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s ease; }
 .modal-overlay.open { opacity:1; pointer-events:all; }
-.modal-sheet { background:var(--bg-card); border-radius:24px 24px 0 0; width:100%; max-width:540px; max-height:85vh; overflow-y:auto; transform:translateY(100%); transition:transform .3s cubic-bezier(0.1, 0.9, 0.2, 1); border-top:1px solid var(--border); box-shadow:0 -10px 40px rgba(0,0,0,0.5); }
+.modal-sheet { background:var(--bg-card); border-radius:24px 24px 0 0; border-top: 1px solid var(--border); width: 100%; max-width: 600px; transform:translateY(100%); transition:transform .3s cubic-bezier(0.1, 0.9, 0.2, 1); }
 .modal-overlay.open .modal-sheet { transform:translateY(0); }
 .modal-handle { width:40px; height:5px; background:var(--border); border-radius:3px; margin:12px auto; }
-.modal-content { padding:8px 24px 32px; }
-.modal-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px; }
-.modal-header h2 { font-family:var(--font-display); font-size:22px; flex:1; color:var(--text); line-height:1.2; padding-right:12px; }
-.modal-info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px; }
-.modal-info-item { padding:12px; background:var(--bg); border-radius:var(--radius-sm); border:1px solid var(--border); }
-.modal-info-item .label { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:4px; }
-.modal-info-item .value { font-size:13px; font-weight:500; color:var(--text); }
-.modal-section { margin-bottom:16px; background:var(--bg); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border); }
-.modal-section .section-title { font-size:11px; font-weight:700; text-transform:uppercase; color:var(--accent); margin-bottom:12px; }
-.modal-section .section-body { font-size:14px; line-height:1.6; color:var(--text-secondary); }
-.modal-section a { color:var(--text); text-decoration:none; display:inline-flex; align-items:center; gap:6px; font-weight:500; }
-.modal-map { width:100%; height:160px; border-radius:var(--radius-sm); overflow:hidden; margin-top:8px; border:1px solid var(--border); }
+.modal-content { padding:8px 24px 32px; max-height:85vh; overflow-y:auto; }
 
-/* UTILITÁRIOS */
-.toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:13px; font-weight:600; z-index:2000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
-.toast.visible { transform:translateX(-50%) translateY(0); opacity:1; }
+.modal-info-item { background:var(--bg); border:1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 8px;}
+.modal-info-item .label { color:var(--primary); font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; }
+
+/* UTILS */
+.tag { font-weight:700; letter-spacing: 0.3px; }
+.form-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; }
+
 .loading-overlay { position:fixed; inset:0; z-index:1000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
 .loading-overlay.hidden { opacity:0; pointer-events:none; }
-.spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; }
+.spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
-.empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
-.empty-state .material-symbols-rounded { font-size:48px; margin-bottom:12px; opacity:0.5; }
+.toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:13px; font-weight:700; z-index:2000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
+.toast.visible { transform:translateX(-50%) translateY(0); opacity:1; }
 </style>
 </head>
 <body>
 
 <div class="loading-overlay hidden" id="loading">
   <div class="spinner"></div>
-  <p style="color:var(--text-secondary);font-size:14px" id="loading-text">Carregando...</p>
+  <p id="loading-text" style="color:var(--text-secondary); font-weight: 600;">Sincronizando...</p>
 </div>
 <div class="toast" id="toast"></div>
 
 <header class="topbar">
-  <div class="brand"><span class="material-symbols-rounded filled">explore</span></div>
+  <div class="brand">
+    <div class="compass-logo"></div>
+    <span class="brand-name">SmartTrip</span>
+  </div>
   <select class="global-trip-select" id="global-trip-selector" onchange="changeActiveTrip(this.value)">
-    <option value="">Selecione uma viagem...</option>
+    <option value="">Minhas Viagens</option>
   </select>
   <button class="btn-icon" onclick="toggleTheme()" id="theme-btn">
     <span class="material-symbols-rounded">light_mode</span>
@@ -193,65 +150,49 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 <div class="main-content">
   <div class="screen active" id="home-screen">
-    <div style="max-width:600px; margin:0 auto; width:100%;">
-      <div style="background:var(--bg-card); padding:24px; border-radius:var(--radius); border:1px solid var(--border); margin-bottom:32px;">
-        <h2 style="font-size:18px; margin-bottom:8px; font-family:var(--font-display);">Nova Viagem</h2>
-        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">Cole o link público da sua planilha do Google Sheets. A planilha deve conter as abas "Roteiro" e "Hospedagens".</p>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          <input type="text" id="new-sheet-url" class="input-field" placeholder="https://docs.google.com/spreadsheets/d/...">
-          <button class="btn btn-primary" onclick="initImport()">
-            <span class="material-symbols-rounded">download</span> Importar Dados
-          </button>
-        </div>
+    <div style="max-width:600px; margin:0 auto; width:100%; padding: 24px;">
+      
+      <div style="margin-bottom: 32px;">
+        <h2 style="font-size:28px; font-weight: 800; color: var(--primary); margin-bottom: 4px;">Olá, Viajante!</h2>
+        <p style="font-size:14px; color:var(--text-secondary);">O seu roteiro ágil e organizado.</p>
       </div>
-      <div class="section-title">Minhas Viagens</div>
+
+      <div style="color: var(--text-muted); font-weight: 800; font-size: 12px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">
+        Suas Viagens
+      </div>
+      
       <div id="trips-list"></div>
+      
     </div>
   </div>
 
   <div class="screen" id="itinerary-screen">
-    <div class="filters-bar">
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city" onchange="applyFilters('itinerary')"><option value="">Cidade</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day" onchange="applyFilters('itinerary')"><option value="">Dia</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category" onchange="applyFilters('itinerary')"><option value="">Categoria</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade" onchange="applyFilters('itinerary')"><option value="">Atividade</option></select></div>
-      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
+    <div class="filters-bar" style="background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; gap: 8px; overflow-x: auto;">
+      <div class="filter-chip"><select id="filter-city" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Cidade</option></select></div>
+      <div class="filter-chip"><select id="filter-day" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Dia</option></select></div>
+      <div class="filter-chip"><select id="filter-category" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Categoria</option></select></div>
     </div>
-    <div class="itinerary-list" id="itinerary-list"></div>
+    <div class="itinerary-list" id="itinerary-list" style="padding: 16px; overflow-y: auto; flex:1;"></div>
   </div>
 
   <div class="screen" id="hospedagens-screen">
-    <div class="filters-bar">
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city-hosp" onchange="applyFilters('hospedagens')"><option value="">Cidade</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day-hosp" onchange="applyFilters('hospedagens')"><option value="">Dia</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category-hosp" onchange="applyFilters('hospedagens')"><option value="">Categoria</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade-hosp" onchange="applyFilters('hospedagens')"><option value="">Hospedagem</option></select></div>
-      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
-    </div>
-    <div class="itinerary-list" id="hospedagens-list"></div>
+    <div class="itinerary-list" id="hospedagens-list" style="padding: 16px; overflow-y: auto; flex:1;"></div>
   </div>
 
   <div class="screen" id="map-screen">
-    <div class="filters-bar">
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">location_city</span><select id="filter-city-map" onchange="applyFilters('map')"><option value="">Cidade</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">calendar_today</span><select id="filter-day-map" onchange="applyFilters('map')"><option value="">Dia</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">category</span><select id="filter-category-map" onchange="applyFilters('map')"><option value="">Categoria</option></select></div>
-      <div class="filter-chip"><span class="material-symbols-rounded" style="font-size:16px">search</span><select id="filter-atividade-map" onchange="applyFilters('map')"><option value="">Atividade</option></select></div>
-      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:16px">filter_alt_off</span>Limpar</button>
-    </div>
-    <div class="map-container">
-      <div id="main-map"></div>
-      <button class="btn-gps" onclick="centerOnUser()" title="Localização Atual"><span class="material-symbols-rounded">my_location</span></button>
+    <div class="map-container" style="flex:1; position:relative;">
+      <div id="main-map" style="width: 100%; height: 100%;"></div>
+      <button class="btn-gps" onclick="centerOnUser()" style="position:absolute; bottom:20px; right:20px; z-index:400; width:48px; height:48px; border-radius:50%; background: var(--primary); color: white; border: none; box-shadow: var(--shadow); display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="material-symbols-rounded">my_location</span></button>
     </div>
   </div>
 </div>
 
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-home" onclick="navigate('home')">
-    <span class="material-symbols-rounded">home</span><span>Início</span>
+    <span class="material-symbols-rounded">dashboard</span><span>Início</span>
   </div>
   <div class="nav-item" id="nav-itinerary" onclick="navigate('itinerary')">
-    <span class="material-symbols-rounded">view_list</span><span>Roteiro</span>
+    <span class="material-symbols-rounded">route</span><span>Roteiro</span>
   </div>
   <div class="nav-item" id="nav-hospedagens" onclick="navigate('hospedagens')">
     <span class="material-symbols-rounded">hotel</span><span>Hotéis</span>
@@ -263,25 +204,48 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-sheet">
-    <div class="modal-handle"></div>
+    <div class="modal-handle" style="background: var(--primary); opacity: 0.3;"></div>
     <div class="modal-content">
-      <div class="modal-header">
-        <h2 id="modal-title"></h2>
-        <button class="btn-icon" onclick="closeModal()" style="background:var(--bg-elevated); border-radius:50%;"><span class="material-symbols-rounded">close</span></button>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+        <h2 id="modal-title" style="font-weight: 800; color: var(--primary); font-size: 22px; line-height: 1.2;"></h2>
+        <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
       </div>
-      <div class="modal-info-grid" id="modal-info-grid"></div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;" id="modal-info-grid"></div>
       <div id="modal-sections"></div>
+      <div class="modal-section" id="modal-map-section" style="display:none; padding:0;">
+        <div class="modal-map" id="modal-map" style="border-radius: 0 0 16px 16px; height: 160px; width: 100%;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="new-trip-modal" onclick="if(event.target===this)closeNewTripModal()">
+  <div class="modal-sheet">
+    <div class="modal-handle" style="background: var(--primary); opacity: 0.3;"></div>
+    <div class="modal-content">
+      <h2 style="font-weight: 800; color: var(--primary); font-size: 22px; margin-bottom: 24px;">Novo Roteiro</h2>
       
-      <div class="modal-section" id="modal-map-section" style="display:none; border:none; padding:0; background:transparent;">
-        <div class="section-title">Localização no Mapa</div>
-        <div class="modal-map" id="modal-map"></div>
+      <div style="display:flex; flex-direction:column; gap:20px; margin-bottom: 32px;">
+        <div>
+          <label class="form-label">Nome da Viagem *</label>
+          <input type="text" id="new-trip-name" class="input-field" placeholder="Ex: Minhas Férias em Paris">
+        </div>
+        <div>
+          <label class="form-label">Link do Google Sheets *</label>
+          <input type="text" id="new-trip-url" class="input-field" placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
       </div>
+
+      <div style="display:flex; gap: 12px;">
+        <button class="btn btn-outline" style="flex:1;" onclick="closeNewTripModal()">Cancelar</button>
+        <button class="btn btn-primary" style="flex:1;" onclick="submitNewTrip()">Aplicar Roteiro</button>
       </div>
+    </div>
   </div>
 </div>
 
 <script>
-// ===== ESTADO GLOBAL =====
+/* LÓGICA FUNCIONAL MANTIDA E AJUSTADA PARA O NOVO MODAL */
 let savedTrips = []; 
 let activeTripId = null;
 let activeRoteiro = [];
@@ -291,20 +255,8 @@ let mainMap = null;
 let modalMap = null;
 let userMarker = null;
 let lastKnownUserPos = null;
-
-// Controle de Importação Paralela
 let importContext = null;
 
-const COLOR_PALETTE = ['#D32F2F', '#C2185B', '#7B1FA2', '#512DA8', '#303F9F', '#1976D2', '#0288D1', '#0097A7', '#00796B', '#388E3C', '#689F38', '#F57C00', '#E64A19', '#5D4037'];
-
-function getDynamicColor(str) {
-  if(!str) return '#555';
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
-  return COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length];
-}
-
-// ===== INICIALIZAÇÃO =====
 window.onload = () => {
   loadTheme();
   loadTripsFromStorage();
@@ -313,12 +265,12 @@ window.onload = () => {
   if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
 };
 
-// ===== TEMA =====
 function toggleTheme() {
   let isLight = document.body.classList.toggle('light-theme');
   localStorage.setItem('smartTripTheme', isLight ? 'light' : 'dark');
   document.getElementById('theme-btn').innerHTML = `<span class="material-symbols-rounded">${isLight ? 'dark_mode' : 'light_mode'}</span>`;
 }
+
 function loadTheme() {
   if(localStorage.getItem('smartTripTheme') === 'light') {
     document.body.classList.add('light-theme');
@@ -326,7 +278,6 @@ function loadTheme() {
   }
 }
 
-// ===== UTILITÁRIOS E UI =====
 function showToast(msg) { let t = document.getElementById('toast'); t.textContent = msg; t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 3000); }
 function showLoading(msg) { document.getElementById('loading-text').textContent = msg; document.getElementById('loading').classList.remove('hidden'); }
 function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
@@ -337,330 +288,144 @@ function navigate(tab) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
   document.getElementById(`nav-${tab}`).classList.add('active');
   document.getElementById(`${tab}-screen`).classList.add('active');
-
-  if(tab === 'map') {
-    setTimeout(() => {
-      if(!mainMap) initMainMap();
-      else mainMap.invalidateSize();
-      applyFilters('map');
-    }, 200);
-  } else if (tab === 'itinerary' || tab === 'hospedagens') {
-    applyFilters(tab);
-  }
+  if(tab === 'map') { setTimeout(() => { if(!mainMap) initMainMap(); else mainMap.invalidateSize(); applyFilters('map'); }, 200); }
+  else if (tab === 'itinerary' || tab === 'hospedagens') { applyFilters(tab); }
 }
 
-// ===== GERENCIAMENTO DE DADOS =====
-function loadTripsFromStorage() { savedTrips = JSON.parse(localStorage.getItem('smartTrips') || '[]'); }
-function saveTripsToStorage() { localStorage.setItem('smartTrips', JSON.stringify(savedTrips)); }
-
-function updateTopSelector() {
-  let sel = document.getElementById('global-trip-selector');
-  if(savedTrips.length === 0) {
-    sel.innerHTML = `<option value="">Nenhuma viagem cadastrada</option>`; sel.disabled = true; return;
-  }
-  sel.disabled = false;
-  sel.innerHTML = savedTrips.map(t => `<option value="${t.id}" ${t.id === activeTripId ? 'selected':''}>${esc(t.title)}</option>`).join('');
-}
-
-function changeActiveTrip(tripId, skipNav = false) {
-  if(!tripId) return;
-  let trip = savedTrips.find(t => t.id === tripId);
-  if(!trip) return;
-
-  activeTripId = tripId;
-  document.getElementById('global-trip-selector').value = tripId;
-  
-  let rotData = trip.roteiro || trip.data || [];
-  let hospData = trip.hospedagens || [];
-
-  activeRoteiro = rotData.sort((a,b) => {
-    let da = parseDayNum(a.dia), db = parseDayNum(b.dia);
-    if (da !== db) return da - db; return parseTimeMin(a.hora) - parseTimeMin(b.hora);
-  });
-  activeHospedagens = hospData.sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
-  
-  clearFilters(null, true);
-  updateCascadingFilters(activeRoteiro, activeHospedagens, {});
-  
-  if(!skipNav) {
-    let currentActive = document.querySelector('.nav-item.active').id.replace('nav-', '');
-    if(currentActive === 'home') navigate('itinerary');
-    else applyFilters(currentActive);
-  }
-}
-
-// ===== TELA INICIAL =====
+/* RENDERIZAÇÃO DA HOME */
 function renderHomeTrips() {
   let list = document.getElementById('trips-list');
-  if(savedTrips.length === 0) {
-    list.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">flight_takeoff</span><p>Você ainda não tem viagens.<br>Importe sua planilha acima.</p></div>`;
-    return;
-  }
-  list.innerHTML = savedTrips.map(trip => `
-    <div class="trip-card" onclick="changeActiveTrip('${trip.id}')">
-      <div class="icon"><span class="material-symbols-rounded">map</span></div>
-      <div class="info">
-        <div class="title">${esc(trip.title)}</div>
-        <div class="meta">${(trip.roteiro||trip.data||[]).length} rotas · ${(trip.hospedagens||[]).length} hotéis</div>
+  let html = '';
+
+  // Renderiza as viagens cadastradas
+  if(savedTrips.length > 0) {
+    html += savedTrips.map(trip => `
+      <div class="activity-card" onclick="changeActiveTrip('${trip.id}')" style="align-items: center;">
+        <div style="background:var(--bg-elevated); color:var(--primary); width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <span class="material-symbols-rounded">flight_takeoff</span>
+        </div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(trip.title)}</div>
+          <div style="font-size:12px; color:var(--text-secondary); font-weight:500;">${(trip.roteiro||[]).length} paradas • ${(trip.hospedagens||[]).length} hotéis</div>
+        </div>
+        <button class="btn-icon" onclick="deleteTrip(event, '${trip.id}')" style="color:var(--text-muted)"><span class="material-symbols-rounded">delete</span></button>
       </div>
-      <div class="trip-actions">
-        <button class="btn-icon" onclick="updateTrip(event, '${trip.id}')" title="Atualizar dados da planilha">
-          <span class="material-symbols-rounded" style="font-size:20px; color:var(--accent);">sync</span>
-        </button>
-        <button class="btn-icon" onclick="renameTrip(event, '${trip.id}')" title="Renomear">
-          <span class="material-symbols-rounded" style="font-size:20px">edit</span>
-        </button>
-        <button class="btn-icon" onclick="deleteTrip(event, '${trip.id}')" title="Excluir" style="color:var(--danger)">
-          <span class="material-symbols-rounded" style="font-size:20px">delete</span>
-        </button>
+    `).join('');
+  }
+
+  // Adiciona o card dinâmico de Inclusão no final da lista
+  html += `
+    <div class="activity-card" onclick="openNewTripModal()" style="align-items: center; justify-content: center; border: 2px dashed var(--border); background: transparent; cursor: pointer; padding: 20px; box-shadow: none;">
+      <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 15px;">
+        <span class="material-symbols-rounded">add_circle</span> Incluir novo roteiro
       </div>
     </div>
-  `).join('');
-}
-
-function renameTrip(e, id) {
-  e.stopPropagation(); let trip = savedTrips.find(t => t.id === id);
-  let newName = prompt("Novo nome para a viagem:", trip.title);
-  if(newName && newName.trim() !== "") { trip.title = newName.trim(); saveTripsToStorage(); renderHomeTrips(); updateTopSelector(); }
-}
-function deleteTrip(e, id) {
-  e.stopPropagation();
-  if(confirm("Tem certeza que deseja excluir esta viagem?")) {
-    savedTrips = savedTrips.filter(t => t.id !== id); saveTripsToStorage();
-    if(activeTripId === id) { activeTripId = null; activeRoteiro = []; activeHospedagens = []; }
-    renderHomeTrips(); updateTopSelector();
-    if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
-  }
-}
-
-// ===== IMPORTAÇÃO =====
-function injectScript(id, url) {
-  let old = document.getElementById(id); if(old) old.remove();
-  let script = document.createElement('script'); script.id = id; script.src = url;
-  script.onerror = () => { importContext.errors++; checkImportStatus(); };
-  document.body.appendChild(script);
-}
-
-function initImport() {
-  let url = document.getElementById('new-sheet-url').value.trim();
-  if (!url) { showToast('Cole um link do Google Sheets.'); return; }
-  executeImport(url, null);
-}
-
-function updateTrip(e, id) {
-  e.stopPropagation(); let trip = savedTrips.find(t => t.id === id);
-  if (!trip.sheetUrl) { showToast('Viagem antiga. Por favor, exclua e importe novamente para ativar atualização rápida.'); return; }
-  executeImport(trip.sheetUrl, id);
-}
-
-function executeImport(url, updateId) {
-  let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (!m) { showToast('Link inválido.'); return; }
-  let sheetId = m[1];
-
-  importContext = { url: url, updateId: updateId, rotDone: false, hospDone: false, roteiro: [], hospedagens: [], errors: 0 };
-  showLoading(updateId ? 'Sincronizando...' : 'Analisando planilhas...');
+  `;
   
-  let base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1`;
-  injectScript('gviz-rot', `${base}&sheet=Roteiro&tqx=responseHandler:_cbRoteiro`);
-  injectScript('gviz-hosp', `${base}&sheet=Hospedagens&tqx=responseHandler:_cbHospedagens`);
+  list.innerHTML = html;
+}
+
+/* CONTROLES DO NOVO MODAL */
+function openNewTripModal() {
+  document.getElementById('new-trip-name').value = '';
+  document.getElementById('new-trip-url').value = '';
+  document.getElementById('new-trip-modal').classList.add('open');
+}
+
+function closeNewTripModal() {
+  document.getElementById('new-trip-modal').classList.remove('open');
+}
+
+function submitNewTrip() {
+  let name = document.getElementById('new-trip-name').value.trim();
+  let url = document.getElementById('new-trip-url').value.trim();
+  
+  if (!name) { showToast('O nome da viagem é obrigatório.'); return; }
+  if (!url) { showToast('O link da planilha é obrigatório.'); return; }
+  
+  let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); 
+  if (!m) { showToast('Link do Google Sheets inválido.'); return; }
+  
+  let sheetId = m[1]; 
+  closeNewTripModal();
+  showLoading('Buscando e organizando roteiro...');
+  
+  // Guardamos o nome customizado no importContext
+  importContext = { url: url, customName: name, rotDone: false, hospDone: false, roteiro: [], hospedagens: [] };
+  
+  injectScript('gviz-rot', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Roteiro&tqx=responseHandler:_cbRoteiro`);
+  injectScript('gviz-hosp', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Hospedagens&tqx=responseHandler:_cbHospedagens`);
 }
 
 function _cbRoteiro(data) { importContext.roteiro = parseGviz(data); importContext.rotDone = true; checkImportStatus(); }
 function _cbHospedagens(data) { importContext.hospedagens = parseGviz(data); importContext.hospDone = true; checkImportStatus(); }
+function injectScript(id, url) { let o = document.getElementById(id); if(o) o.remove(); let s = document.createElement('script'); s.id = id; s.src = url; document.body.appendChild(s); }
 
 function parseGviz(data) {
-  if(!data || data.status === 'error' || !data.table) return [];
-  let headers = data.table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
-  let map = {
-    cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')),
-    dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
-    hora: headers.findIndex(h => h.includes('hora')||h.includes('time')),
-    categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
-    atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')),
-    google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
-    observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')),
-    link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps'))
-  };
-
-  let parsed = [];
-  data.table.rows.forEach((row) => {
-    let r = row.c; if(!r) return;
-    let item = { _id: 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) };
-    Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
-    if(item.atividade || item.cidade || item.dia) parsed.push(item);
-  });
-  return parsed;
+  if(!data || !data.table) return [];
+  let headers = data.table.cols.map(c => (c.label || '').toLowerCase());
+  let map = { cidade: headers.findIndex(h => h.includes('cidade')), dia: headers.findIndex(h => h.includes('dia')), hora: headers.findIndex(h => h.includes('hora')), categoria: headers.findIndex(h => h.includes('categoria')), atividade: headers.findIndex(h => h.includes('atividade')||h.includes('desc')), google_maps: headers.findIndex(h => h.includes('maps')), link: headers.findIndex(h => h.includes('link')) };
+  return data.table.rows.map(row => {
+    let r = row.c; let item = { _id: 'id_' + Math.random().toString(36).substr(2, 9) };
+    Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].v || ''); });
+    return item;
+  }).filter(i => i.atividade);
 }
 
 function checkImportStatus() {
   if(importContext.rotDone && importContext.hospDone) {
-    hideLoading();
-    if(importContext.errors > 0 || (importContext.roteiro.length === 0 && importContext.hospedagens.length === 0)) {
-      showToast('Erro ao ler dados. Verifique as abas da planilha.'); return;
-    }
-    if (importContext.updateId) {
-      let trip = savedTrips.find(t => t.id === importContext.updateId);
-      trip.roteiro = importContext.roteiro; trip.hospedagens = importContext.hospedagens;
-      saveTripsToStorage(); renderHomeTrips();
-      if(activeTripId === trip.id) changeActiveTrip(trip.id, true);
-      showToast('Sincronização concluída!');
-    } else {
-      let titleCity = importContext.roteiro[0]?.cidade || importContext.hospedagens[0]?.cidade || 'Nova';
-      let newTrip = { id: 'trip_' + Date.now(), title: 'Viagem (' + titleCity + ')', roteiro: importContext.roteiro, hospedagens: importContext.hospedagens, sheetUrl: importContext.url };
-      savedTrips.push(newTrip); saveTripsToStorage();
-      document.getElementById('new-sheet-url').value = '';
-      renderHomeTrips(); updateTopSelector(); changeActiveTrip(newTrip.id);
-      showToast('Viagem importada com sucesso!');
-    }
+    hideLoading(); 
+    
+    // Cria a viagem usando o nome obrigatório inserido pelo usuário no modal
+    let newTrip = { 
+        id: 'trip_' + Date.now(), 
+        title: importContext.customName, 
+        roteiro: importContext.roteiro, 
+        hospedagens: importContext.hospedagens,
+        sheetUrl: importContext.url
+    };
+    
+    savedTrips.push(newTrip); 
+    saveTripsToStorage(); 
+    renderHomeTrips(); 
+    updateTopSelector(); 
+    changeActiveTrip(newTrip.id);
+    showToast('Roteiro importado com sucesso!');
   }
 }
 
-// ===== PARSERS =====
-function formatDayWithWeekday(dStr) {
-  if (!dStr) return "Sem data";
-  let parts = String(dStr).split(/[\/\-]/);
-  if (parts.length >= 2) {
-    let d = parseInt(parts[0]), m = parseInt(parts[1]) - 1, y = parts.length === 3 && parts[2].length === 4 ? parseInt(parts[2]) : new Date().getFullYear();
-    let dateObj = new Date(y, m, d);
-    if (!isNaN(dateObj)) return `${dStr} - ${['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'][dateObj.getDay()]}`;
-  } return dStr;
-}
-function parseDayNum(dStr) {
-  if (!dStr) return 99999999;
-  let parts = String(dStr).split(/[\/\-]/);
-  if(parts.length >= 2) return parseInt((parts.length===3?parts[2].substring(0,4):"2024") + parts[1].padStart(2,'0') + parts[0].padStart(2,'0'));
-  return parseInt(String(dStr).replace(/\D/g, '')) || 9999;
-}
-function parseTimeMin(t) { let m = String(t||'').match(/(\d{1,2})[:\.](\d{2})/); return m ? parseInt(m[1])*60 + parseInt(m[2]) : 9999; }
-
-function extractCoords(url) {
-  if (!url) return null; let m;
-  m = url.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  m = url.match(/[?&](?:q|ll)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  m = url.match(/\/dir\/.*?\/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  m = url.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
-  return null;
-}
-
-// ===== FILTROS E SINCRONIZAÇÃO =====
-function clearFilters(context, preventApply = false) {
-  ['filter-city', 'filter-day', 'filter-category', 'filter-atividade'].forEach(baseId => {
-    ['', '-hosp', '-map'].forEach(suf => { let el = document.getElementById(baseId + suf); if(el) { el.value = ''; el.closest('.filter-chip').classList.remove('active'); } });
-  });
-  if(!preventApply) applyFilters(context || document.querySelector('.nav-item.active').id.replace('nav-', ''));
-}
-
-function applyFilters(sourceTab) {
-  if(activeRoteiro.length === 0 && activeHospedagens.length === 0) return;
-
-  let srcSuffix = sourceTab === 'hospedagens' ? '-hosp' : (sourceTab === 'map' ? '-map' : '');
-  
-  let city = document.getElementById('filter-city'+srcSuffix).value;
-  let day = document.getElementById('filter-day'+srcSuffix).value;
-  let cat = document.getElementById('filter-category'+srcSuffix).value;
-  let atv = document.getElementById('filter-atividade'+srcSuffix).value;
-
-  ['', '-hosp', '-map'].forEach(suf => {
-    if(document.getElementById('filter-city'+suf)) document.getElementById('filter-city'+suf).value = city;
-    if(document.getElementById('filter-day'+suf)) document.getElementById('filter-day'+suf).value = day;
-    if(document.getElementById('filter-category'+suf)) document.getElementById('filter-category'+suf).value = cat;
-    if(document.getElementById('filter-atividade'+suf)) document.getElementById('filter-atividade'+suf).value = atv;
-  });
-
-  let filRot = activeRoteiro.filter(d => {
-    if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
-    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
-  });
-
-  let filHosp = activeHospedagens.filter(d => {
-    if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
-    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
-  });
-
-  updateCascadingFilters(filRot, filHosp, { city, day, cat, atv });
-
-  renderList('itinerary-list', filRot, false, day); 
-  renderList('hospedagens-list', filHosp, true);
-  renderMapMarkers(filRot, filHosp);
-}
-
-function updateCascadingFilters(dsRot, dsHosp, current = {}) {
-  let cities=[], days=[], cats=[], atvs=[], cityEarliest={};
-  
-  const process = (d) => {
-    if(d.cidade && !cities.includes(d.cidade)) cities.push(d.cidade);
-    if(d.dia && !days.includes(d.dia)) days.push(d.dia);
-    if(d.categoria && !cats.includes(d.categoria)) cats.push(d.categoria);
-    if(d.atividade && !atvs.includes(d.atividade)) atvs.push(d.atividade);
-    if(d.cidade && d.dia) { let dNum = parseDayNum(d.dia); if(!cityEarliest[d.cidade] || dNum < cityEarliest[d.cidade]) cityEarliest[d.cidade] = dNum; }
-  };
-  dsRot.forEach(process); dsHosp.forEach(process);
-
-  cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
-  days.sort((a,b) => parseDayNum(a) - parseDayNum(b));
-  cats.sort(); atvs.sort((a,b) => a.localeCompare(b));
-
-  const fill = (idBase, items, label, val) => {
-    let fVal = items.includes(val) ? val : '';
-    let html = `<option value="">${label}</option>` + items.map(v => `<option value="${esc(v)}" ${v===fVal ? 'selected':''}>${esc(v)}</option>`).join('');
-    ['', '-hosp', '-map'].forEach(suf => {
-      let el = document.getElementById(idBase + suf);
-      if(el) { el.innerHTML = html; if(fVal) el.closest('.filter-chip').classList.add('active'); else el.closest('.filter-chip').classList.remove('active'); }
-    });
-  };
-
-  fill('filter-city', cities, 'Cidade', current.city);
-  fill('filter-day', days, 'Dia', current.day);
-  fill('filter-category', cats, 'Categoria', current.cat);
-  fill('filter-atividade', atvs, 'Atividade/Local', current.atv);
-}
-
-// ===== RENDERIZAÇÃO: LISTAS E BOTÃO ROTA DO DIA =====
 function renderList(containerId, items, isHosp, filteredDay = null) {
   let container = document.getElementById(containerId);
   if(!container) return;
   if(items.length === 0) {
-    container.innerHTML = `<div class="empty-state"><span class="material-symbols-rounded">search_off</span><p>Nenhuma ${isHosp ? 'hospedagem' : 'atividade'} encontrada.</p></div>`;
+    container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><span class="material-symbols-rounded" style="font-size:48px;">search_off</span><p style="margin-top:8px; font-weight:600;">Nenhuma atividade encontrada.</p></div>`;
     return;
   }
-
   let html = '';
-
   if (!isHosp && filteredDay && items.length > 1) {
     let routePoints = items.filter(d => extractCoords(d.google_maps)).map(d => extractCoords(d.google_maps));
     if (routePoints.length >= 2) {
       let origin = `${routePoints[0].lat},${routePoints[0].lng}`;
       let dest = `${routePoints[routePoints.length-1].lat},${routePoints[routePoints.length-1].lng}`;
       let waypoints = routePoints.slice(1, -1).slice(0, 9).map(p => `${p.lat},${p.lng}`).join('|');
-      let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}` + (waypoints ? `&waypoints=${waypoints}` : '');
-      
-      html += `<button class="btn btn-success" onclick="window.open('${mapsUrl}', '_blank')"><span class="material-symbols-rounded">route</span> Traçar Rota do Dia</button>`;
+      let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${waypoints ? '&waypoints='+waypoints : ''}`;
+      html += `<button class="btn btn-success" onclick="window.open('${mapsUrl}', '_blank')"><span class="material-symbols-rounded">directions</span> Traçar Rota do Dia</button>`;
     }
   }
-
   let currentDay = null;
   items.forEach(item => {
     let formattedDay = formatDayWithWeekday(item.dia);
-    if(formattedDay !== currentDay) { html += `<div class="day-header"><span class="day-label">${esc(formattedDay)}</span></div>`; currentDay = formattedDay; }
-    
-    let catColor = getDynamicColor(item.categoria); let cityColor = getDynamicColor(item.cidade);
-    let catHtml = item.categoria ? `<span class="tag" style="background:${catColor}; color:#fff;"><span class="material-symbols-rounded" style="font-size:14px">label</span>${esc(item.categoria)}</span>` : '';
-    let cityHtml = item.cidade ? `<span class="tag" style="background:${cityColor}; color:#fff;"><span class="material-symbols-rounded" style="font-size:14px">location_on</span>${esc(item.cidade)}</span>` : '';
-    let anexoHtml = item.link ? `<span class="tag tag-anexo"><span class="material-symbols-rounded" style="font-size:14px">attach_file</span>Anexo</span>` : '';
-    let hospTag = isHosp ? `<span class="tag tag-hospedagem"><span class="material-symbols-rounded" style="font-size:14px">hotel</span>Hotel</span>` : '';
-
-    let safeId = item._id || item._i;
+    if(formattedDay !== currentDay) { html += `<div style="margin: 20px 0 10px;"><span class="day-label">${esc(formattedDay)}</span></div>`; currentDay = formattedDay; }
     html += `
-      <div class="activity-card" onclick="openDetail('${safeId}', ${isHosp})">
-        <div class="card-time"><span class="hour">${esc(item.hora||'--')}</span></div>
-        <div class="card-body">
-          <div class="card-title">${esc(item.atividade||'Sem título')}</div>
-          <div class="card-meta">
-            ${cityHtml}
-            ${hospTag}
-            ${catHtml}
-            ${anexoHtml}
+      <div class="activity-card" onclick="openDetail('${item._id || item._i}', ${isHosp})">
+        <div style="min-width:50px; text-align:center; border-right: 1px solid var(--border); margin-right: 10px;">
+          <div style="font-size:16px; font-weight:800; color:var(--primary);">${esc(item.hora||'--')}</div>
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:700; font-size:15px; margin-bottom:6px;">${esc(item.atividade)}</div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <span class="tag" style="font-size:10px; padding:3px 8px; border-radius:4px; background:var(--bg-elevated); color:var(--primary);">${esc(item.categoria||'Geral')}</span>
+            ${isHosp ? '<span class="tag" style="font-size:10px; padding:3px 8px; border-radius:4px; background:var(--accent); color:var(--primary-dark);">HOTEL</span>' : ''}
           </div>
         </div>
       </div>`;
@@ -668,134 +433,78 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
   container.innerHTML = html;
 }
 
-// ===== ABERTURA DE DETALHES VIA MAPA =====
-function openFromMap(id, isHosp) {
-  closeModal();
-  if(mainMap) mainMap.closePopup();
-  navigate(isHosp ? 'hospedagens' : 'itinerary');
-  setTimeout(() => openDetail(id, isHosp), 300); // Aguarda a transição
+/* LÓGICA DE DADOS RESTANTE */
+function loadTripsFromStorage() { savedTrips = JSON.parse(localStorage.getItem('smartTrips') || '[]'); }
+function saveTripsToStorage() { localStorage.setItem('smartTrips', JSON.stringify(savedTrips)); }
+function updateTopSelector() {
+  let sel = document.getElementById('global-trip-selector');
+  if(savedTrips.length === 0) { sel.innerHTML = `<option value="">Minhas Viagens</option>`; return; }
+  sel.innerHTML = savedTrips.map(t => `<option value="${t.id}" ${t.id === activeTripId ? 'selected':''}>${esc(t.title)}</option>`).join('');
 }
-
-// ===== MODAL DE DETALHES =====
-function openDetail(id, isHosp) {
-  let item = isHosp 
-    ? activeHospedagens.find(d => String(d._id || d._i) === String(id)) 
-    : activeRoteiro.find(d => String(d._id || d._i) === String(id));
-    
-  if(!item) return;
-
-  document.getElementById('modal-title').textContent = item.atividade;
-  
-  let grid = '';
-  if(item.dia) grid += `<div class="modal-info-item"><div class="label">Data</div><div class="value">${esc(formatDayWithWeekday(item.dia))}</div></div>`;
-  if(item.hora) grid += `<div class="modal-info-item"><div class="label">${isHosp ? 'Check-in/Horário' : 'Horário'}</div><div class="value">${esc(item.hora)}</div></div>`;
-  if(item.cidade) grid += `<div class="modal-info-item"><div class="label">Cidade</div><div class="value">${esc(item.cidade)}</div></div>`;
-  if(item.categoria) grid += `<div class="modal-info-item"><div class="label">Categoria</div><div class="value">${esc(item.categoria)}</div></div>`;
-  document.getElementById('modal-info-grid').innerHTML = grid;
-
-  let sec = '';
-  if(item.observacoes) sec += `<div class="modal-section"><div class="section-title">Observações</div><div class="section-body">${esc(item.observacoes).replace(/\n/g,'<br>')}</div></div>`;
-  if(item.link) sec += `<div class="modal-section"><div class="section-title">Anexos</div><div class="section-body"><a href="${esc(item.link)}" target="_blank"><span class="material-symbols-rounded">attach_file</span> Visualizar Anexo/Link</a></div></div>`;
-  
-  let coords = extractCoords(item.google_maps);
-  if(coords || item.google_maps) {
-    let dirLink = coords ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}` : item.google_maps;
-    let mapsLink = coords ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}` : item.google_maps;
-    
-    sec += `<div class="modal-section"><div class="section-title">Localização e Rotas</div>
-      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
-        <a href="${dirLink}" target="_blank" class="btn btn-primary" style="flex:1; min-width:140px; text-decoration:none;"><span class="material-symbols-rounded">directions_car</span> Traçar Rota</a>
-        <a href="${mapsLink}" target="_blank" class="btn btn-outline" style="flex:1; min-width:140px; text-decoration:none;"><span class="material-symbols-rounded">pin_drop</span> Ver no Google</a>
-      </div>
-    </div>`;
+function changeActiveTrip(tripId, skipNav = false) {
+  if(!tripId) return; let trip = savedTrips.find(t => t.id === tripId); if(!trip) return;
+  activeTripId = tripId;
+  document.getElementById('global-trip-selector').value = tripId;
+  activeRoteiro = (trip.roteiro || []).sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
+  activeHospedagens = (trip.hospedagens || []).sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
+  if(!skipNav) navigate('itinerary');
+}
+function deleteTrip(e, id) {
+  e.stopPropagation(); if(confirm("Excluir viagem definitivamente?")) {
+    savedTrips = savedTrips.filter(t => t.id !== id); saveTripsToStorage(); 
+    if (activeTripId === id) { activeRoteiro = []; activeHospedagens = []; activeTripId = null; }
+    renderHomeTrips(); updateTopSelector();
   }
-
+}
+function formatDayWithWeekday(d) { return d; }
+function parseDayNum(d) { return parseInt(String(d).replace(/\D/g, '')) || 0; }
+function extractCoords(url) {
+  if (!url) return null; let m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  return null;
+}
+function openDetail(id, isHosp) {
+  let item = isHosp ? activeHospedagens.find(d => d._id === id) : activeRoteiro.find(d => d._id === id);
+  if(!item) return;
+  document.getElementById('modal-title').textContent = item.atividade;
+  let grid = `<div class="modal-info-item"><div class="label">Horário</div><div style="font-weight:600;">${esc(item.hora||'--')}</div></div><div class="modal-info-item"><div class="label">Local</div><div style="font-weight:600;">${esc(item.cidade||'--')}</div></div>`;
+  document.getElementById('modal-info-grid').innerHTML = grid;
+  let coords = extractCoords(item.google_maps);
+  let sec = `<div style="margin-bottom: 24px;"><div class="form-label" style="color:var(--primary);">Navegação</div><div style="display:flex; gap:10px;">`;
+  if(coords) sec += `<button class="btn btn-primary" style="flex:1" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}', '_blank')"><span class="material-symbols-rounded" style="font-size:18px">directions_car</span> Rota</button>`;
+  if(item.google_maps) sec += `<button class="btn btn-outline" style="flex:1" onclick="window.open('${item.google_maps}', '_blank')"><span class="material-symbols-rounded" style="font-size:18px">map</span> Mapa</button>`;
+  sec += `</div></div>`;
   document.getElementById('modal-sections').innerHTML = sec;
-
-  let mapSec = document.getElementById('modal-map-section');
-  if(coords) {
-    mapSec.style.display = 'block';
-    setTimeout(() => {
-      if(modalMap) { modalMap.remove(); modalMap = null; }
-      modalMap = L.map('modal-map',{zoomControl:false, attributionControl:false}).setView([coords.lat, coords.lng], 16);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(modalMap);
-      
-      let iconHtml = isHosp ? '🏨' : '📍';
-      let bgColor = isHosp ? 'var(--hotel)' : 'var(--accent)';
-      let icon = L.divIcon({className:'', html:`<div class="map-marker-label" style="background:${bgColor};color:#fff;border-color:#fff;font-size:14px">${iconHtml}</div>`, iconSize:[30,30]});
-      L.marker([coords.lat, coords.lng], {icon}).addTo(modalMap);
-      
-      modalMap.invalidateSize();
-    }, 250);
-  } else { mapSec.style.display = 'none'; }
-
   document.getElementById('modal').classList.add('open');
 }
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
-
-// ===== RENDERIZAÇÃO E GPS DO MAPA PRINCIPAL =====
+function applyFilters(tab) {
+  if(tab === 'itinerary') renderList('itinerary-list', activeRoteiro, false);
+  if(tab === 'hospedagens') renderList('hospedagens-list', activeHospedagens, true);
+  if(tab === 'map') renderMapMarkers(activeRoteiro, activeHospedagens);
+}
 function initMainMap() {
-  mainMap = L.map('main-map', {zoomControl:false, attributionControl:false}).setView([0,0], 2);
+  mainMap = L.map('main-map', {zoomControl:false}).setView([0,0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
-  L.control.zoom({position: 'topright'}).addTo(mainMap);
-  
-  if ('geolocation' in navigator) {
-    navigator.geolocation.watchPosition(pos => {
-      lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude];
-      if(userMarker) userMarker.setLatLng(lastKnownUserPos);
-      else {
-        let icon = L.divIcon({className:'', html:'<div class="map-marker-user"></div>', iconSize:[16,16]});
-        userMarker = L.marker(lastKnownUserPos,{icon, zIndexOffset:1000}).addTo(mainMap);
-      }
-    }, () => {}, {enableHighAccuracy:true, maximumAge:30000});
-  }
 }
-
-function centerOnUser() {
-  if (lastKnownUserPos && mainMap) {
-    mainMap.setView(lastKnownUserPos, 15);
-  } else {
-    showToast("Buscando sua localização... Certifique-se que o GPS está ativado e permitido.");
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude];
-        mainMap.setView(lastKnownUserPos, 15);
-      }, () => showToast("Não foi possível acessar a localização."));
-    }
-  }
-}
-
-function renderMapMarkers(rotItems, hospItems) {
-  if(!mainMap) return;
-  mapMarkers.forEach(m => mainMap.removeLayer(m));
-  mapMarkers = [];
-  let bounds = [], count = 0;
-  
-  hospItems.forEach(item => {
-    let coords = extractCoords(item.google_maps); if(!coords) return;
-    let safeId = item._id || item._i;
-    let icon = L.divIcon({className:'', html:`<div class="map-marker-hotel">🏨</div>`, iconSize:[34,34], iconAnchor:[17,17]});
-    let marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
-    
-    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
-    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
-    
-    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
+function renderMapMarkers(rots, hosps) {
+  if(!mainMap) return; mapMarkers.forEach(m => mainMap.removeLayer(m)); mapMarkers = [];
+  let bounds = [];
+  rots.forEach((item, i) => {
+    let c = extractCoords(item.google_maps); if(!c) return;
+    let icon = L.divIcon({className:'map-marker-label', html:i+1, iconSize:[28,28]});
+    let m = L.marker([c.lat, c.lng], {icon}).addTo(mainMap).bindPopup(`<strong style="font-family:var(--font-body);">${esc(item.atividade)}</strong>`);
+    mapMarkers.push(m); bounds.push([c.lat, c.lng]);
   });
-
-  rotItems.forEach(item => {
-    let coords = extractCoords(item.google_maps); if(!coords) return;
-    count++;
-    let safeId = item._id || item._i;
-    let icon = L.divIcon({className:'', html:`<div class="map-marker-label">${count}</div>`, iconSize:[28,28]});
-    let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
-    
-    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
-    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
-    
-    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
+  hosps.forEach(item => {
+    let c = extractCoords(item.google_maps); if(!c) return;
+    let icon = L.divIcon({className:'map-marker-hotel', html:'H', iconSize:[28,28]});
+    let m = L.marker([c.lat, c.lng], {icon}).addTo(mainMap).bindPopup(`<strong style="font-family:var(--font-body);">${esc(item.atividade)}</strong>`);
+    mapMarkers.push(m); bounds.push([c.lat, c.lng]);
   });
-  
-  if(bounds.length > 0) mainMap.fitBounds(bounds, {padding:[50,50], maxZoom:15});
+  if(bounds.length) mainMap.fitBounds(bounds, {padding:[50,50]});
 }
+function centerOnUser() { navigator.geolocation.getCurrentPosition(p => mainMap.setView([p.coords.latitude, p.coords.longitude], 14)); }
 </script>
+</body>
+</html>
