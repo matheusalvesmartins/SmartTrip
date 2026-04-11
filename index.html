@@ -11,7 +11,6 @@
 <style>
 /* VARIÁVEIS DE ACORDO COM O BRANDBOOK v2.0 */
 :root {
-  /* Cores Base - Modo Escuro (Default) */
   --bg: #0a0f12;
   --bg-card: #162127;
   --bg-card-hover: #1e2c34;
@@ -21,7 +20,6 @@
   --text-secondary: #8896a4;
   --text-muted: #5a6a77;
   
-  /* Paleta SmartTrip */
   --primary: #2596be;
   --primary-dark: #15556c;
   --accent: #B8D430;
@@ -29,7 +27,6 @@
   --white: #FFFFFF;
   --black: #000000;
   
-  /* Estética */
   --radius: 8px;
   --shadow: 0 4px 12px rgba(0,0,0,0.3);
   --font-body: 'Montserrat', sans-serif;
@@ -37,7 +34,6 @@
   --map-filter: brightness(0.6) saturate(0.8) contrast(1.1) hue-rotate(180deg) invert(100%);
 }
 
-/* Modo Claro - Fiel ao Brandbook */
 body.light-theme {
   --bg: #f0f9ff;
   --bg-card: #FFFFFF;
@@ -56,69 +52,74 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
 .filled { font-variation-settings:'FILL' 1; }
 
-/* HEADER / LOGO (BÚSSOLA DIGITAL) */
+/* HEADER / LOGO */
 .topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg-card); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:64px; box-shadow: var(--shadow); }
 .brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
-
-/* Construção da Logo Bússola via CSS */
-.compass-logo { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; }
-.compass-logo::before { content: ''; position: absolute; inset: 0; border: 3px solid var(--primary); border-radius: 50%; }
-.compass-logo::after { content: ''; position: absolute; top: 6px; left: 15px; width: 3px; height: 16px; background: var(--accent); border-radius: 2px; transform: rotate(45deg); transform-origin: bottom center; }
+.compass-logo { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.compass-logo::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 3px solid var(--primary); border-radius: 50%; box-sizing: border-box; }
+.compass-logo::after { content: ''; position: absolute; top: 50%; left: 50%; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); }
 .brand-name { font-weight: 800; font-size: 20px; color: var(--primary); letter-spacing: -0.5px; }
 
 .global-trip-select { flex:1; appearance:none; background:var(--bg-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%232596be' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:14px; font-family:var(--font-body); font-weight: 500; padding:10px 32px 10px 12px; outline:none; text-overflow:ellipsis; }
-
 .btn-icon { width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius); background:transparent; border:none; color:var(--text-secondary); cursor:pointer; transition:all var(--transition);}
 .btn-icon:hover { background:var(--bg-elevated); color:var(--primary); }
 
 .main-content { flex:1; position:relative; overflow:hidden; }
 
-/* NAVEGAÇÃO INFERIOR */
+/* NAV INFERIOR */
 .bottom-nav { display:flex; justify-content:space-around; align-items:center; background:var(--bg-card); border-top:1px solid var(--border); height:68px; flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:100; }
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-muted); cursor:pointer; height:100%; transition:all var(--transition); border-top: 3px solid transparent; }
 .nav-item .material-symbols-rounded { font-size:26px; }
 .nav-item span:last-child { font-size:10px; font-weight:700; text-transform: uppercase; letter-spacing: 0.5px; }
 .nav-item.active { color:var(--primary); border-top-color: var(--primary); background: linear-gradient(to bottom, rgba(37, 150, 190, 0.05), transparent); }
 
-/* CARDS E LISTAS */
+/* TELAS */
 .screen { position:absolute; inset:0; display:flex; flex-direction:column; opacity:0; pointer-events:none; transition:opacity .3s ease; overflow:hidden; z-index:1; }
 .screen.active { opacity:1; pointer-events:all; z-index:10; }
 
-.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:14px 24px; border-radius:var(--radius); font-family:var(--font-body); font-size:14px; font-weight:700; border:none; cursor:pointer; transition:all var(--transition); text-decoration:none; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:var(--radius); font-family:var(--font-body); font-size:14px; font-weight:700; border:none; cursor:pointer; transition:all var(--transition); text-decoration:none; }
 .btn-primary { background:var(--primary); color:var(--white); }
 .btn-primary:hover { background:var(--primary-dark); box-shadow: 0 4px 15px rgba(37, 150, 190, 0.3); }
 .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
 .btn-outline:hover { background:var(--bg-elevated); }
 .btn-success { background:var(--accent); color:var(--primary-dark); width:100%; margin-bottom:16px; }
 .btn-success:hover { background:var(--accent-dark); }
-
 .input-field { width:100%; padding:14px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:14px; font-family:var(--font-body); outline:none; transition:border var(--transition); }
 .input-field:focus { border-color:var(--primary); }
 
 .activity-card { display:flex; align-items:flex-start; gap:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; cursor:pointer; transition:all var(--transition); box-shadow: var(--shadow); }
 .activity-card:hover { border-color:var(--primary); transform: translateY(-2px); }
-
 .day-label { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--primary); background:rgba(37, 150, 190, 0.1); padding:6px 16px; border-radius:20px; }
 
+/* FILTROS */
+.filters-bar { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; align-items: center; gap: 8px; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; }
+.filters-bar::-webkit-scrollbar { display: none; }
+.filter-chip { flex-shrink: 0; }
+.btn-clear { background: transparent; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; color: var(--text-muted); display:flex; align-items:center; gap:4px; font-family: var(--font-body); font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: all var(--transition); }
+.btn-clear:hover { background: var(--bg-elevated); color: var(--text); }
+
 /* MAPA */
-.map-marker-label { background:var(--primary); color:var(--white); border: 2px solid var(--white); border-radius: 50%; font-weight: 800; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
-.map-marker-hotel { background:var(--accent); color:var(--primary-dark); border: 2px solid var(--white); border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.4); }
+.map-marker-label { display:flex; align-items:center; justify-content:center; width:28px; height:28px; background:var(--primary); color:var(--white); border: 2px solid var(--white); border-radius: 50%; font-weight: 800; box-shadow: 0 2px 10px rgba(0,0,0,0.4); font-size: 12px; }
+.map-marker-hotel { display:flex; align-items:center; justify-content:center; width:34px; height:34px; background:var(--accent); color:var(--primary-dark); border: 2px solid var(--white); border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.4); font-size: 16px; font-weight: 800; z-index: 1000 !important; }
+.leaflet-tile-pane { filter:var(--map-filter); transition:filter 0.3s ease; }
 
 /* MODAL GERAL */
 .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(4px); z-index:500; display:flex; align-items:flex-end; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s ease; }
 .modal-overlay.open { opacity:1; pointer-events:all; }
 .modal-sheet { background:var(--bg-card); border-radius:24px 24px 0 0; border-top: 1px solid var(--border); width: 100%; max-width: 600px; transform:translateY(100%); transition:transform .3s cubic-bezier(0.1, 0.9, 0.2, 1); }
 .modal-overlay.open .modal-sheet { transform:translateY(0); }
-.modal-handle { width:40px; height:5px; background:var(--border); border-radius:3px; margin:12px auto; }
+.modal-handle { width:40px; height:5px; background:var(--primary); opacity: 0.3; border-radius:3px; margin:12px auto; }
 .modal-content { padding:8px 24px 32px; max-height:85vh; overflow-y:auto; }
-
-.modal-info-item { background:var(--bg); border:1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 8px;}
-.modal-info-item .label { color:var(--primary); font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; }
+.modal-info-item { background:var(--bg); border:1px solid var(--border); border-radius: var(--radius); padding: 12px; }
+.modal-info-item .label { color:var(--text-muted); font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 4px; }
+.modal-section { margin-bottom: 16px; background: var(--bg); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+.modal-section .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--primary); margin-bottom: 12px; }
+.modal-section .section-body { font-size: 14px; line-height: 1.6; color: var(--text-secondary); }
+.modal-section a { color: var(--text); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 
 /* UTILS */
 .tag { font-weight:700; letter-spacing: 0.3px; }
 .form-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; }
-
 .loading-overlay { position:fixed; inset:0; z-index:1000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
 .loading-overlay.hidden { opacity:0; pointer-events:none; }
 .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
@@ -151,38 +152,50 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 <div class="main-content">
   <div class="screen active" id="home-screen">
     <div style="max-width:600px; margin:0 auto; width:100%; padding: 24px;">
-      
       <div style="margin-bottom: 32px;">
         <h2 style="font-size:28px; font-weight: 800; color: var(--primary); margin-bottom: 4px;">Olá, Viajante!</h2>
         <p style="font-size:14px; color:var(--text-secondary);">O seu roteiro ágil e organizado.</p>
       </div>
-
       <div style="color: var(--text-muted); font-weight: 800; font-size: 12px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">
         Suas Viagens
       </div>
-      
       <div id="trips-list"></div>
-      
     </div>
   </div>
 
   <div class="screen" id="itinerary-screen">
-    <div class="filters-bar" style="background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; gap: 8px; overflow-x: auto;">
+    <div class="filters-bar">
       <div class="filter-chip"><select id="filter-city" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Cidade</option></select></div>
       <div class="filter-chip"><select id="filter-day" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Dia</option></select></div>
       <div class="filter-chip"><select id="filter-category" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Categoria</option></select></div>
+      <div class="filter-chip"><select id="filter-atividade" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Atividade</option></select></div>
+      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:18px;">filter_alt_off</span> Limpar</button>
     </div>
     <div class="itinerary-list" id="itinerary-list" style="padding: 16px; overflow-y: auto; flex:1;"></div>
   </div>
 
   <div class="screen" id="hospedagens-screen">
+    <div class="filters-bar">
+      <div class="filter-chip"><select id="filter-city-hosp" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('hospedagens')"><option value="">Cidade</option></select></div>
+      <div class="filter-chip"><select id="filter-day-hosp" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('hospedagens')"><option value="">Dia</option></select></div>
+      <div class="filter-chip"><select id="filter-category-hosp" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('hospedagens')"><option value="">Categoria</option></select></div>
+      <div class="filter-chip"><select id="filter-atividade-hosp" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('hospedagens')"><option value="">Hospedagem</option></select></div>
+      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:18px;">filter_alt_off</span> Limpar</button>
+    </div>
     <div class="itinerary-list" id="hospedagens-list" style="padding: 16px; overflow-y: auto; flex:1;"></div>
   </div>
 
   <div class="screen" id="map-screen">
+    <div class="filters-bar">
+      <div class="filter-chip"><select id="filter-city-map" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('map')"><option value="">Cidade</option></select></div>
+      <div class="filter-chip"><select id="filter-day-map" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('map')"><option value="">Dia</option></select></div>
+      <div class="filter-chip"><select id="filter-category-map" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('map')"><option value="">Categoria</option></select></div>
+      <div class="filter-chip"><select id="filter-atividade-map" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('map')"><option value="">Atividade</option></select></div>
+      <button class="btn-clear" onclick="clearFilters()"><span class="material-symbols-rounded" style="font-size:18px;">filter_alt_off</span> Limpar</button>
+    </div>
     <div class="map-container" style="flex:1; position:relative;">
       <div id="main-map" style="width: 100%; height: 100%;"></div>
-      <button class="btn-gps" onclick="centerOnUser()" style="position:absolute; bottom:20px; right:20px; z-index:400; width:48px; height:48px; border-radius:50%; background: var(--primary); color: white; border: none; box-shadow: var(--shadow); display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="material-symbols-rounded">my_location</span></button>
+      <button class="btn-gps" onclick="centerOnUser()" title="Localização Atual" style="position:absolute; bottom:20px; right:20px; z-index:400; width:48px; height:48px; border-radius:50%; background: var(--primary); color: white; border: none; box-shadow: var(--shadow); display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="material-symbols-rounded">my_location</span></button>
     </div>
   </div>
 </div>
@@ -204,16 +217,18 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 <div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-sheet">
-    <div class="modal-handle" style="background: var(--primary); opacity: 0.3;"></div>
+    <div class="modal-handle"></div>
     <div class="modal-content">
       <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
-        <h2 id="modal-title" style="font-weight: 800; color: var(--primary); font-size: 22px; line-height: 1.2;"></h2>
-        <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+        <h2 id="modal-title" style="font-weight: 800; color: var(--text); font-size: 22px; line-height: 1.2;"></h2>
+        <button class="btn-icon" onclick="closeModal()" style="background:var(--bg-elevated);"><span class="material-symbols-rounded">close</span></button>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;" id="modal-info-grid"></div>
       <div id="modal-sections"></div>
-      <div class="modal-section" id="modal-map-section" style="display:none; padding:0;">
-        <div class="modal-map" id="modal-map" style="border-radius: 0 0 16px 16px; height: 160px; width: 100%;"></div>
+      
+      <div class="modal-section" id="modal-map-section" style="display:none; padding:0; border:none; margin-top:8px;">
+        <div class="section-title" style="margin-bottom: 8px;">Localização no Mapa</div>
+        <div class="modal-map" id="modal-map" style="border-radius: var(--radius); height: 160px; width: 100%; border: 1px solid var(--border);"></div>
       </div>
     </div>
   </div>
@@ -221,9 +236,9 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 <div class="modal-overlay" id="new-trip-modal" onclick="if(event.target===this)closeNewTripModal()">
   <div class="modal-sheet">
-    <div class="modal-handle" style="background: var(--primary); opacity: 0.3;"></div>
+    <div class="modal-handle"></div>
     <div class="modal-content">
-      <h2 style="font-weight: 800; color: var(--primary); font-size: 22px; margin-bottom: 24px;">Novo Roteiro</h2>
+      <h2 id="trip-modal-title" style="font-weight: 800; color: var(--primary); font-size: 22px; margin-bottom: 24px;">Novo Roteiro</h2>
       
       <div style="display:flex; flex-direction:column; gap:20px; margin-bottom: 32px;">
         <div>
@@ -245,7 +260,6 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 </div>
 
 <script>
-/* LÓGICA FUNCIONAL MANTIDA E AJUSTADA PARA O NOVO MODAL */
 let savedTrips = []; 
 let activeTripId = null;
 let activeRoteiro = [];
@@ -256,6 +270,7 @@ let modalMap = null;
 let userMarker = null;
 let lastKnownUserPos = null;
 let importContext = null;
+let editingTripId = null; // Variável global para saber se estamos editando
 
 window.onload = () => {
   loadTheme();
@@ -270,14 +285,12 @@ function toggleTheme() {
   localStorage.setItem('smartTripTheme', isLight ? 'light' : 'dark');
   document.getElementById('theme-btn').innerHTML = `<span class="material-symbols-rounded">${isLight ? 'dark_mode' : 'light_mode'}</span>`;
 }
-
 function loadTheme() {
   if(localStorage.getItem('smartTripTheme') === 'light') {
     document.body.classList.add('light-theme');
     document.getElementById('theme-btn').innerHTML = `<span class="material-symbols-rounded">dark_mode</span>`;
   }
 }
-
 function showToast(msg) { let t = document.getElementById('toast'); t.textContent = msg; t.classList.add('visible'); setTimeout(() => t.classList.remove('visible'), 3000); }
 function showLoading(msg) { document.getElementById('loading-text').textContent = msg; document.getElementById('loading').classList.remove('hidden'); }
 function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
@@ -292,12 +305,11 @@ function navigate(tab) {
   else if (tab === 'itinerary' || tab === 'hospedagens') { applyFilters(tab); }
 }
 
-/* RENDERIZAÇÃO DA HOME */
+/* ================= HOME & AÇÕES ================= */
 function renderHomeTrips() {
   let list = document.getElementById('trips-list');
   let html = '';
 
-  // Renderiza as viagens cadastradas
   if(savedTrips.length > 0) {
     html += savedTrips.map(trip => `
       <div class="activity-card" onclick="changeActiveTrip('${trip.id}')" style="align-items: center;">
@@ -308,12 +320,15 @@ function renderHomeTrips() {
           <div style="font-weight:700; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(trip.title)}</div>
           <div style="font-size:12px; color:var(--text-secondary); font-weight:500;">${(trip.roteiro||[]).length} paradas • ${(trip.hospedagens||[]).length} hotéis</div>
         </div>
-        <button class="btn-icon" onclick="deleteTrip(event, '${trip.id}')" style="color:var(--text-muted)"><span class="material-symbols-rounded">delete</span></button>
+        <div style="display:flex; gap:4px;" onclick="event.stopPropagation()">
+          <button class="btn-icon" onclick="updateTrip(event, '${trip.id}')" title="Sincronizar" style="color:var(--primary)"><span class="material-symbols-rounded" style="font-size:20px;">sync</span></button>
+          <button class="btn-icon" onclick="editTrip(event, '${trip.id}')" title="Editar" style="color:var(--text-secondary)"><span class="material-symbols-rounded" style="font-size:20px;">edit</span></button>
+          <button class="btn-icon" onclick="deleteTrip(event, '${trip.id}')" title="Excluir" style="color:var(--text-muted)"><span class="material-symbols-rounded" style="font-size:20px;">delete</span></button>
+        </div>
       </div>
     `).join('');
   }
 
-  // Adiciona o card dinâmico de Inclusão no final da lista
   html += `
     <div class="activity-card" onclick="openNewTripModal()" style="align-items: center; justify-content: center; border: 2px dashed var(--border); background: transparent; cursor: pointer; padding: 20px; box-shadow: none;">
       <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-weight: 700; font-size: 15px;">
@@ -321,12 +336,40 @@ function renderHomeTrips() {
       </div>
     </div>
   `;
-  
   list.innerHTML = html;
 }
 
-/* CONTROLES DO NOVO MODAL */
+function updateTrip(e, id) {
+  e.stopPropagation(); let trip = savedTrips.find(t => t.id === id);
+  if (!trip.sheetUrl) { showToast('Planilha não possui link salvo. Edite e insira o link.'); return; }
+  executeImport(trip.sheetUrl, id, trip.title);
+}
+
+function editTrip(e, id) {
+  e.stopPropagation(); 
+  let trip = savedTrips.find(t => t.id === id);
+  if(!trip) return;
+  editingTripId = id;
+  document.getElementById('trip-modal-title').textContent = "Editar Roteiro";
+  document.getElementById('new-trip-name').value = trip.title;
+  document.getElementById('new-trip-url').value = trip.sheetUrl || "";
+  document.getElementById('new-trip-modal').classList.add('open');
+}
+
+function deleteTrip(e, id) {
+  e.stopPropagation(); if(confirm("Excluir viagem definitivamente?")) {
+    savedTrips = savedTrips.filter(t => t.id !== id); saveTripsToStorage(); 
+    if (activeTripId === id) { activeRoteiro = []; activeHospedagens = []; activeTripId = null; }
+    renderHomeTrips(); updateTopSelector();
+    if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
+    else clearFilters(null, true);
+  }
+}
+
+/* ================= NOVO ROTEIRO E IMPORTAÇÃO ================= */
 function openNewTripModal() {
+  editingTripId = null;
+  document.getElementById('trip-modal-title').textContent = "Novo Roteiro";
   document.getElementById('new-trip-name').value = '';
   document.getElementById('new-trip-url').value = '';
   document.getElementById('new-trip-modal').classList.add('open');
@@ -342,16 +385,18 @@ function submitNewTrip() {
   
   if (!name) { showToast('O nome da viagem é obrigatório.'); return; }
   if (!url) { showToast('O link da planilha é obrigatório.'); return; }
-  
+  executeImport(url, editingTripId, name);
+}
+
+function executeImport(url, updateId, customName) {
   let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); 
   if (!m) { showToast('Link do Google Sheets inválido.'); return; }
   
   let sheetId = m[1]; 
   closeNewTripModal();
-  showLoading('Buscando e organizando roteiro...');
+  showLoading(updateId ? 'Sincronizando dados...' : 'Buscando e organizando roteiro...');
   
-  // Guardamos o nome customizado no importContext
-  importContext = { url: url, customName: name, rotDone: false, hospDone: false, roteiro: [], hospedagens: [] };
+  importContext = { url: url, customName: customName, updateId: updateId, rotDone: false, hospDone: false, roteiro: [], hospedagens: [] };
   
   injectScript('gviz-rot', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Roteiro&tqx=responseHandler:_cbRoteiro`);
   injectScript('gviz-hosp', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Hospedagens&tqx=responseHandler:_cbHospedagens`);
@@ -363,11 +408,21 @@ function injectScript(id, url) { let o = document.getElementById(id); if(o) o.re
 
 function parseGviz(data) {
   if(!data || !data.table) return [];
-  let headers = data.table.cols.map(c => (c.label || '').toLowerCase());
-  let map = { cidade: headers.findIndex(h => h.includes('cidade')), dia: headers.findIndex(h => h.includes('dia')), hora: headers.findIndex(h => h.includes('hora')), categoria: headers.findIndex(h => h.includes('categoria')), atividade: headers.findIndex(h => h.includes('atividade')||h.includes('desc')), google_maps: headers.findIndex(h => h.includes('maps')), link: headers.findIndex(h => h.includes('link')) };
+  let headers = data.table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
+  let map = {
+    cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')),
+    dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
+    hora: headers.findIndex(h => h.includes('hora')||h.includes('time')),
+    categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
+    atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')),
+    google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
+    observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')),
+    link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps'))
+  };
+
   return data.table.rows.map(row => {
-    let r = row.c; let item = { _id: 'id_' + Math.random().toString(36).substr(2, 9) };
-    Object.keys(map).forEach(k => { if(map[k] !== -1 && r[map[k]]) item[k] = String(r[map[k]].v || ''); });
+    let r = row.c; let item = { _id: 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) };
+    Object.keys(map).forEach(k => { if(map[k] !== -1 && r && r[map[k]]) item[k] = String(r[map[k]].f || r[map[k]].v || ''); });
     return item;
   }).filter(i => i.atividade);
 }
@@ -376,24 +431,32 @@ function checkImportStatus() {
   if(importContext.rotDone && importContext.hospDone) {
     hideLoading(); 
     
-    // Cria a viagem usando o nome obrigatório inserido pelo usuário no modal
-    let newTrip = { 
-        id: 'trip_' + Date.now(), 
-        title: importContext.customName, 
-        roteiro: importContext.roteiro, 
-        hospedagens: importContext.hospedagens,
-        sheetUrl: importContext.url
-    };
-    
-    savedTrips.push(newTrip); 
-    saveTripsToStorage(); 
-    renderHomeTrips(); 
-    updateTopSelector(); 
-    changeActiveTrip(newTrip.id);
-    showToast('Roteiro importado com sucesso!');
+    if (importContext.updateId) {
+      // Atualizando viagem existente
+      let trip = savedTrips.find(t => t.id === importContext.updateId);
+      trip.roteiro = importContext.roteiro; 
+      trip.hospedagens = importContext.hospedagens;
+      if (importContext.customName) trip.title = importContext.customName;
+      if (importContext.url) trip.sheetUrl = importContext.url;
+      saveTripsToStorage(); renderHomeTrips(); updateTopSelector();
+      if(activeTripId === trip.id) changeActiveTrip(trip.id, true);
+      showToast('Sincronização concluída!');
+    } else {
+      // Nova viagem
+      let newTrip = { 
+          id: 'trip_' + Date.now(), 
+          title: importContext.customName || 'Nova Viagem', 
+          roteiro: importContext.roteiro, 
+          hospedagens: importContext.hospedagens,
+          sheetUrl: importContext.url
+      };
+      savedTrips.push(newTrip); saveTripsToStorage(); renderHomeTrips(); updateTopSelector(); changeActiveTrip(newTrip.id);
+      showToast('Roteiro importado com sucesso!');
+    }
   }
 }
 
+/* ================= RENDER LISTAS (Cidade e Tags restauradas) ================= */
 function renderList(containerId, items, isHosp, filteredDay = null) {
   let container = document.getElementById(containerId);
   if(!container) return;
@@ -401,7 +464,9 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
     container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);"><span class="material-symbols-rounded" style="font-size:48px;">search_off</span><p style="margin-top:8px; font-weight:600;">Nenhuma atividade encontrada.</p></div>`;
     return;
   }
+  
   let html = '';
+  
   if (!isHosp && filteredDay && items.length > 1) {
     let routePoints = items.filter(d => extractCoords(d.google_maps)).map(d => extractCoords(d.google_maps));
     if (routePoints.length >= 2) {
@@ -409,23 +474,33 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
       let dest = `${routePoints[routePoints.length-1].lat},${routePoints[routePoints.length-1].lng}`;
       let waypoints = routePoints.slice(1, -1).slice(0, 9).map(p => `${p.lat},${p.lng}`).join('|');
       let mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}${waypoints ? '&waypoints='+waypoints : ''}`;
-      html += `<button class="btn btn-success" onclick="window.open('${mapsUrl}', '_blank')"><span class="material-symbols-rounded">directions</span> Traçar Rota do Dia</button>`;
+      html += `<button class="btn btn-success" onclick="window.open('${mapsUrl}', '_blank')"><span class="material-symbols-rounded">directions</span> Traçar Rota do Dia (Maps)</button>`;
     }
   }
+  
   let currentDay = null;
   items.forEach(item => {
     let formattedDay = formatDayWithWeekday(item.dia);
     if(formattedDay !== currentDay) { html += `<div style="margin: 20px 0 10px;"><span class="day-label">${esc(formattedDay)}</span></div>`; currentDay = formattedDay; }
+    
+    let catHtml = item.categoria ? `<span class="tag" style="font-size:10px; padding:3px 8px; border-radius:4px; background:var(--bg-elevated); color:var(--primary);">${esc(item.categoria)}</span>` : '';
+    let cityHtml = item.cidade ? `<span class="tag" style="font-size:10px; padding:3px 8px; border-radius:4px; background:var(--primary); color:white;">${esc(item.cidade)}</span>` : '';
+    let anexoHtml = item.link ? `<span class="tag tag-anexo" style="font-size:10px; padding:3px 8px; border-radius:4px; border:1px solid var(--border); color:var(--text-secondary);">Anexo</span>` : '';
+    let hospTag = isHosp ? `<span class="tag tag-hospedagem" style="font-size:10px; padding:3px 8px; border-radius:4px; background:var(--accent); color:var(--primary-dark);">HOTEL</span>` : '';
+
+    let safeId = item._id || item._i;
     html += `
-      <div class="activity-card" onclick="openDetail('${item._id || item._i}', ${isHosp})">
-        <div style="min-width:50px; text-align:center; border-right: 1px solid var(--border); margin-right: 10px;">
+      <div class="activity-card" onclick="openDetail('${safeId}', ${isHosp})">
+        <div style="min-width:50px; text-align:center; border-right: 1px solid var(--border); margin-right: 10px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
           <div style="font-size:16px; font-weight:800; color:var(--primary);">${esc(item.hora||'--')}</div>
         </div>
-        <div style="flex:1;">
-          <div style="font-weight:700; font-size:15px; margin-bottom:6px;">${esc(item.atividade)}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-weight:700; font-size:15px; margin-bottom:6px; line-height:1.3; color:var(--text);">${esc(item.atividade||'Sem título')}</div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            <span class="tag" style="font-size:10px; padding:3px 8px; border-radius:4px; background:var(--bg-elevated); color:var(--primary);">${esc(item.categoria||'Geral')}</span>
-            ${isHosp ? '<span class="tag" style="font-size:10px; padding:3px 8px; border-radius:4px; background:var(--accent); color:var(--primary-dark);">HOTEL</span>' : ''}
+            ${cityHtml}
+            ${hospTag}
+            ${catHtml}
+            ${anexoHtml}
           </div>
         </div>
       </div>`;
@@ -433,7 +508,81 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
   container.innerHTML = html;
 }
 
-/* LÓGICA DE DADOS RESTANTE */
+/* ================= FILTROS ================= */
+function clearFilters(context, preventApply = false) {
+  ['filter-city', 'filter-day', 'filter-category', 'filter-atividade'].forEach(baseId => {
+    ['', '-hosp', '-map'].forEach(suf => { let el = document.getElementById(baseId + suf); if(el) el.value = ''; });
+  });
+  if(!preventApply) applyFilters(context || document.querySelector('.nav-item.active').id.replace('nav-', ''));
+}
+
+function applyFilters(sourceTab) {
+  if(activeRoteiro.length === 0 && activeHospedagens.length === 0) return;
+
+  let srcSuffix = sourceTab === 'hospedagens' ? '-hosp' : (sourceTab === 'map' ? '-map' : '');
+  
+  let city = document.getElementById('filter-city'+srcSuffix) ? document.getElementById('filter-city'+srcSuffix).value : '';
+  let day = document.getElementById('filter-day'+srcSuffix) ? document.getElementById('filter-day'+srcSuffix).value : '';
+  let cat = document.getElementById('filter-category'+srcSuffix) ? document.getElementById('filter-category'+srcSuffix).value : '';
+  let atv = document.getElementById('filter-atividade'+srcSuffix) ? document.getElementById('filter-atividade'+srcSuffix).value : '';
+
+  ['', '-hosp', '-map'].forEach(suf => {
+    if(document.getElementById('filter-city'+suf)) document.getElementById('filter-city'+suf).value = city;
+    if(document.getElementById('filter-day'+suf)) document.getElementById('filter-day'+suf).value = day;
+    if(document.getElementById('filter-category'+suf)) document.getElementById('filter-category'+suf).value = cat;
+    if(document.getElementById('filter-atividade'+suf)) document.getElementById('filter-atividade'+suf).value = atv;
+  });
+
+  let filRot = activeRoteiro.filter(d => {
+    if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
+    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
+  });
+
+  let filHosp = activeHospedagens.filter(d => {
+    if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
+    if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
+  });
+
+  updateCascadingFilters(filRot, filHosp, { city, day, cat, atv });
+
+  renderList('itinerary-list', filRot, false, day); 
+  renderList('hospedagens-list', filHosp, true);
+  renderMapMarkers(filRot, filHosp);
+}
+
+function updateCascadingFilters(dsRot, dsHosp, current = {}) {
+  let cities=[], days=[], cats=[], atvs=[], cityEarliest={};
+  
+  const process = (d) => {
+    if(d.cidade && !cities.includes(d.cidade)) cities.push(d.cidade);
+    if(d.dia && !days.includes(d.dia)) days.push(d.dia);
+    if(d.categoria && !cats.includes(d.categoria)) cats.push(d.categoria);
+    if(d.atividade && !atvs.includes(d.atividade)) atvs.push(d.atividade);
+    if(d.cidade && d.dia) { let dNum = parseDayNum(d.dia); if(!cityEarliest[d.cidade] || dNum < cityEarliest[d.cidade]) cityEarliest[d.cidade] = dNum; }
+  };
+  dsRot.forEach(process); dsHosp.forEach(process);
+
+  cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
+  days.sort((a,b) => parseDayNum(a) - parseDayNum(b));
+  cats.sort(); atvs.sort((a,b) => a.localeCompare(b));
+
+  const fill = (idBase, items, label, val) => {
+    let fVal = items.includes(val) ? val : '';
+    let html = `<option value="">${label}</option>` + items.map(v => `<option value="${esc(v)}" ${v===fVal ? 'selected':''}>${esc(v)}</option>`).join('');
+    ['', '-hosp', '-map'].forEach(suf => {
+      let el = document.getElementById(idBase + suf);
+      if(el) el.innerHTML = html;
+    });
+  };
+
+  fill('filter-city', cities, 'Cidade', current.city);
+  fill('filter-day', days, 'Dia', current.day);
+  fill('filter-category', cats, 'Categoria', current.cat);
+  fill('filter-atividade', atvs, 'Atividade/Local', current.atv);
+}
+
+
+/* ================= DADOS E MODAL DETALHE (Restaurado) ================= */
 function loadTripsFromStorage() { savedTrips = JSON.parse(localStorage.getItem('smartTrips') || '[]'); }
 function saveTripsToStorage() { localStorage.setItem('smartTrips', JSON.stringify(savedTrips)); }
 function updateTopSelector() {
@@ -447,64 +596,165 @@ function changeActiveTrip(tripId, skipNav = false) {
   document.getElementById('global-trip-selector').value = tripId;
   activeRoteiro = (trip.roteiro || []).sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
   activeHospedagens = (trip.hospedagens || []).sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
-  if(!skipNav) navigate('itinerary');
-}
-function deleteTrip(e, id) {
-  e.stopPropagation(); if(confirm("Excluir viagem definitivamente?")) {
-    savedTrips = savedTrips.filter(t => t.id !== id); saveTripsToStorage(); 
-    if (activeTripId === id) { activeRoteiro = []; activeHospedagens = []; activeTripId = null; }
-    renderHomeTrips(); updateTopSelector();
+  
+  clearFilters(null, true);
+  updateCascadingFilters(activeRoteiro, activeHospedagens, {});
+  
+  if(!skipNav) {
+    let currentActive = document.querySelector('.nav-item.active').id.replace('nav-', '');
+    if(currentActive === 'home') navigate('itinerary');
+    else applyFilters(currentActive);
   }
 }
-function formatDayWithWeekday(d) { return d; }
-function parseDayNum(d) { return parseInt(String(d).replace(/\D/g, '')) || 0; }
+function formatDayWithWeekday(dStr) {
+  if (!dStr) return "Sem data";
+  let parts = String(dStr).split(/[\/\-]/);
+  if (parts.length >= 2) {
+    let d = parseInt(parts[0]), m = parseInt(parts[1]) - 1, y = parts.length === 3 && parts[2].length === 4 ? parseInt(parts[2]) : new Date().getFullYear();
+    let dateObj = new Date(y, m, d);
+    if (!isNaN(dateObj)) return `${dStr} - ${['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][dateObj.getDay()]}`;
+  } return dStr;
+}
+function parseDayNum(dStr) {
+  if (!dStr) return 99999999;
+  let parts = String(dStr).split(/[\/\-]/);
+  if(parts.length >= 2) return parseInt((parts.length===3?parts[2].substring(0,4):"2024") + parts[1].padStart(2,'0') + parts[0].padStart(2,'0'));
+  return parseInt(String(dStr).replace(/\D/g, '')) || 9999;
+}
 function extractCoords(url) {
-  if (!url) return null; let m = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (m) return { lat: parseFloat(m[1]), lng: parseFloat(m[2]) };
+  if (!url) return null; let m;
+  m = url.match(/!3d(-?\d{1,3}\.\d+)!4d(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  m = url.match(/[?&](?:q|ll)=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  m = url.match(/\/dir\/.*?\/(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if(m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
+  m = url.match(/@(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/); if (m) return {lat: parseFloat(m[1]), lng: parseFloat(m[2])};
   return null;
 }
+
 function openDetail(id, isHosp) {
-  let item = isHosp ? activeHospedagens.find(d => d._id === id) : activeRoteiro.find(d => d._id === id);
+  let item = isHosp 
+    ? activeHospedagens.find(d => String(d._id || d._i) === String(id)) 
+    : activeRoteiro.find(d => String(d._id || d._i) === String(id));
   if(!item) return;
+
   document.getElementById('modal-title').textContent = item.atividade;
-  let grid = `<div class="modal-info-item"><div class="label">Horário</div><div style="font-weight:600;">${esc(item.hora||'--')}</div></div><div class="modal-info-item"><div class="label">Local</div><div style="font-weight:600;">${esc(item.cidade||'--')}</div></div>`;
+  
+  let grid = '';
+  if(item.dia) grid += `<div class="modal-info-item"><div class="label">Data</div><div class="value" style="font-weight:600; font-size:13px; color:var(--text);">${esc(formatDayWithWeekday(item.dia))}</div></div>`;
+  if(item.hora) grid += `<div class="modal-info-item"><div class="label">${isHosp ? 'Check-in/Horário' : 'Horário'}</div><div class="value" style="font-weight:600; font-size:13px; color:var(--text);">${esc(item.hora)}</div></div>`;
+  if(item.cidade) grid += `<div class="modal-info-item"><div class="label">Cidade</div><div class="value" style="font-weight:600; font-size:13px; color:var(--text);">${esc(item.cidade)}</div></div>`;
+  if(item.categoria) grid += `<div class="modal-info-item"><div class="label">Categoria</div><div class="value" style="font-weight:600; font-size:13px; color:var(--text);">${esc(item.categoria)}</div></div>`;
   document.getElementById('modal-info-grid').innerHTML = grid;
+
+  // Restaurando Observações e Links
+  let sec = '';
+  if(item.observacoes) sec += `<div class="modal-section"><div class="section-title">Observações</div><div class="section-body">${esc(item.observacoes).replace(/\n/g,'<br>')}</div></div>`;
+  if(item.link) sec += `<div class="modal-section"><div class="section-title">Anexos</div><div class="section-body"><a href="${esc(item.link)}" target="_blank"><span class="material-symbols-rounded" style="font-size:18px;">attach_file</span> Visualizar Anexo/Link</a></div></div>`;
+  
   let coords = extractCoords(item.google_maps);
-  let sec = `<div style="margin-bottom: 24px;"><div class="form-label" style="color:var(--primary);">Navegação</div><div style="display:flex; gap:10px;">`;
-  if(coords) sec += `<button class="btn btn-primary" style="flex:1" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}', '_blank')"><span class="material-symbols-rounded" style="font-size:18px">directions_car</span> Rota</button>`;
-  if(item.google_maps) sec += `<button class="btn btn-outline" style="flex:1" onclick="window.open('${item.google_maps}', '_blank')"><span class="material-symbols-rounded" style="font-size:18px">map</span> Mapa</button>`;
-  sec += `</div></div>`;
+  if(coords || item.google_maps) {
+    let dirLink = coords ? `https://www.google.com/maps/dir/?api=1&destination=${coords.lat},${coords.lng}` : item.google_maps;
+    let mapsLink = item.google_maps || dirLink;
+    
+    sec += `<div class="modal-section"><div class="section-title">Rotas e Navegação</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;">
+        <a href="${dirLink}" target="_blank" class="btn btn-primary" style="flex:1; min-width:140px; text-decoration:none;"><span class="material-symbols-rounded">directions_car</span> Traçar Rota</a>
+        <a href="${mapsLink}" target="_blank" class="btn btn-outline" style="flex:1; min-width:140px; text-decoration:none;"><span class="material-symbols-rounded">pin_drop</span> Ver no Mapa</a>
+      </div>
+    </div>`;
+  }
   document.getElementById('modal-sections').innerHTML = sec;
+
+  // Restaurando o Map Preview no Modal
+  let mapSec = document.getElementById('modal-map-section');
+  if(coords) {
+    mapSec.style.display = 'block';
+    setTimeout(() => {
+      if(modalMap) { modalMap.remove(); modalMap = null; }
+      modalMap = L.map('modal-map',{zoomControl:false, attributionControl:false}).setView([coords.lat, coords.lng], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(modalMap);
+      
+      let iconHtml = isHosp ? 'H' : '📍';
+      let bgColor = isHosp ? 'var(--accent)' : 'var(--primary)';
+      let txtColor = isHosp ? 'var(--primary-dark)' : 'white';
+      let icon = L.divIcon({className:'', html:`<div class="map-marker-label" style="background:${bgColor};color:${txtColor};">${iconHtml}</div>`, iconSize:[28,28]});
+      L.marker([coords.lat, coords.lng], {icon}).addTo(modalMap);
+    }, 250);
+  } else { mapSec.style.display = 'none'; }
+
   document.getElementById('modal').classList.add('open');
 }
+
 function closeModal() { document.getElementById('modal').classList.remove('open'); }
-function applyFilters(tab) {
-  if(tab === 'itinerary') renderList('itinerary-list', activeRoteiro, false);
-  if(tab === 'hospedagens') renderList('hospedagens-list', activeHospedagens, true);
-  if(tab === 'map') renderMapMarkers(activeRoteiro, activeHospedagens);
+
+/* ================= MAPA PRINCIPAL (Ações do clique restauradas) ================= */
+function openFromMap(id, isHosp) {
+  closeModal();
+  if(mainMap) mainMap.closePopup();
+  navigate(isHosp ? 'hospedagens' : 'itinerary');
+  setTimeout(() => openDetail(id, isHosp), 300);
 }
+
 function initMainMap() {
-  mainMap = L.map('main-map', {zoomControl:false}).setView([0,0], 2);
+  mainMap = L.map('main-map', {zoomControl:false, attributionControl:false}).setView([0,0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
+  L.control.zoom({position: 'topright'}).addTo(mainMap);
+  
+  if ('geolocation' in navigator) {
+    navigator.geolocation.watchPosition(pos => {
+      lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude];
+      if(userMarker) userMarker.setLatLng(lastKnownUserPos);
+      else {
+        let icon = L.divIcon({className:'', html:'<div style="width:16px; height:16px; background:var(--primary); border:3px solid white; border-radius:50%; box-shadow:0 0 0 4px rgba(37,150,190,0.3);"></div>', iconSize:[16,16]});
+        userMarker = L.marker(lastKnownUserPos,{icon, zIndexOffset:1000}).addTo(mainMap);
+      }
+    }, () => {}, {enableHighAccuracy:true, maximumAge:30000});
+  }
 }
-function renderMapMarkers(rots, hosps) {
+
+function renderMapMarkers(rotItems, hospItems) {
   if(!mainMap) return; mapMarkers.forEach(m => mainMap.removeLayer(m)); mapMarkers = [];
-  let bounds = [];
-  rots.forEach((item, i) => {
-    let c = extractCoords(item.google_maps); if(!c) return;
-    let icon = L.divIcon({className:'map-marker-label', html:i+1, iconSize:[28,28]});
-    let m = L.marker([c.lat, c.lng], {icon}).addTo(mainMap).bindPopup(`<strong style="font-family:var(--font-body);">${esc(item.atividade)}</strong>`);
-    mapMarkers.push(m); bounds.push([c.lat, c.lng]);
+  let bounds = [], count = 0;
+  
+  hospItems.forEach(item => {
+    let coords = extractCoords(item.google_maps); if(!coords) return;
+    let safeId = item._id || item._i;
+    let icon = L.divIcon({className:'map-marker-hotel', html:'H', iconSize:[30,30], iconAnchor:[15,15]});
+    let marker = L.marker([coords.lat, coords.lng], {icon, zIndexOffset: 800}).addTo(mainMap);
+    
+    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', true)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>🏨 ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
+    
+    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
   });
-  hosps.forEach(item => {
-    let c = extractCoords(item.google_maps); if(!c) return;
-    let icon = L.divIcon({className:'map-marker-hotel', html:'H', iconSize:[28,28]});
-    let m = L.marker([c.lat, c.lng], {icon}).addTo(mainMap).bindPopup(`<strong style="font-family:var(--font-body);">${esc(item.atividade)}</strong>`);
-    mapMarkers.push(m); bounds.push([c.lat, c.lng]);
+
+  rotItems.forEach(item => {
+    let coords = extractCoords(item.google_maps); if(!coords) return;
+    count++;
+    let safeId = item._id || item._i;
+    let icon = L.divIcon({className:'map-marker-label', html:count, iconSize:[28,28]});
+    let marker = L.marker([coords.lat, coords.lng], {icon}).addTo(mainMap);
+    
+    let actionBtn = `<button class="btn btn-primary" onclick="openFromMap('${safeId}', false)" style="margin-top:10px; width:100%; padding:8px; font-size:12px;">Ver detalhes e rotas</button>`;
+    marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${count}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
+    
+    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
   });
-  if(bounds.length) mainMap.fitBounds(bounds, {padding:[50,50]});
+  if(bounds.length) mainMap.fitBounds(bounds, {padding:[50,50], maxZoom:15});
 }
-function centerOnUser() { navigator.geolocation.getCurrentPosition(p => mainMap.setView([p.coords.latitude, p.coords.longitude], 14)); }
+
+function centerOnUser() {
+  if (lastKnownUserPos && mainMap) {
+    mainMap.setView(lastKnownUserPos, 15);
+  } else {
+    showToast("Buscando sua localização...");
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude];
+        mainMap.setView(lastKnownUserPos, 15);
+      }, () => showToast("Não foi possível acessar a localização."));
+    }
+  }
+}
 </script>
 </body>
 </html>
