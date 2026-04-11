@@ -22,6 +22,7 @@
   --text-muted: #8896a4;
   --shadow: 0 4px 6px rgba(0,0,0,0.05);
   --map-filter: none;
+  --pattern-opacity: 0.04; /* Opacidade do pattern no modo claro */
   
   --primary: #2596be;
   --primary-dark: #15556c;
@@ -57,15 +58,31 @@ body.dark-theme {
   --text-muted: #5a6a77;
   --shadow: 0 4px 12px rgba(0,0,0,0.3);
   --map-filter: brightness(0.6) saturate(0.8) contrast(1.1) hue-rotate(180deg) invert(100%);
+  --pattern-opacity: 0.02; /* Opacidade menor no modo escuro */
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); }
+html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); position: relative;}
+
+/* BRAND PATTERN (Marca d'água Tech/Map Grid) */
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(var(--primary) 1px, transparent 1px), radial-gradient(var(--primary) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+  opacity: var(--pattern-opacity);
+  transition: opacity var(--transition);
+}
+
 .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
 .filled { font-variation-settings:'FILL' 1; }
 
 /* HEADER / LOGO */
-.topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg-card); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:64px; box-shadow: var(--shadow); }
+.topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg-card); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:64px; box-shadow: var(--shadow); position: relative;}
 .brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
 .compass-logo { width: 32px; height: 32px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .compass-logo::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: 3px solid var(--primary); border-radius: 50%; box-sizing: border-box; }
@@ -76,10 +93,10 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .btn-icon { width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius); background:transparent; border:none; color:var(--text-secondary); cursor:pointer; transition:all var(--transition); flex-shrink: 0;}
 .btn-icon:hover { background:var(--bg-elevated); color:var(--primary); }
 
-.main-content { flex:1; position:relative; overflow:hidden; }
+.main-content { flex:1; position:relative; overflow:hidden; z-index: 1;}
 
 /* NAV INFERIOR */
-.bottom-nav { display:flex; justify-content:space-around; align-items:center; background:var(--bg-card); border-top:1px solid var(--border); height:68px; flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:100; }
+.bottom-nav { display:flex; justify-content:space-around; align-items:center; background:var(--bg-card); border-top:1px solid var(--border); height:68px; flex-shrink:0; padding-bottom:env(safe-area-inset-bottom); z-index:100; position: relative;}
 .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--text-muted); cursor:pointer; height:100%; transition:all var(--transition); border-top: 3px solid transparent; }
 .nav-item .material-symbols-rounded { font-size:26px; }
 .nav-item span:last-child { font-size:var(--text-xs); font-weight:700; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -92,22 +109,22 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:var(--radius); font-family:var(--font-body); font-size:var(--text-base); font-weight:700; border:none; cursor:pointer; transition:all var(--transition); text-decoration:none; }
 .btn-primary { background:var(--primary); color:var(--white); }
 .btn-primary:hover { background:var(--primary-dark); box-shadow: 0 4px 15px rgba(37, 150, 190, 0.3); }
-.btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+.btn-outline { background:var(--bg-card); border:1px solid var(--border); color:var(--text); }
 .btn-outline:hover { background:var(--bg-elevated); }
 .btn-success { background:var(--accent); color:var(--primary-dark); width:100%; margin-bottom:16px; }
 .btn-success:hover { background:var(--accent-dark); }
-.input-field { width:100%; padding:14px 16px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:var(--text-base); font-family:var(--font-body); outline:none; transition:border var(--transition); }
+.input-field { width:100%; padding:14px 16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:var(--text-base); font-family:var(--font-body); outline:none; transition:border var(--transition); }
 .input-field:focus { border-color:var(--primary); }
 
-.activity-card { display:flex; align-items:flex-start; gap:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; cursor:pointer; transition:all var(--transition); box-shadow: var(--shadow); }
+.activity-card { display:flex; align-items:flex-start; gap:16px; padding:16px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; cursor:pointer; transition:all var(--transition); box-shadow: var(--shadow); position: relative; z-index: 2;}
 .activity-card:hover { border-color:var(--primary); transform: translateY(-2px); }
-.day-label { font-size:var(--text-sm); font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--primary); background:rgba(37, 150, 190, 0.1); padding:6px 16px; border-radius:20px; }
+.day-label { font-size:var(--text-sm); font-weight:800; text-transform:uppercase; letter-spacing:1px; color:var(--primary); background:rgba(37, 150, 190, 0.1); padding:6px 16px; border-radius:20px; display:inline-block;}
 
 /* FILTROS */
 .filters-bar { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; align-items: center; gap: 8px; overflow-x: auto; flex-shrink: 0; scrollbar-width: none; }
 .filters-bar::-webkit-scrollbar { display: none; }
 .filter-chip { flex-shrink: 0; }
-.btn-clear { background: transparent; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; color: var(--text-muted); display:flex; align-items:center; justify-content:center; cursor: pointer; flex-shrink: 0; transition: all var(--transition); }
+.btn-clear { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; color: var(--text-muted); display:flex; align-items:center; justify-content:center; cursor: pointer; flex-shrink: 0; transition: all var(--transition); }
 .btn-clear:hover { background: var(--bg-elevated); color: var(--primary); border-color: var(--primary); }
 
 /* MAPA */
@@ -132,7 +149,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 /* OPÇÕES DE ÍCONE DO NOVO MODAL */
 .icon-option-label { display: inline-flex; cursor: pointer; flex-shrink: 0; }
 .icon-option-label input { display: none; }
-.icon-option-label span { display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: var(--bg-elevated); color: var(--text-secondary); border: 2px solid transparent; transition: all var(--transition); font-size: 24px;}
+.icon-option-label span { display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: var(--bg-card); color: var(--text-secondary); border: 2px solid var(--border); transition: all var(--transition); font-size: 24px;}
 .icon-option-label input:checked + span { background: rgba(37, 150, 190, 0.1); color: var(--primary); border-color: var(--primary); }
 
 /* UTILS */
@@ -170,19 +187,19 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 <div class="main-content">
   <div class="screen active" id="home-screen">
     <div style="max-width:600px; margin:0 auto; width:100%; padding: 24px;">
-      <div style="margin-bottom: 32px;">
+      <div style="margin-bottom: 32px; position:relative; z-index: 2;">
         <h2 id="greeting-name" style="font-size:var(--text-3xl); font-weight: 800; color: var(--primary); margin-bottom: 4px;">Olá, Viajante!</h2>
         <p style="font-size:var(--text-base); color:var(--text-secondary);">O seu roteiro ágil e organizado.</p>
       </div>
-      <div style="color: var(--text-muted); font-weight: 800; font-size: var(--text-xs); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px;">
+      <div style="color: var(--text-muted); font-weight: 800; font-size: var(--text-xs); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; position:relative; z-index: 2;">
         Suas Viagens
       </div>
-      <div id="trips-list"></div>
+      <div id="trips-list" style="position:relative; z-index: 2;"></div>
     </div>
   </div>
 
   <div class="screen" id="settings-screen">
-    <div style="max-width:600px; margin:0 auto; width:100%; padding: 24px; overflow-y: auto;">
+    <div style="max-width:600px; margin:0 auto; width:100%; padding: 24px; overflow-y: auto; position:relative; z-index: 2;">
       <div style="margin-bottom: 32px;">
         <h2 style="font-size:var(--text-3xl); font-weight: 800; color: var(--primary); margin-bottom: 4px;">Ajustes</h2>
         <p style="font-size:var(--text-base); color:var(--text-secondary);">Personalize a sua experiência.</p>
@@ -223,7 +240,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
       <div class="filter-chip"><select id="filter-category" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Categoria</option></select></div>
       <div class="filter-chip"><select id="filter-atividade" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Atividade</option></select></div>
     </div>
-    <div class="itinerary-list" id="itinerary-list" style="padding: 16px; overflow-y: auto; flex:1;"></div>
+    <div class="itinerary-list" id="itinerary-list" style="padding: 16px; overflow-y: auto; flex:1; position:relative; z-index:2;"></div>
   </div>
 
   <div class="screen" id="hospedagens-screen">
@@ -234,7 +251,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
       <div class="filter-chip"><select id="filter-category-hosp" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('hospedagens')"><option value="">Categoria</option></select></div>
       <div class="filter-chip"><select id="filter-atividade-hosp" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('hospedagens')"><option value="">Hospedagem</option></select></div>
     </div>
-    <div class="itinerary-list" id="hospedagens-list" style="padding: 16px; overflow-y: auto; flex:1;"></div>
+    <div class="itinerary-list" id="hospedagens-list" style="padding: 16px; overflow-y: auto; flex:1; position:relative; z-index:2;"></div>
   </div>
 
   <div class="screen" id="map-screen">
@@ -245,7 +262,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
       <div class="filter-chip"><select id="filter-category-map" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('map')"><option value="">Categoria</option></select></div>
       <div class="filter-chip"><select id="filter-atividade-map" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('map')"><option value="">Atividade</option></select></div>
     </div>
-    <div class="map-container" style="flex:1; position:relative;">
+    <div class="map-container" style="flex:1; position:relative; z-index:2;">
       <div id="main-map" style="width: 100%; height: 100%;"></div>
       <button class="btn-gps" onclick="centerOnUser()" title="Localização Atual" style="position:absolute; bottom:20px; right:20px; z-index:400; width:48px; height:48px; border-radius:50%; background: var(--primary); color: white; border: none; box-shadow: var(--shadow); display:flex; align-items:center; justify-content:center; cursor:pointer;"><span class="material-symbols-rounded">my_location</span></button>
     </div>
@@ -304,13 +321,20 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
         <div>
           <label class="form-label">Ícone da Viagem</label>
           <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:8px; scrollbar-width:none;" id="icon-selector-container">
-            <label class="icon-option-label"><input type="radio" name="new-trip-icon" value="flight_takeoff" checked><span class="material-symbols-rounded">flight_takeoff</span></label>
-            <label class="icon-option-label"><input type="radio" name="new-trip-icon" value="directions_car"><span class="material-symbols-rounded">directions_car</span></label>
-            <label class="icon-option-label"><input type="radio" name="new-trip-icon" value="directions_boat"><span class="material-symbols-rounded">directions_boat</span></label>
-            <label class="icon-option-label"><input type="radio" name="new-trip-icon" value="train"><span class="material-symbols-rounded">train</span></label>
-            <label class="icon-option-label"><input type="radio" name="new-trip-icon" value="landscape"><span class="material-symbols-rounded">landscape</span></label>
-            <label class="icon-option-label"><input type="radio" name="new-trip-icon" value="location_city"><span class="material-symbols-rounded">location_city</span></label>
-            <label class="icon-option-label"><input type="radio" name="new-trip-icon" value="beach_access"><span class="material-symbols-rounded">beach_access</span></label>
+            <label class="icon-option-label" title="Voo"><input type="radio" name="new-trip-icon" value="flight_takeoff" checked><span><span class="material-symbols-rounded">flight_takeoff</span></span></label>
+            <label class="icon-option-label" title="Carro"><input type="radio" name="new-trip-icon" value="directions_car"><span><span class="material-symbols-rounded">directions_car</span></span></label>
+            <label class="icon-option-label" title="Barco/Cruzeiro"><input type="radio" name="new-trip-icon" value="directions_boat"><span><span class="material-symbols-rounded">directions_boat</span></span></label>
+            <label class="icon-option-label" title="Trem"><input type="radio" name="new-trip-icon" value="train"><span><span class="material-symbols-rounded">train</span></span></label>
+            <label class="icon-option-label" title="Natureza"><input type="radio" name="new-trip-icon" value="landscape"><span><span class="material-symbols-rounded">landscape</span></span></label>
+            <label class="icon-option-label" title="Cidade"><input type="radio" name="new-trip-icon" value="location_city"><span><span class="material-symbols-rounded">location_city</span></span></label>
+            <label class="icon-option-label" title="Praia"><input type="radio" name="new-trip-icon" value="beach_access"><span><span class="material-symbols-rounded">beach_access</span></span></label>
+            <label class="icon-option-label" title="Bagagem"><input type="radio" name="new-trip-icon" value="luggage"><span><span class="material-symbols-rounded">luggage</span></span></label>
+            <label class="icon-option-label" title="Trilha"><input type="radio" name="new-trip-icon" value="hiking"><span><span class="material-symbols-rounded">hiking</span></span></label>
+            <label class="icon-option-label" title="Acampamento"><input type="radio" name="new-trip-icon" value="camping"><span><span class="material-symbols-rounded">camping</span></span></label>
+            <label class="icon-option-label" title="Neve/Ski"><input type="radio" name="new-trip-icon" value="downhill_skiing"><span><span class="material-symbols-rounded">downhill_skiing</span></span></label>
+            <label class="icon-option-label" title="Negócios"><input type="radio" name="new-trip-icon" value="business_center"><span><span class="material-symbols-rounded">business_center</span></span></label>
+            <label class="icon-option-label" title="Show/Festival"><input type="radio" name="new-trip-icon" value="festival"><span><span class="material-symbols-rounded">festival</span></span></label>
+            <label class="icon-option-label" title="Esportes"><input type="radio" name="new-trip-icon" value="stadium"><span><span class="material-symbols-rounded">stadium</span></span></label>
           </div>
         </div>
       </div>
@@ -420,7 +444,7 @@ function renderHomeTrips() {
 
   if(savedTrips.length > 0) {
     html += savedTrips.map(trip => {
-      // Contagem distinta de hotéis via google_maps ou atividade
+      // Contagem distinta de hotéis
       let distinctHotels = new Set((trip.hospedagens||[]).map(h => h.google_maps || h.atividade)).size;
       let iconName = trip.icon || 'flight_takeoff';
 
@@ -429,11 +453,11 @@ function renderHomeTrips() {
         <div style="background:var(--bg-elevated); color:var(--primary); width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
           <span class="material-symbols-rounded">${iconName}</span>
         </div>
-        <div style="flex:1; min-width:0; margin-right: 8px;">
+        <div style="flex:1; min-width:0; margin-right: 2px;">
           <div style="font-weight:700; font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${esc(trip.title)}</div>
           <div style="font-size:var(--text-sm); color:var(--text-secondary); font-weight:500;">${(trip.roteiro||[]).length} atividades • ${distinctHotels} hotéis</div>
         </div>
-        <div style="display:flex; gap:0px;" onclick="event.stopPropagation()">
+        <div style="display:flex; gap:0px; flex-shrink:0;" onclick="event.stopPropagation()">
           <button class="btn-icon" onclick="updateTrip(event, '${trip.id}')" title="Sincronizar" style="color:var(--primary)"><span class="material-symbols-rounded" style="font-size:var(--text-xl);">sync</span></button>
           <button class="btn-icon" onclick="editTrip(event, '${trip.id}')" title="Editar" style="color:var(--text-secondary)"><span class="material-symbols-rounded" style="font-size:var(--text-xl);">edit</span></button>
           <button class="btn-icon" onclick="deleteTrip(event, '${trip.id}')" title="Excluir" style="color:var(--text-muted)"><span class="material-symbols-rounded" style="font-size:var(--text-xl);">delete</span></button>
@@ -467,7 +491,6 @@ function editTrip(e, id) {
   document.getElementById('new-trip-name').value = trip.title;
   document.getElementById('new-trip-url').value = trip.sheetUrl || "";
   
-  // Seleciona o rádio correto
   let iconRadios = document.getElementsByName('new-trip-icon');
   for (let r of iconRadios) { r.checked = (r.value === (trip.icon || 'flight_takeoff')); }
   
@@ -610,7 +633,6 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
     let catStyle = getDynamicBrandStyle(item.categoria);
     let catHtml = item.categoria ? `<span class="tag" style="font-size:var(--text-xs); padding:3px 8px; border-radius:4px; background:${catStyle.bg}; color:${catStyle.text};">${esc(item.categoria)}</span>` : '';
     let cityHtml = item.cidade ? `<span class="tag" style="font-size:var(--text-xs); padding:3px 8px; border-radius:4px; background:var(--primary); color:white;">${esc(item.cidade)}</span>` : '';
-    // Somente o icone do clip, sem texto "Anexo"
     let anexoHtml = item.link ? `<span class="tag tag-anexo" title="Anexo" style="display:inline-flex; align-items:center; padding:3px 6px; border-radius:4px; background:var(--bg-elevated); color:var(--primary);"><span class="material-symbols-rounded" style="font-size:var(--text-lg);">attach_file</span></span>` : '';
     let hospTag = isHosp ? `<span class="tag tag-hospedagem" style="font-size:var(--text-xs); padding:3px 8px; border-radius:4px; background:var(--accent); color:var(--primary-dark);">HOTEL</span>` : '';
 
@@ -657,7 +679,7 @@ function populateFilters(current = {}) {
   let cities = [...new Set(allItems.map(d => d.cidade).filter(Boolean))];
   cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
 
-  // Dias: filtrados pela Cidade/Cat/Atv. Garantimos que o "current.day" fique na lista se estiver selecionado.
+  // Dias: filtrados pela Cidade/Cat/Atv.
   let daysSet = new Set(allItems.filter(d => 
     (!current.city || d.cidade === current.city) &&
     (!current.cat || d.categoria === current.cat) &&
@@ -711,7 +733,6 @@ function applyFilters(sourceTab) {
   let cat = document.getElementById('filter-category'+srcSuffix) ? document.getElementById('filter-category'+srcSuffix).value : '';
   let atv = document.getElementById('filter-atividade'+srcSuffix) ? document.getElementById('filter-atividade'+srcSuffix).value : '';
 
-  // Espelha escolhas
   ['', '-hosp', '-map'].forEach(suf => {
     if(document.getElementById('filter-city'+suf)) document.getElementById('filter-city'+suf).value = city;
     if(document.getElementById('filter-day'+suf)) document.getElementById('filter-day'+suf).value = day;
@@ -719,10 +740,8 @@ function applyFilters(sourceTab) {
     if(document.getElementById('filter-atividade'+suf)) document.getElementById('filter-atividade'+suf).value = atv;
   });
 
-  // Processo da cascata inteligente baseada na seleção
   populateFilters({city, day, cat, atv});
 
-  // Filtra as listas e o mapa
   let filRot = activeRoteiro.filter(d => {
     if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
     if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
