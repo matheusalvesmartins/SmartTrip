@@ -58,21 +58,20 @@ body.dark-theme {
   --text-muted: #5a6a77;
   --shadow: 0 4px 12px rgba(0,0,0,0.3);
   --map-filter: brightness(0.6) saturate(0.8) contrast(1.1) hue-rotate(180deg) invert(100%);
-  --pattern-opacity: 0.03; /* Círculos mais sutis no modo escuro */
+  --pattern-opacity: 0.04; /* Círculos mais sutis no modo escuro */
 }
 
 * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); position: relative; }
 
-/* BRAND PATTERN: Círculos Concêntricos (Muted Sky Radar) */
+/* BRAND PATTERN: Círculos Concêntricos (Muted Sky Radar) Fiel ao Brandbook */
 .pattern-bg {
   position: fixed;
-  inset: 0;
+  inset: -50%; /* Estendido para garantir que cubra qualquer redimensionamento de tela */
   pointer-events: none;
   z-index: 0;
-  background-image: 
-    repeating-radial-gradient(circle at 0% 0%, transparent 0, transparent 60px, var(--primary) 60px, var(--primary) 61px),
-    repeating-radial-gradient(circle at 100% 100%, transparent 0, transparent 60px, var(--primary) 60px, var(--primary) 61px);
+  /* Círculos concêntricos expandindo a partir do centro da tela */
+  background-image: repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 70px, var(--primary) 70px, var(--primary) 71px);
   opacity: var(--pattern-opacity);
   transition: opacity var(--transition);
 }
@@ -350,7 +349,7 @@ let activeTripId = null;
 let activeRoteiro = [];
 let activeHospedagens = [];
 let mapMarkers = [];
-let mapNavItems = []; // Itens ordenados para navegação
+let mapNavItems = []; // Itens ordenados para a navegação do mapa
 let currentNavIndex = -1;
 let isNavMode = false;
 
@@ -398,7 +397,7 @@ window.onload = () => {
   if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
 };
 
-/* ================= ÍCONES, CONFIG E TEMA ================= */
+/* ================= ÍCONES E CONFIGURAÇÕES ================= */
 function renderIconOptions() {
   let html = '';
   ICON_OPTIONS.forEach(opt => {
@@ -462,7 +461,7 @@ function navigate(tab) {
   else if (tab === 'itinerary' || tab === 'hospedagens') { applyFilters(tab); }
 }
 
-/* ================= HOME & AÇÕES DE VIAGEM ================= */
+/* ================= HOME & AÇÕES ================= */
 function renderHomeTrips() {
   let list = document.getElementById('trips-list');
   let html = '';
@@ -567,7 +566,7 @@ function deleteCurrentEditingTrip() {
   }
 }
 
-/* ================= IMPORTAÇÃO GViz ================= */
+/* ================= IMPORTAÇÃO ================= */
 function executeImport(url, updateId, customName, customIcon) {
   let m = url.match(/\/d\/([a-zA-Z0-9_-]+)/); 
   if (!m) { showToast('Link do Google Sheets inválido.'); return; }
@@ -666,7 +665,7 @@ function renderList(containerId, items, isHosp, filteredDay = null) {
   container.innerHTML = html;
 }
 
-/* ================= FILTROS E SINCRONIZAÇÃO ================= */
+/* ================= FILTROS ================= */
 function clearFilters(context, preventApply = false) {
   ['filter-city', 'filter-day', 'filter-category', 'filter-atividade'].forEach(baseId => {
     ['', '-hosp', '-map'].forEach(suf => { let el = document.getElementById(baseId + suf); if(el) el.value = ''; });
@@ -685,21 +684,17 @@ function populateFilters(current = {}) {
     }
   });
 
-  // Todas as Cidades sempre disponíveis
   let cities = [...new Set(allItems.map(d => d.cidade).filter(Boolean))];
   cities.sort((a,b) => (cityEarliest[a]||0) - (cityEarliest[b]||0));
 
-  // Dias: filtrados apenas pela Cidade
   let daysSet = new Set(allItems.filter(d => (!current.city || d.cidade === current.city)).map(d => d.dia).filter(Boolean));
   if (current.day && allItems.some(d => d.dia === current.day)) daysSet.add(current.day); 
   let days = [...daysSet].sort((a,b) => parseDayNum(a) - parseDayNum(b));
 
-  // Categorias (filtrado por cidade e dia)
   let catsSet = new Set(allItems.filter(d => (!current.city || d.cidade === current.city) && (!current.day || d.dia === current.day)).map(d => d.categoria).filter(Boolean));
   if (current.cat && allItems.some(d => d.categoria === current.cat)) catsSet.add(current.cat);
   let cats = [...catsSet].sort();
 
-  // Atividades (filtrado por cidade, dia e categoria)
   let atvsSet = new Set(allItems.filter(d => (!current.city || d.cidade === current.city) && (!current.day || d.dia === current.day) && (!current.cat || d.categoria === current.cat)).map(d => d.atividade).filter(Boolean));
   if (current.atv && allItems.some(d => d.atividade === current.atv)) atvsSet.add(current.atv);
   let atvs = [...atvsSet].sort((a,b) => a.localeCompare(b));
@@ -742,9 +737,7 @@ function applyFilters(sourceTab) {
     if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
   });
 
-  renderList('itinerary-list', filRot, false, day); 
-  renderList('hospedagens-list', filHosp, true); 
-  renderMapMarkers(filRot, filHosp);
+  renderList('itinerary-list', filRot, false, day); renderList('hospedagens-list', filHosp, true); renderMapMarkers(filRot, filHosp);
 }
 
 /* ================= DADOS E GERAL ================= */
@@ -857,15 +850,22 @@ function openFromMap(id, isHosp) {
   closeModal(); if(mainMap) mainMap.closePopup(); navigate(isHosp ? 'hospedagens' : 'itinerary'); setTimeout(() => openDetail(id, isHosp), 300);
 }
 
+function syncNavToMarker(safeId) {
+    let idx = mapNavItems.findIndex(n => (n.item._id || n.item._i) === safeId);
+    if(idx !== -1) {
+        currentNavIndex = idx;
+        isNavMode = true;
+        updateMapNavUI();
+        document.getElementById('map-nav-text').textContent = mapNavItems[idx].title;
+    }
+}
+
 function initMainMap() {
   mainMap = L.map('main-map', {zoomControl:false, attributionControl:false}).setView([0,0], 2);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mainMap);
   L.control.zoom({position: 'topright'}).addTo(mainMap);
   
-  // Saída fácil do modo de navegação ao clicar no mapa
-  mainMap.on('click', function() {
-      exitNavMode();
-  });
+  mainMap.on('click', function() { exitNavMode(); }); // Saída fácil do modo de navegação
   
   if ('geolocation' in navigator) {
     navigator.geolocation.watchPosition(pos => {
@@ -882,11 +882,9 @@ function initMainMap() {
 function renderMapMarkers(rotItems, hospItems) {
   if(!mainMap) return; 
   mapMarkers.forEach(m => mainMap.removeLayer(m)); 
-  mapMarkers = [];
-  mapNavItems = []; // Reseta os itens de navegação
+  mapMarkers = []; mapNavItems = []; 
   let bounds = [];
   
-  // Combina e ordena cronologicamente
   let combined = [
     ...hospItems.map(i => ({...i, isHosp:true})),
     ...rotItems.map(i => ({...i, isHosp:false}))
@@ -895,8 +893,7 @@ function renderMapMarkers(rotItems, hospItems) {
   combined.sort((a, b) => {
     let dA = parseDayNum(a.dia), dB = parseDayNum(b.dia);
     if (dA !== dB) return dA - dB;
-    let tA = parseTimeNum(a.hora), tB = parseTimeNum(b.hora);
-    return tA - tB;
+    return parseTimeNum(a.hora) - parseTimeNum(b.hora);
   });
 
   let rotCount = 0;
@@ -920,15 +917,14 @@ function renderMapMarkers(rotItems, hospItems) {
         marker.bindPopup(`<div style="font-family:var(--font-body); color:var(--black);"><b>${rotCount}. ${esc(item.atividade)}</b><br><span style="color:#555;font-size:12px;">${esc(formatDayWithWeekday(item.dia))}</span>${actionBtn}</div>`);
     }
     
-    mapMarkers.push(marker); 
-    bounds.push([coords.lat, coords.lng]);
+    // Inicia a navegação sincronizada ao clicar no pino
+    marker.on('click', () => syncNavToMarker(safeId));
 
-    // Guarda referência para a navegação sequencial
+    mapMarkers.push(marker); bounds.push([coords.lat, coords.lng]);
     mapNavItems.push({ item: item, marker: marker, title: item.atividade });
   });
 
   if(bounds.length) mainMap.fitBounds(bounds, {padding:[50,50], maxZoom:15});
-  
   updateMapNavUI();
 }
 
@@ -936,37 +932,30 @@ function updateMapNavUI() {
     let panel = document.getElementById('map-nav-panel');
     if(mapNavItems.length === 0) {
         panel.style.display = 'none';
-        isNavMode = false;
-        return;
+        isNavMode = false; return;
     }
     panel.style.display = 'flex';
-    if(!isNavMode) {
-        document.getElementById('map-nav-text').textContent = "Iniciar Navegação";
-    }
+    if(!isNavMode) document.getElementById('map-nav-text').textContent = "Iniciar Navegação";
 }
 
 function startNavMode(e) {
     if(e) e.stopPropagation();
     if(mapNavItems.length === 0) return;
-    
     isNavMode = true;
+    
     let now = new Date();
     let todayNum = now.getFullYear() * 10000 + (now.getMonth()+1) * 100 + now.getDate();
     let nowTime = now.getHours() * 60 + now.getMinutes();
 
     let foundIdx = -1;
-    // Encontra o item mais próximo do horário atual
     for(let i=0; i<mapNavItems.length; i++) {
         let dNum = parseDayNum(mapNavItems[i].item.dia);
         let tNum = parseTimeNum(mapNavItems[i].item.hora);
-        if (dNum > todayNum || (dNum === todayNum && tNum >= nowTime)) {
-            foundIdx = i;
-            break;
-        }
+        if (dNum > todayNum || (dNum === todayNum && tNum >= nowTime)) { foundIdx = i; break; }
     }
     
-    if (foundIdx === -1) foundIdx = mapNavItems.length - 1; // Se tudo já passou, seleciona o último
-    if (foundIdx === -1) foundIdx = 0; // Garantia
+    if (foundIdx === -1) foundIdx = mapNavItems.length - 1;
+    if (foundIdx === -1) foundIdx = 0;
     
     currentNavIndex = Math.max(0, foundIdx);
     focusCurrentNav();
@@ -979,34 +968,27 @@ function focusCurrentNav(e) {
     let target = mapNavItems[currentNavIndex];
     
     document.getElementById('map-nav-text').textContent = target.title;
-    
-    // Centraliza com offset para não ficar embaixo dos modais
     mainMap.panTo(target.marker.getLatLng(), {animate: true, duration: 0.5});
     setTimeout(() => { target.marker.openPopup(); }, 500);
 }
 
 function navPrevMap(e) {
-    if(e) e.stopPropagation();
-    if(mapNavItems.length === 0) return;
+    if(e) e.stopPropagation(); if(mapNavItems.length === 0) return;
     if(!isNavMode) { startNavMode(); return; }
-    currentNavIndex--;
-    if(currentNavIndex < 0) currentNavIndex = mapNavItems.length - 1;
+    currentNavIndex--; if(currentNavIndex < 0) currentNavIndex = mapNavItems.length - 1;
     focusCurrentNav();
 }
 
 function navNextMap(e) {
-    if(e) e.stopPropagation();
-    if(mapNavItems.length === 0) return;
+    if(e) e.stopPropagation(); if(mapNavItems.length === 0) return;
     if(!isNavMode) { startNavMode(); return; }
-    currentNavIndex++;
-    if(currentNavIndex >= mapNavItems.length) currentNavIndex = 0;
+    currentNavIndex++; if(currentNavIndex >= mapNavItems.length) currentNavIndex = 0;
     focusCurrentNav();
 }
 
 function exitNavMode() {
     if(isNavMode) {
-        isNavMode = false;
-        currentNavIndex = -1;
+        isNavMode = false; currentNavIndex = -1;
         document.getElementById('map-nav-text').textContent = "Iniciar Navegação";
     }
 }
@@ -1014,10 +996,10 @@ function exitNavMode() {
 function centerOnUser() {
   if (lastKnownUserPos && mainMap) mainMap.setView(lastKnownUserPos, 15);
   else {
-    showToast("Buscando sua localização...");
+    showToast("Buscando localização...");
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(pos => { lastKnownUserPos = [pos.coords.latitude, pos.coords.longitude]; mainMap.setView(lastKnownUserPos, 15);
-      }, () => showToast("Não foi possível acessar a localização."));
+      }, () => showToast("Não foi possível acessar."));
     }
   }
 }
