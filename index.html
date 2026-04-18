@@ -174,8 +174,19 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .fab:hover { transform:scale(1.1); box-shadow:0 8px 32px rgba(184,212,48,0.5); }
 .fab:active { transform:scale(0.95); }
 .fab .material-symbols-rounded { font-size:26px; font-variation-settings:'FILL' 1; }
-.fab.hidden { display: none !important; opacity:0; pointer-events:none; transform:scale(0.5); }
+.fab.hidden { opacity:0; pointer-events:none; transform:scale(0.5); }
 @keyframes fab-glow { 0%,100%{box-shadow:0 6px 24px rgba(184,212,48,0.35)} 50%{box-shadow:0 6px 24px rgba(184,212,48,0.15)} }
+
+/* PRO Gate Modal */
+.pro-gate { position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(6px); z-index:600; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s; padding:20px; }
+.pro-gate.open { opacity:1; pointer-events:all; }
+.pro-gate-card { background:var(--bg-card); border:1px solid var(--border); border-radius:20px; padding:36px 28px; max-width:360px; width:100%; text-align:center; transform:scale(0.9); transition:transform .3s cubic-bezier(0.34,1.56,0.64,1); }
+.pro-gate.open .pro-gate-card { transform:scale(1); }
+.pro-gate-icon { width:72px; height:72px; border-radius:50%; background:rgba(184,212,48,0.12); display:flex; align-items:center; justify-content:center; margin:0 auto 20px; }
+.pro-gate-icon .material-symbols-rounded { font-size:36px; color:var(--accent); font-variation-settings:'FILL' 1; }
+.btn-accent { background:var(--accent); color:var(--primary-dark); font-weight:700; width:100%; }
+.btn-accent:hover { background:var(--accent-dark); }
+.btn-ghost { background:transparent; color:var(--text-muted); font-size:var(--text-sm); width:100%; border:none; cursor:pointer; padding:12px; font-family:var(--font-body); }
 
 /* Wizard Overlay */
 .wizard-overlay { position:fixed; inset:0; z-index:500; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); opacity:0; pointer-events:none; transition:opacity .3s, transform .4s cubic-bezier(0.16,1,0.3,1); }
@@ -385,7 +396,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
   </div>
 </div>
 
-<button class="fab hidden" id="fab-btn" onclick="handleFabClick()"><span class="material-symbols-rounded">auto_awesome</span></button>
+<button class="fab" id="fab-btn" onclick="handleFabClick()"><span class="material-symbols-rounded">auto_awesome</span></button>
 
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-home" onclick="navigate('home')">
@@ -460,10 +471,10 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
     <div class="modal-content" style="padding: 16px 24px;">
       <h3 style="margin-bottom: 20px; color: var(--primary); font-weight: 800; font-size: var(--text-2xl);">Assistência IA</h3>
       <button class="btn btn-outline" style="width: 100%; margin-bottom: 12px; justify-content: flex-start; padding: 16px;" onclick="openAiChat()">
-        <span class="material-symbols-rounded" style="color: var(--primary);">chat</span> Fazer perguntas sobre sua viagem
+        <span class="material-symbols-rounded" style="color: var(--primary); font-size: 24px;">chat</span> <span style="font-weight: 700;">Fazer perguntas sobre sua viagem</span>
       </button>
       <button class="btn btn-outline" style="width: 100%; justify-content: flex-start; padding: 16px;" onclick="startWizardFromMenu()">
-        <span class="material-symbols-rounded" style="color: var(--accent-dark);">auto_awesome</span> Gerar novo roteiro com IA
+        <span class="material-symbols-rounded" style="color: var(--accent-dark); font-size: 24px;">auto_awesome</span> <span style="font-weight: 700;">Gerar novo roteiro com IA</span>
       </button>
     </div>
   </div>
@@ -473,7 +484,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
   <div class="modal-sheet" style="height: 85vh; display: flex; flex-direction: column;">
     <div class="modal-handle"></div>
     <div style="padding: 16px 24px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="color: var(--primary); font-weight: 800; font-size: var(--text-2xl);">Chat de Viagem</h3>
+        <h3 style="color: var(--primary); font-weight: 800; font-size: var(--text-xl);">Chat de Viagem</h3>
         <button class="btn-icon" onclick="closeAiChat()"><span class="material-symbols-rounded">close</span></button>
     </div>
     <div style="padding: 8px 24px; background: var(--bg-elevated);">
@@ -484,6 +495,16 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
         <input type="text" id="chat-input" class="input-field" style="flex:1;" placeholder="Pergunte algo..." onkeypress="if(event.key==='Enter') sendChatMessage()">
         <button class="btn btn-primary" style="padding:10px; width:48px; height:48px; border-radius:50%; flex-shrink:0;" onclick="sendChatMessage()"><span class="material-symbols-rounded">send</span></button>
     </div>
+  </div>
+</div>
+
+<div class="pro-gate" id="pro-gate" onclick="if(event.target===this)closeProGate()">
+  <div class="pro-gate-card">
+    <div class="pro-gate-icon"><span class="material-symbols-rounded">lock</span></div>
+    <h3 style="font-size:var(--text-xl); font-weight:800; margin-bottom:8px;">Funcionalidade PRO</h3>
+    <p style="font-size:var(--text-base); color:var(--text-secondary); line-height:1.6; margin-bottom:24px;">A geração de roteiros com IA é exclusiva para assinantes do plano <b style="color:var(--accent);">SmartTrip PRO</b>.</p>
+    <button class="btn btn-accent" onclick="activateProFromGate()"><span class="material-symbols-rounded" style="font-size:18px;">star</span> Ativar PRO</button>
+    <button class="btn-ghost" onclick="closeProGate()">Agora não</button>
   </div>
 </div>
 
@@ -500,6 +521,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
       <p class="step-desc">Pode ser uma cidade, país ou região. Se forem múltiplos destinos, separe por vírgula.</p>
       <input type="text" class="wiz-input" id="wiz-destino" placeholder="Ex: Lisboa, Porto e Sintra">
     </div>
+    
     <div class="wizard-step" data-step="2">
       <h3>Partida e Transporte 🚗</h3>
       <p class="step-desc">De onde você está saindo e como vai viajar até o destino?</p>
@@ -519,6 +541,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
         </select>
       </div>
     </div>
+    
     <div class="wizard-step" data-step="3">
       <h3>Quando vai ser? 📅</h3>
       <p class="step-desc">Selecione as datas ou deixe em branco para um roteiro genérico.</p>
@@ -569,7 +592,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
       <div class="wiz-loading-steps">
         <div class="wiz-ls" id="ls-1"><span class="material-symbols-rounded">radio_button_unchecked</span> Analisando destino e transporte</div>
         <div class="wiz-ls" id="ls-2"><span class="material-symbols-rounded">radio_button_unchecked</span> Selecionando atividades</div>
-        <div class="wiz-ls" id="ls-3"><span class="material-symbols-rounded">radio_button_unchecked</span> Organizando cronograma</div>
+        <div class="wiz-ls" id="ls-3"><span class="material-symbols-rounded">radio_button_unchecked</span> Organizando cronograma e rotas</div>
         <div class="wiz-ls" id="ls-4"><span class="material-symbols-rounded">radio_button_unchecked</span> Adicionando coordenadas</div>
       </div>
     </div>
@@ -603,7 +626,7 @@ let wizStep = 1;
 const WIZ_TOTAL = 7;
 let generatedData = null;
 
-// SETTINGS INCLUINDO "PRO" DEFAULT FALSE
+// SETTINGS INCLUINDO "PRO" FALLBACK
 let userSettings = JSON.parse(localStorage.getItem('smartTripSettings') || '{"name":"Viajante", "theme":"light", "fontSize":"1", "pro":false}');
 
 const ICON_OPTIONS = [
@@ -666,6 +689,7 @@ function applyGlobalSettings() {
   document.documentElement.style.setProperty('--font-scale', userSettings.fontSize);
   let greeting = document.getElementById('greeting-name');
   if(greeting) greeting.textContent = `Olá, ${userSettings.name}!`;
+  
   updateFabVisibility();
 }
 
@@ -1010,11 +1034,13 @@ function saveTripsToStorage() { localStorage.setItem('smartTrips', JSON.stringif
 function updateTopSelector() {
   let sel = document.getElementById('global-trip-selector');
   let chatSel = document.getElementById('chat-trip-selector');
+  
   if(savedTrips.length === 0) { 
-      sel.innerHTML = `<option value="">Minhas Viagens</option>`; 
-      if(chatSel) chatSel.innerHTML = `<option value="">Sem viagens salvas</option>`;
-      return; 
+    sel.innerHTML = `<option value="">Minhas Viagens</option>`; 
+    if(chatSel) chatSel.innerHTML = `<option value="">Sem viagens salvas</option>`;
+    return; 
   }
+  
   let options = savedTrips.map(t => `<option value="${t.id}" ${t.id === activeTripId ? 'selected':''}>${esc(t.title)}</option>`).join('');
   sel.innerHTML = options;
   if(chatSel) chatSel.innerHTML = options;
@@ -1079,6 +1105,7 @@ function openDetail(id, isHosp) {
   if(item.cidade) grid += `<div class="modal-info-item"><div class="label">Cidade</div><div style="font-weight:600; font-size:var(--text-sm); color:var(--text);">${esc(item.cidade)}</div></div>`;
   if(item.categoria) grid += `<div class="modal-info-item"><div class="label">Categoria</div><div style="font-weight:600; font-size:var(--text-sm); color:var(--text);">${esc(item.categoria)}</div></div>`;
   if(item.custos) grid += `<div class="modal-info-item" style="grid-column: span 2; background: rgba(37,150,190,0.05); border-color: var(--primary);"><div class="label" style="color:var(--primary);">Estimativa de Custo</div><div style="font-weight:700; font-size:var(--text-md); color:var(--primary-dark);">${esc(item.custos)}</div></div>`;
+  
   document.getElementById('modal-info-grid').innerHTML = grid;
 
   let sec = '';
@@ -1275,11 +1302,11 @@ function centerOnUser() {
 }
 
 /* =================================================================================
-   GERAÇÃO E CHAT POR IA (RECURSOS PRO)
+   GERAÇÃO E CHAT POR IA (GROQ API Llama 3)
    ================================================================================= */
 
 function handleFabClick() {
-  if(!userSettings.pro) return; // Segurança dupla, o CSS já deve ocultar.
+  if(!userSettings.pro) return; 
   openFabMenu();
 }
 
@@ -1289,12 +1316,12 @@ function closeFabMenu() { document.getElementById('fab-menu-modal').classList.re
 /* CHAT IA */
 function openAiChat() {
   closeFabMenu();
-  updateTopSelector(); // Garante sync do select
+  updateTopSelector(); 
   document.getElementById('ai-chat-modal').classList.add('open');
   
   let msgContainer = document.getElementById('chat-messages');
   if(msgContainer.children.length === 0) {
-      msgContainer.innerHTML = `<div style="align-self: flex-start; background: var(--bg-card); padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid var(--border); max-width: 85%; line-height: 1.5; color: var(--text-secondary); box-shadow: var(--shadow);">Olá! Selecione uma de suas viagens no topo e me pergunte qualquer coisa sobre ela (roteiro, dicas, horários).</div>`;
+      msgContainer.innerHTML = `<div class="chat-msg bot">Olá! Selecione uma de suas viagens no topo e me pergunte qualquer coisa sobre ela (roteiro, dicas, horários).</div>`;
   }
 }
 function closeAiChat() { document.getElementById('ai-chat-modal').classList.remove('open'); }
@@ -1307,14 +1334,15 @@ function sendChatMessage() {
   let msgContainer = document.getElementById('chat-messages');
 
   let userMsg = document.createElement('div');
-  userMsg.style.cssText = "align-self: flex-end; background: var(--primary); color: white; padding: 12px 16px; border-radius: 12px 12px 0 12px; max-width: 85%; line-height: 1.5; box-shadow: var(--shadow);";
+  userMsg.className = "chat-msg user";
   userMsg.textContent = text;
   msgContainer.appendChild(userMsg);
   input.value = '';
   msgContainer.scrollTop = msgContainer.scrollHeight;
 
   let loading = document.createElement('div');
-  loading.style.cssText = "align-self: flex-start; background: var(--bg-card); padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid var(--border); max-width: 85%; color: var(--text-muted); font-size: var(--text-sm);";
+  loading.className = "chat-msg bot";
+  loading.style.color = "var(--text-muted)";
   loading.innerHTML = `<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></div> Pensando...`;
   msgContainer.appendChild(loading);
   msgContainer.scrollTop = msgContainer.scrollHeight;
@@ -1326,7 +1354,7 @@ function sendChatMessage() {
       let tripName = trip ? trip.title : "sua viagem";
 
       let botMsg = document.createElement('div');
-      botMsg.style.cssText = "align-self: flex-start; background: var(--bg-card); padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid var(--border); max-width: 85%; line-height: 1.5; color: var(--text-secondary); box-shadow: var(--shadow);";
+      botMsg.className = "chat-msg bot";
       botMsg.innerHTML = `<strong>IA:</strong> Neste momento, como demonstração, eu responderia cruzando a sua pergunta ("<em>${esc(text)}</em>") com o banco de dados de <strong>${esc(tripName)}</strong>. A integração com a API da IA cuidará disso no backend.`;
       msgContainer.appendChild(botMsg);
       msgContainer.scrollTop = msgContainer.scrollHeight;
@@ -1438,18 +1466,31 @@ async function startAIGeneration() {
   
   let prompt = buildAIPrompt(data);
   
+  // ==================================================================
+  // INTEGRAÇÃO GROQ API
+  // ==================================================================
+  const GROQ_API_KEY = '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'; //
+  
   try {
-    // Chamada à API
-    const resp = await fetch('/api/generate', {
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${GROQ_API_KEY}`
+      },
+      body: JSON.stringify({ 
+        model: "llama3-70b-8192", // Llama 3 70B (Excelente para JSON e lógicas complexas)
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" },
+        temperature: 0.3
+      })
     });
     
     if(!resp.ok) throw new Error('API error ' + resp.status);
     
     const result = await resp.json();
-    let text = result.content?.map(c => c.text || '').join('') || '';
+    let text = result.choices[0]?.message?.content || '';
+    
     let jsonMatch = text.match(/\{[\s\S]*\}/);
     if(!jsonMatch) throw new Error('No JSON');
     
