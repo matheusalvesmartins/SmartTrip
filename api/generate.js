@@ -18,11 +18,11 @@ module.exports = async function handler(req, res) {
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        // Atualizado para o modelo mais recente da Groq
         model: "llama-3.3-70b-versatile", 
         messages: [{ role: "user", content: prompt }],
         response_format: { type: "json_object" },
-        temperature: 0.3
+        temperature: 0.3,
+        max_tokens: 5000 // Limita a reserva para caber no tier gratuito
       })
     });
 
