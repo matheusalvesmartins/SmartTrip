@@ -159,7 +159,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .fab:hover { transform:scale(1.1); box-shadow:0 8px 32px rgba(184,212,48,0.5); }
 .fab:active { transform:scale(0.95); }
 .fab .material-symbols-rounded { font-size:26px; font-variation-settings:'FILL' 1; }
-.fab.hidden { display: none !important; opacity:0; pointer-events:none; transform:scale(0.5); }
+.fab.hidden { opacity:0; pointer-events:none; transform:scale(0.5); display: none !important; }
 @keyframes fab-glow { 0%,100%{box-shadow:0 6px 24px rgba(184,212,48,0.35)} 50%{box-shadow:0 6px 24px rgba(184,212,48,0.15)} }
 
 /* PRO Gate Modal */
@@ -1296,8 +1296,23 @@ function centerOnUser() {
    ================================================================================= */
 
 function handleFabClick() {
-  if(!userSettings.pro) return; 
+  if(!userSettings.pro) {
+    document.getElementById('pro-gate').classList.add('open');
+    return;
+  }
   openFabMenu();
+}
+
+function closeProGate() {
+  document.getElementById('pro-gate').classList.remove('open');
+}
+
+function activateProFromGate() {
+  userSettings.pro = true;
+  localStorage.setItem('smartTripSettings', JSON.stringify(userSettings));
+  closeProGate();
+  openFabMenu();
+  showToast('✓ PRO ativado!');
 }
 
 function openFabMenu() { document.getElementById('fab-menu-modal').classList.add('open'); }
@@ -1354,9 +1369,9 @@ PERGUNTA DO USUÁRIO: ${text}`;
       body: JSON.stringify({ promptContexto })
     });
     
-    if(!resp.ok) throw new Error('API error ' + resp.status);
-    
     const result = await resp.json();
+    if(!resp.ok) throw new Error(result.error || 'Erro desconhecido na API');
+    
     let botText = result.text || 'Não consegui processar a resposta.';
 
     loading.remove();
@@ -1372,7 +1387,7 @@ PERGUNTA DO USUÁRIO: ${text}`;
     let errorMsg = document.createElement('div');
     errorMsg.className = "chat-msg bot";
     errorMsg.style.color = "red";
-    errorMsg.innerHTML = `<strong>Erro:</strong> Falha ao conectar com a IA. Certifique-se de estar rodando no Vercel.`;
+    errorMsg.innerHTML = `<strong>Erro:</strong> ${err.message}`;
     msgContainer.appendChild(errorMsg);
   }
 }
@@ -1482,7 +1497,8 @@ async function startAIGeneration() {
   
   let prompt = buildAIPrompt(data);
   
-try {
+  try {
+    // Chamada à API do Vercel
     const resp = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1506,10 +1522,10 @@ try {
     
   } catch(err) {
     console.error('AI Generation error:', err);
-    // Vai mostrar o erro na notificação flutuante no celular
     showToast(`Erro: ${err.message}`);
     closeWizard();
   }
+}
 
 function buildAIPrompt(d) {
   let di = d.dataInicio && d.dataFim ? `de ${d.dataInicio} até ${d.dataFim}` : (d.dataInicio ? `a partir de ${d.dataInicio}` : '5 dias (datas fictícias a partir de 15/07)');
