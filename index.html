@@ -1482,21 +1482,20 @@ async function startAIGeneration() {
   
   let prompt = buildAIPrompt(data);
   
-  try {
-    // Chamada à API do Vercel
+try {
     const resp = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt })
     });
     
-    if(!resp.ok) throw new Error('API error ' + resp.status);
-    
     const result = await resp.json();
+    if(!resp.ok) throw new Error(result.error || 'Erro desconhecido na API');
+    
     let text = result.content || '';
     
     let jsonMatch = text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('No JSON');
+    if(!jsonMatch) throw new Error('O Groq não retornou um JSON válido.');
     
     generatedData = JSON.parse(jsonMatch[0]);
     (generatedData.roteiro || []).forEach((item, i) => { item._id = 'ai_r_' + Date.now() + '_' + i; });
@@ -1507,10 +1506,10 @@ async function startAIGeneration() {
     
   } catch(err) {
     console.error('AI Generation error:', err);
-    showToast('Erro na geração. Certifique-se de estar rodando no Vercel.');
+    // Vai mostrar o erro na notificação flutuante no celular
+    showToast(`Erro: ${err.message}`);
     closeWizard();
   }
-}
 
 function buildAIPrompt(d) {
   let di = d.dataInicio && d.dataFim ? `de ${d.dataInicio} até ${d.dataFim}` : (d.dataInicio ? `a partir de ${d.dataInicio}` : '5 dias (datas fictícias a partir de 15/07)');
