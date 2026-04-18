@@ -1338,6 +1338,7 @@ async function sendChatMessage() {
 
   let msgContainer = document.getElementById('chat-messages');
 
+  // Mensagem do usuário
   let userMsg = document.createElement('div');
   userMsg.className = "chat-msg user";
   userMsg.textContent = text;
@@ -1345,6 +1346,7 @@ async function sendChatMessage() {
   input.value = '';
   msgContainer.scrollTop = msgContainer.scrollHeight;
 
+  // Estado de "Pensando..."
   let loading = document.createElement('div');
   loading.className = "chat-msg bot";
   loading.style.color = "var(--text-muted)";
@@ -1354,12 +1356,24 @@ async function sendChatMessage() {
 
   let tripId = document.getElementById('chat-trip-selector').value;
   let trip = savedTrips.find(t => t.id === tripId);
-  let contextoViagem = trip ? JSON.stringify(trip) : "Nenhuma viagem selecionada.";
+  
+  // OTIMIZAÇÃO: Filtramos URLs de mapas e IDs para economizar milhares de tokens
+  let contextoLimpo = "Nenhuma viagem selecionada.";
+  if (trip) {
+    const roteiroEnxuto = (trip.roteiro || []).map(item => ({
+      dia: item.dia,
+      hora: item.hora,
+      cidade: item.cidade,
+      atividade: item.atividade,
+      observacoes: item.observacoes
+    }));
+    contextoLimpo = JSON.stringify({ titulo: trip.title, roteiro: roteiroEnxuto });
+  }
 
   let promptContexto = `Você é um assistente virtual do aplicativo de viagens SmartTrip. 
 Responda à pergunta do usuário baseando-se EXCLUSIVAMENTE nos dados da viagem abaixo. 
-Se a informação não estiver no JSON, dê uma dica geral e amigável. Seja conciso e direto.
-DADOS DA VIAGEM: ${contextoViagem}
+Se a informação não estiver nos dados, dê uma dica geral e amigável. Seja conciso e direto.
+DADOS DA VIAGEM: ${contextoLimpo}
 PERGUNTA DO USUÁRIO: ${text}`;
 
   try {
