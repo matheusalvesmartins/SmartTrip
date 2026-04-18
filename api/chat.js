@@ -18,7 +18,8 @@ module.exports = async function handler(req, res) {
         'Authorization': `Bearer ${GROQ_API_KEY}`
       },
       body: JSON.stringify({
-        model: "llama3-70b-8192",
+        // Atualizado para o modelo mais recente da Groq
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: promptContexto }],
         temperature: 0.5
       })
