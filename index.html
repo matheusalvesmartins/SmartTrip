@@ -63,17 +63,11 @@ body.dark-theme {
 html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); position: relative; }
 
 .pattern-bg {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image: 
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='56' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='56' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-position: 0 0, 80px 80px;
-  background-size: 160px 160px;
-  opacity: var(--pattern-opacity);
-  transition: opacity var(--transition);
+  background-position: 0 0, 80px 80px; background-size: 160px 160px; opacity: var(--pattern-opacity); transition: opacity var(--transition);
 }
 
 .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
@@ -161,20 +155,11 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .toggle-switch input:checked + .toggle-slider::before { transform:translateX(22px); }
 
 /* FAB (Floating Action Button) */
-.fab {
-  position:fixed; bottom:84px; right:20px; z-index:90;
-  width:56px; height:56px; border-radius:50%;
-  background:linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-  color:var(--primary-dark); border:none; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 6px 24px rgba(184,212,48,0.35);
-  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  animation:fab-glow 3s ease-in-out infinite;
-}
+.fab { position:fixed; bottom:84px; right:20px; z-index:90; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); color:var(--primary-dark); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 24px rgba(184,212,48,0.35); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); animation:fab-glow 3s ease-in-out infinite; }
 .fab:hover { transform:scale(1.1); box-shadow:0 8px 32px rgba(184,212,48,0.5); }
 .fab:active { transform:scale(0.95); }
 .fab .material-symbols-rounded { font-size:26px; font-variation-settings:'FILL' 1; }
-.fab.hidden { opacity:0; pointer-events:none; transform:scale(0.5); }
+.fab.hidden { display: none !important; opacity:0; pointer-events:none; transform:scale(0.5); }
 @keyframes fab-glow { 0%,100%{box-shadow:0 6px 24px rgba(184,212,48,0.35)} 50%{box-shadow:0 6px 24px rgba(184,212,48,0.15)} }
 
 /* PRO Gate Modal */
@@ -247,6 +232,11 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
 .preview-actions .btn { flex:1; }
 .btn-confirm { background:var(--accent); color:var(--primary-dark); font-weight:700; }
 .btn-confirm:hover { background:var(--accent-dark); }
+
+/* Chat Bubbles */
+.chat-msg { max-width: 85%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: var(--text-base); }
+.chat-msg.bot { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); border-radius: 12px 12px 12px 0; box-shadow: var(--shadow); }
+.chat-msg.user { align-self: flex-end; background: var(--primary); color: white; border-radius: 12px 12px 0 12px; box-shadow: var(--shadow); }
 </style>
 </head>
 <body>
@@ -396,7 +386,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
   </div>
 </div>
 
-<button class="fab" id="fab-btn" onclick="handleFabClick()"><span class="material-symbols-rounded">auto_awesome</span></button>
+<button class="fab hidden" id="fab-btn" onclick="handleFabClick()"><span class="material-symbols-rounded">auto_awesome</span></button>
 
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-home" onclick="navigate('home')">
@@ -471,10 +461,10 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
     <div class="modal-content" style="padding: 16px 24px;">
       <h3 style="margin-bottom: 20px; color: var(--primary); font-weight: 800; font-size: var(--text-2xl);">Assistência IA</h3>
       <button class="btn btn-outline" style="width: 100%; margin-bottom: 12px; justify-content: flex-start; padding: 16px;" onclick="openAiChat()">
-        <span class="material-symbols-rounded" style="color: var(--primary); font-size: 24px;">chat</span> <span style="font-weight: 700;">Fazer perguntas sobre sua viagem</span>
+        <span class="material-symbols-rounded" style="color: var(--primary); margin-right: 8px;">chat</span> <span style="font-weight: 700;">Fazer perguntas sobre sua viagem</span>
       </button>
       <button class="btn btn-outline" style="width: 100%; justify-content: flex-start; padding: 16px;" onclick="startWizardFromMenu()">
-        <span class="material-symbols-rounded" style="color: var(--accent-dark); font-size: 24px;">auto_awesome</span> <span style="font-weight: 700;">Gerar novo roteiro com IA</span>
+        <span class="material-symbols-rounded" style="color: var(--accent-dark); margin-right: 8px;">auto_awesome</span> <span style="font-weight: 700;">Gerar novo roteiro com IA</span>
       </button>
     </div>
   </div>
@@ -626,7 +616,7 @@ let wizStep = 1;
 const WIZ_TOTAL = 7;
 let generatedData = null;
 
-// SETTINGS INCLUINDO "PRO" FALLBACK
+// SETTINGS INCLUINDO "PRO" FALLBACK (Padrao Desativado)
 let userSettings = JSON.parse(localStorage.getItem('smartTripSettings') || '{"name":"Viajante", "theme":"light", "fontSize":"1", "pro":false}');
 
 const ICON_OPTIONS = [
@@ -1302,7 +1292,7 @@ function centerOnUser() {
 }
 
 /* =================================================================================
-   GERAÇÃO E CHAT POR IA (GROQ API Llama 3)
+   GERAÇÃO E CHAT POR IA (Vercel Backend API)
    ================================================================================= */
 
 function handleFabClick() {
@@ -1326,7 +1316,7 @@ function openAiChat() {
 }
 function closeAiChat() { document.getElementById('ai-chat-modal').classList.remove('open'); }
 
-function sendChatMessage() {
+async function sendChatMessage() {
   let input = document.getElementById('chat-input');
   let text = input.value.trim();
   if(!text) return;
@@ -1347,18 +1337,44 @@ function sendChatMessage() {
   msgContainer.appendChild(loading);
   msgContainer.scrollTop = msgContainer.scrollHeight;
 
-  setTimeout(() => {
-      loading.remove();
-      let tripId = document.getElementById('chat-trip-selector').value;
-      let trip = savedTrips.find(t => t.id === tripId);
-      let tripName = trip ? trip.title : "sua viagem";
+  let tripId = document.getElementById('chat-trip-selector').value;
+  let trip = savedTrips.find(t => t.id === tripId);
+  let contextoViagem = trip ? JSON.stringify(trip) : "Nenhuma viagem selecionada.";
 
-      let botMsg = document.createElement('div');
-      botMsg.className = "chat-msg bot";
-      botMsg.innerHTML = `<strong>IA:</strong> Neste momento, como demonstração, eu responderia cruzando a sua pergunta ("<em>${esc(text)}</em>") com o banco de dados de <strong>${esc(tripName)}</strong>. A integração com a API da IA cuidará disso no backend.`;
-      msgContainer.appendChild(botMsg);
-      msgContainer.scrollTop = msgContainer.scrollHeight;
-  }, 1500);
+  let promptContexto = `Você é um assistente virtual do aplicativo de viagens SmartTrip. 
+Responda à pergunta do usuário baseando-se EXCLUSIVAMENTE nos dados da viagem abaixo. 
+Se a informação não estiver no JSON, dê uma dica geral e amigável. Seja conciso e direto.
+DADOS DA VIAGEM: ${contextoViagem}
+PERGUNTA DO USUÁRIO: ${text}`;
+
+  try {
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ promptContexto })
+    });
+    
+    if(!resp.ok) throw new Error('API error ' + resp.status);
+    
+    const result = await resp.json();
+    let botText = result.text || 'Não consegui processar a resposta.';
+
+    loading.remove();
+    let botMsg = document.createElement('div');
+    botMsg.className = "chat-msg bot";
+    botMsg.innerHTML = `<strong>IA:</strong> ${botText.replace(/\n/g, '<br>')}`;
+    msgContainer.appendChild(botMsg);
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
+  } catch(err) {
+    console.error('Erro no chat:', err);
+    loading.remove();
+    let errorMsg = document.createElement('div');
+    errorMsg.className = "chat-msg bot";
+    errorMsg.style.color = "red";
+    errorMsg.innerHTML = `<strong>Erro:</strong> Falha ao conectar com a IA. Certifique-se de estar rodando no Vercel.`;
+    msgContainer.appendChild(errorMsg);
+  }
 }
 
 /* WIZARD IA */
@@ -1466,30 +1482,18 @@ async function startAIGeneration() {
   
   let prompt = buildAIPrompt(data);
   
-  // ==================================================================
-  // INTEGRAÇÃO GROQ API
-  // ==================================================================
-  const GROQ_API_KEY = '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'; //
-  
   try {
-    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    // Chamada à API do Vercel
+    const resp = await fetch('/api/generate', {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${GROQ_API_KEY}`
-      },
-      body: JSON.stringify({ 
-        model: "llama3-70b-8192", // Llama 3 70B (Excelente para JSON e lógicas complexas)
-        messages: [{ role: "user", content: prompt }],
-        response_format: { type: "json_object" },
-        temperature: 0.3
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
     });
     
     if(!resp.ok) throw new Error('API error ' + resp.status);
     
     const result = await resp.json();
-    let text = result.choices[0]?.message?.content || '';
+    let text = result.content || '';
     
     let jsonMatch = text.match(/\{[\s\S]*\}/);
     if(!jsonMatch) throw new Error('No JSON');
@@ -1503,7 +1507,7 @@ async function startAIGeneration() {
     
   } catch(err) {
     console.error('AI Generation error:', err);
-    showToast('Erro na geração. Tente novamente.');
+    showToast('Erro na geração. Certifique-se de estar rodando no Vercel.');
     closeWizard();
   }
 }
