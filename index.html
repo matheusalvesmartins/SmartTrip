@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SmartTrip — Explore Confidently</title>
-<link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-<link href="[https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1&display=swap](https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1&display=swap)" rel="stylesheet">
-<link rel="stylesheet" href="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.css](https://unpkg.com/leaflet@1.9.4/dist/leaflet.css)"/>
-<script src="[https://unpkg.com/leaflet@1.9.4/dist/leaflet.js](https://unpkg.com/leaflet@1.9.4/dist/leaflet.js)"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 /* VARIÁVEIS DE ACORDO COM O BRANDBOOK v2.0 */
 :root {
@@ -63,11 +63,17 @@ body.dark-theme {
 html, body { height:100%; font-family:var(--font-body); background:var(--bg); color:var(--text); overflow:hidden; display:flex; flex-direction:column; transition:background var(--transition), color var(--transition); position: relative; }
 
 .pattern-bg {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
   background-image: 
-    url("data:image/svg+xml,%3Csvg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='56' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E"),
-    url("data:image/svg+xml,%3Csvg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='56' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-position: 0 0, 80px 80px; background-size: 160px 160px; opacity: var(--pattern-opacity); transition: opacity var(--transition);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='56' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='56' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-position: 0 0, 80px 80px;
+  background-size: 160px 160px;
+  opacity: var(--pattern-opacity);
+  transition: opacity var(--transition);
 }
 
 .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
@@ -80,7 +86,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .compass-logo::after { content: ''; position: absolute; top: 50%; left: 50%; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; transform: translate(-50%, -50%) rotate(45deg); }
 .brand-name { font-weight: 800; font-size: var(--text-xl); color: var(--primary); letter-spacing: -0.5px; }
 
-.global-trip-select { appearance:none; background:var(--bg-elevated) url("data:image/svg+xml,%3Csvg xmlns='[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)' width='16' height='16' fill='%232596be' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:var(--text-base); font-family:var(--font-body); font-weight: 500; padding:10px 32px 10px 12px; outline:none; text-overflow:ellipsis; transition: all var(--transition); }
+.global-trip-select { appearance:none; background:var(--bg-elevated) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%232596be' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid var(--border); border-radius:var(--radius); color:var(--text); font-size:var(--text-base); font-family:var(--font-body); font-weight: 500; padding:10px 32px 10px 12px; outline:none; text-overflow:ellipsis; transition: all var(--transition); }
 .btn-icon { width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius); background:transparent; border:none; color:var(--text-secondary); cursor:pointer; transition:all var(--transition); flex-shrink: 0;}
 .btn-icon:hover { background:var(--bg-elevated); color:var(--primary); }
 
@@ -146,7 +152,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:var(--text-sm); font-weight:700; z-index:2000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
 .toast.visible { transform:translateX(-50%) translateY(0); opacity:1; }
 
-/* ═══ RECURSOS PRO E IA ═══ */
+/* Toggle Switch (PRO Settings) */
 .toggle-switch { position:relative; display:inline-block; width:48px; height:26px; flex-shrink:0; }
 .toggle-switch input { opacity:0; width:0; height:0; }
 .toggle-slider { position:absolute; cursor:pointer; inset:0; background:var(--border); border-radius:26px; transition:var(--transition); }
@@ -154,15 +160,24 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .toggle-switch input:checked + .toggle-slider { background:var(--accent); }
 .toggle-switch input:checked + .toggle-slider::before { transform:translateX(22px); }
 
-/* FAB Button */
-.fab { position:fixed; bottom:84px; right:20px; z-index:90; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); color:var(--primary-dark); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 6px 24px rgba(184,212,48,0.35); transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1); animation:fab-glow 3s ease-in-out infinite; }
+/* FAB (Floating Action Button) */
+.fab {
+  position:fixed; bottom:84px; right:20px; z-index:90;
+  width:56px; height:56px; border-radius:50%;
+  background:linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+  color:var(--primary-dark); border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:0 6px 24px rgba(184,212,48,0.35);
+  transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  animation:fab-glow 3s ease-in-out infinite;
+}
 .fab:hover { transform:scale(1.1); box-shadow:0 8px 32px rgba(184,212,48,0.5); }
 .fab:active { transform:scale(0.95); }
 .fab .material-symbols-rounded { font-size:26px; font-variation-settings:'FILL' 1; }
 .fab.hidden { display: none !important; opacity:0; pointer-events:none; transform:scale(0.5); }
 @keyframes fab-glow { 0%,100%{box-shadow:0 6px 24px rgba(184,212,48,0.35)} 50%{box-shadow:0 6px 24px rgba(184,212,48,0.15)} }
 
-/* Modal do Wizard */
+/* Wizard Overlay */
 .wizard-overlay { position:fixed; inset:0; z-index:500; background:var(--bg); display:flex; flex-direction:column; transform:translateY(100%); opacity:0; pointer-events:none; transition:opacity .3s, transform .4s cubic-bezier(0.16,1,0.3,1); }
 .wizard-overlay.open { opacity:1; pointer-events:all; transform:translateY(0); }
 .wizard-header { display:flex; align-items:center; gap:12px; padding:16px 20px; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--bg-card); }
@@ -197,6 +212,8 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
 .pace-card .pace-desc { font-size:var(--text-xs); color:var(--text-muted); }
 .wizard-footer { padding:16px 20px; border-top:1px solid var(--border); flex-shrink:0; display:flex; gap:10px; background:var(--bg-card); }
 .wizard-footer .btn { flex:1; }
+
+/* Wizard Loading */
 .wiz-loading { display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px; padding:40px 20px; text-align:center; min-height:300px; }
 .wiz-loading.active { display:flex; }
 .loading-compass { width:80px; height:80px; border-radius:50%; border:4px solid var(--border); position:relative; display:flex; align-items:center; justify-content:center; animation:compass-anim 2s ease-in-out infinite; }
@@ -207,6 +224,8 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
 .wiz-ls { display:flex; align-items:center; gap:10px; font-size:var(--text-sm); color:var(--text-muted); transition:all 0.3s; }
 .wiz-ls.done { color:var(--accent); }
 .wiz-ls .material-symbols-rounded { font-size:18px; }
+
+/* Preview Screen */
 .preview-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
 .preview-stats { display:flex; gap:16px; }
 .preview-stat .num { font-size:var(--text-2xl); font-weight:800; color:var(--primary); }
@@ -366,7 +385,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
   </div>
 </div>
 
-<button class="fab hidden" id="fab-btn" onclick="openFabMenu()"><span class="material-symbols-rounded">auto_awesome</span></button>
+<button class="fab hidden" id="fab-btn" onclick="handleFabClick()"><span class="material-symbols-rounded">auto_awesome</span></button>
 
 <nav class="bottom-nav">
   <div class="nav-item active" id="nav-home" onclick="navigate('home')">
@@ -414,10 +433,10 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
         </div>
         <div>
           <label class="form-label">Link do Google Sheets *</label>
-          <input type="text" id="new-trip-url" class="input-field" placeholder="[https://docs.google.com/spreadsheets/d/](https://docs.google.com/spreadsheets/d/)...">
+          <input type="text" id="new-trip-url" class="input-field" placeholder="https://docs.google.com/spreadsheets/d/...">
         </div>
         <div>
-          <label class="form-label">Ícone da Viagem</label>
+          <label class="form-label">Ícone da Viagem (Símbolos e Emojis)</label>
           <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap:8px; max-height:160px; overflow-y:auto; padding:4px; border:1px solid var(--border); border-radius:var(--radius); background:var(--bg-elevated);" id="icon-selector-container"></div>
         </div>
       </div>
@@ -439,14 +458,12 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
   <div class="modal-sheet" style="padding-bottom: 24px;">
     <div class="modal-handle"></div>
     <div class="modal-content" style="padding: 16px 24px;">
-      <h3 style="margin-bottom: 20px; color: var(--primary); font-size: var(--text-2xl); font-weight: 800;">O que deseja fazer?</h3>
-      <button class="btn btn-outline" style="width: 100%; margin-bottom: 12px; justify-content: flex-start; padding: 18px; border-width: 2px;" onclick="openAiChat()">
-        <span class="material-symbols-rounded" style="color: var(--primary); font-size: 24px;">chat</span> 
-        <span style="font-weight: 700; color: var(--text);">Fazer perguntas sobre sua viagem</span>
+      <h3 style="margin-bottom: 20px; color: var(--primary); font-weight: 800; font-size: var(--text-2xl);">Assistência IA</h3>
+      <button class="btn btn-outline" style="width: 100%; margin-bottom: 12px; justify-content: flex-start; padding: 16px;" onclick="openAiChat()">
+        <span class="material-symbols-rounded" style="color: var(--primary);">chat</span> Fazer perguntas sobre sua viagem
       </button>
-      <button class="btn btn-outline" style="width: 100%; justify-content: flex-start; padding: 18px; border-width: 2px;" onclick="startWizardFromMenu()">
-        <span class="material-symbols-rounded" style="color: var(--accent-dark); font-size: 24px;">auto_awesome</span> 
-        <span style="font-weight: 700; color: var(--text);">Gerar novo roteiro com IA</span>
+      <button class="btn btn-outline" style="width: 100%; justify-content: flex-start; padding: 16px;" onclick="startWizardFromMenu()">
+        <span class="material-symbols-rounded" style="color: var(--accent-dark);">auto_awesome</span> Gerar novo roteiro com IA
       </button>
     </div>
   </div>
@@ -455,24 +472,17 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
 <div class="modal-overlay" id="ai-chat-modal" onclick="if(event.target===this)closeAiChat()">
   <div class="modal-sheet" style="height: 85vh; display: flex; flex-direction: column;">
     <div class="modal-handle"></div>
-    <div style="padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 12px;">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="color: var(--primary); font-weight: 800;">Assistente de Viagem</h3>
+    <div style="padding: 16px 24px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="color: var(--primary); font-weight: 800; font-size: var(--text-2xl);">Chat de Viagem</h3>
         <button class="btn-icon" onclick="closeAiChat()"><span class="material-symbols-rounded">close</span></button>
-      </div>
-      <select id="chat-trip-selector" class="input-field" style="padding: 10px; font-size: var(--text-sm); font-weight: 600;">
-        </select>
     </div>
-    <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 16px 24px; display: flex; flex-direction: column; gap: 12px; background: var(--bg);">
-       <div style="align-self: flex-start; background: var(--bg-card); padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid var(--border); max-width: 85%; line-height: 1.5; color: var(--text-secondary);">
-          Olá! Selecione uma de suas viagens acima e me pergunte qualquer coisa (onde comer, dicas, deslocamentos...).
-       </div>
+    <div style="padding: 8px 24px; background: var(--bg-elevated);">
+        <select id="chat-trip-selector" class="global-trip-select" style="width:100%; display:block;"></select>
     </div>
-    <div style="padding: 16px 24px; border-top: 1px solid var(--border); background: var(--bg-card); display: flex; gap: 8px;">
-       <input type="text" id="chat-input" class="input-field" placeholder="Pergunte sobre sua viagem..." style="flex: 1;" onkeypress="if(event.key==='Enter') sendChatMessage()">
-       <button class="btn btn-primary" style="padding: 0 16px; border-radius: 50%; width: 48px; height: 48px; flex-shrink: 0;" onclick="sendChatMessage()">
-          <span class="material-symbols-rounded">send</span>
-       </button>
+    <div id="chat-messages" style="flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; background: var(--bg);"></div>
+    <div style="padding:16px 24px; border-top:1px solid var(--border); display:flex; gap:8px; background: var(--bg-card);">
+        <input type="text" id="chat-input" class="input-field" style="flex:1;" placeholder="Pergunte algo..." onkeypress="if(event.key==='Enter') sendChatMessage()">
+        <button class="btn btn-primary" style="padding:10px; width:48px; height:48px; border-radius:50%; flex-shrink:0;" onclick="sendChatMessage()"><span class="material-symbols-rounded">send</span></button>
     </div>
   </div>
 </div>
@@ -483,36 +493,32 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
     <h2>Gerar Roteiro com IA</h2>
     <button class="wiz-icon-btn" onclick="closeWizard()"><span class="material-symbols-rounded">close</span></button>
   </div>
-  <div class="wizard-progress"><div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:14.2%"></div></div><div class="progress-label" id="progress-label">Etapa 1 de 7</div></div>
-  
+  <div class="wizard-progress"><div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:14.28%"></div></div><div class="progress-label" id="progress-label">Etapa 1 de 7</div></div>
   <div class="wizard-body" id="wizard-body">
-    
     <div class="wizard-step active" data-step="1">
       <h3>Para onde você vai? ✈️</h3>
       <p class="step-desc">Pode ser uma cidade, país ou região. Se forem múltiplos destinos, separe por vírgula.</p>
       <input type="text" class="wiz-input" id="wiz-destino" placeholder="Ex: Lisboa, Porto e Sintra">
     </div>
-
     <div class="wizard-step" data-step="2">
       <h3>Partida e Transporte 🚗</h3>
       <p class="step-desc">De onde você está saindo e como vai viajar até o destino?</p>
-      <div style="margin-bottom: 20px;">
-         <label class="form-label">Saindo de onde?</label>
-         <input type="text" class="wiz-input" id="wiz-origem" placeholder="Ex: São Paulo, SP">
+      <div style="margin-bottom: 16px;">
+        <label class="form-label">Saindo de onde?</label>
+        <input type="text" class="wiz-input" id="wiz-origem" placeholder="Ex: São Paulo, SP">
       </div>
       <div>
-         <label class="form-label">Meio de Transporte</label>
-         <select id="wiz-transporte" class="wiz-input">
-            <option value="Avião">Avião</option>
-            <option value="Carro">Carro</option>
-            <option value="Ônibus">Ônibus</option>
-            <option value="Trem">Trem</option>
-            <option value="Cruzeiro/Navio">Cruzeiro / Navio</option>
-            <option value="Múltiplos">Múltiplos / Outros</option>
-         </select>
+        <label class="form-label">Meio de Transporte Principal</label>
+        <select id="wiz-transporte" class="wiz-input">
+          <option value="Avião">Avião</option>
+          <option value="Carro">Carro</option>
+          <option value="Ônibus">Ônibus</option>
+          <option value="Trem">Trem</option>
+          <option value="Navio/Cruzeiro">Navio/Cruzeiro</option>
+          <option value="Múltiplos">Múltiplos / Outros</option>
+        </select>
       </div>
     </div>
-
     <div class="wizard-step" data-step="3">
       <h3>Quando vai ser? 📅</h3>
       <p class="step-desc">Selecione as datas ou deixe em branco para um roteiro genérico.</p>
@@ -521,7 +527,6 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
         <div class="date-field"><label>Data de Fim</label><input type="date" class="wiz-input" id="wiz-data-fim" style="font-size:var(--text-base);"></div>
       </div>
     </div>
-
     <div class="wizard-step" data-step="4">
       <h3>O que te interessa? 🎯</h3>
       <p class="step-desc">Selecione quantas categorias quiser.</p>
@@ -538,29 +543,25 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
         <div class="chip" data-val="Experiências Locais" onclick="toggleChip(this)"><span class="material-symbols-rounded">emoji_people</span>Experiências</div>
       </div>
     </div>
-
     <div class="wizard-step" data-step="5">
       <h3>Onde vai se hospedar? 🏨</h3>
       <p class="step-desc">Informe o hotel, Airbnb ou região. Se ainda não reservou, diga a região desejada.</p>
       <input type="text" class="wiz-input" id="wiz-hospedagem" placeholder="Ex: Hotel no bairro Chiado, Lisboa">
     </div>
-
     <div class="wizard-step" data-step="6">
       <h3>Qual o ritmo? 🚶</h3>
       <p class="step-desc">Define a quantidade de atividades por dia.</p>
       <div class="pace-options" id="pace-options">
-        <div class="pace-card" data-val="tranquilo" onclick="selectPace(this)"><div class="pace-icon">🐢</div><div class="pace-name">Tranquilo</div><div class="pace-desc">2-3 ativ/dia</div></div>
-        <div class="pace-card selected" data-val="moderado" onclick="selectPace(this)"><div class="pace-icon">🚶</div><div class="pace-name">Moderado</div><div class="pace-desc">4-5 ativ/dia</div></div>
-        <div class="pace-card" data-val="intenso" onclick="selectPace(this)"><div class="pace-icon">🏃</div><div class="pace-name">Intenso</div><div class="pace-desc">6-7 ativ/dia</div></div>
+        <div class="pace-card" data-val="tranquilo" onclick="selectPace(this)"><div class="pace-icon">🐢</div><div class="pace-name">Tranquilo</div><div class="pace-desc">2-3 atividades/dia</div></div>
+        <div class="pace-card selected" data-val="moderado" onclick="selectPace(this)"><div class="pace-icon">🚶</div><div class="pace-name">Moderado</div><div class="pace-desc">4-5 atividades/dia</div></div>
+        <div class="pace-card" data-val="intenso" onclick="selectPace(this)"><div class="pace-icon">🏃</div><div class="pace-name">Intenso</div><div class="pace-desc">6-7 atividades/dia</div></div>
       </div>
     </div>
-
     <div class="wizard-step" data-step="7">
       <h3>Mais algum detalhe? 💬</h3>
       <p class="step-desc">Campo livre para preferências, restrições ou pedidos especiais. Opcional.</p>
       <textarea class="wiz-input" id="wiz-extras" placeholder="Ex: Sou vegetariano, viajo com criança de 5 anos, quero um jantar especial no último dia..."></textarea>
     </div>
-
     <div class="wiz-loading" id="wiz-loading">
       <div class="loading-compass"></div>
       <div style="font-size:var(--text-lg); font-weight:700; color:var(--text);">Montando seu roteiro...</div>
@@ -568,11 +569,10 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
       <div class="wiz-loading-steps">
         <div class="wiz-ls" id="ls-1"><span class="material-symbols-rounded">radio_button_unchecked</span> Analisando destino e transporte</div>
         <div class="wiz-ls" id="ls-2"><span class="material-symbols-rounded">radio_button_unchecked</span> Selecionando atividades</div>
-        <div class="wiz-ls" id="ls-3"><span class="material-symbols-rounded">radio_button_unchecked</span> Organizando cronograma e rotas</div>
+        <div class="wiz-ls" id="ls-3"><span class="material-symbols-rounded">radio_button_unchecked</span> Organizando cronograma</div>
         <div class="wiz-ls" id="ls-4"><span class="material-symbols-rounded">radio_button_unchecked</span> Adicionando coordenadas</div>
       </div>
     </div>
-
   </div>
   <div class="wizard-footer" id="wizard-footer">
     <button class="btn btn-outline" onclick="wizardBack()" id="btn-wiz-back" style="display:none;">Voltar</button>
@@ -581,6 +581,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
 </div>
 
 <script>
+// VARIAVEIS PRINCIPAIS
 let savedTrips = []; 
 let activeTripId = null;
 let activeRoteiro = [];
@@ -597,10 +598,12 @@ let lastKnownUserPos = null;
 let importContext = null;
 let editingTripId = null; 
 
+// VARIÁVEIS IA / WIZARD
 let wizStep = 1; 
 const WIZ_TOTAL = 7;
 let generatedData = null;
 
+// SETTINGS INCLUINDO "PRO" DEFAULT FALSE
 let userSettings = JSON.parse(localStorage.getItem('smartTripSettings') || '{"name":"Viajante", "theme":"light", "fontSize":"1", "pro":false}');
 
 const ICON_OPTIONS = [
@@ -636,7 +639,7 @@ window.onload = () => {
   renderHomeTrips();
   updateTopSelector();
   if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
-  setDefaultDates();
+  setDefaultDates(); 
 };
 
 /* ================= ÍCONES E CONFIGURAÇÕES ================= */
@@ -664,6 +667,18 @@ function applyGlobalSettings() {
   let greeting = document.getElementById('greeting-name');
   if(greeting) greeting.textContent = `Olá, ${userSettings.name}!`;
   updateFabVisibility();
+}
+
+function updateFabVisibility() {
+  let fab = document.getElementById('fab-btn');
+  if(!fab) return;
+  let activeScreen = document.querySelector('.screen.active');
+  let isHome = activeScreen && activeScreen.id === 'home-screen';
+  if(isHome && userSettings.pro) {
+      fab.classList.remove('hidden');
+  } else {
+      fab.classList.add('hidden');
+  }
 }
 
 function saveSettings() {
@@ -708,15 +723,6 @@ function navigate(tab) {
   if(tab === 'map') { setTimeout(() => { if(!mainMap) initMainMap(); else mainMap.invalidateSize(); applyFilters('map'); }, 200); }
   else if (tab === 'itinerary' || tab === 'hospedagens') { applyFilters(tab); }
 }
-
-function updateFabVisibility() {
-  let fab = document.getElementById('fab-btn');
-  if(!fab) return;
-  let activeScreen = document.querySelector('.screen.active');
-  let isHome = activeScreen && activeScreen.id === 'home-screen';
-  if(isHome && userSettings.pro) fab.classList.remove('hidden'); else fab.classList.add('hidden');
-}
-
 
 /* ================= HOME & AÇÕES ================= */
 function renderHomeTrips() {
@@ -842,14 +848,10 @@ function parseGviz(data) {
   if(!data || !data.table) return [];
   let headers = data.table.cols.map(c => (c.label || '').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''));
   let map = {
-    cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')), 
-    dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
-    hora: headers.findIndex(h => h.includes('hora')||h.includes('time')), 
-    categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
-    atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')), 
-    google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
-    observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')), 
-    link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps')),
+    cidade: headers.findIndex(h => h.includes('cidade')||h.includes('local')), dia: headers.findIndex(h => h.includes('dia')||h.includes('data')),
+    hora: headers.findIndex(h => h.includes('hora')||h.includes('time')), categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
+    atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')), google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
+    observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')), link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps')),
     custos: headers.findIndex(h => h.includes('custo')||h.includes('valor')||h.includes('preco'))
   };
   return data.table.rows.map(row => {
@@ -1009,13 +1011,13 @@ function updateTopSelector() {
   let sel = document.getElementById('global-trip-selector');
   let chatSel = document.getElementById('chat-trip-selector');
   if(savedTrips.length === 0) { 
-    sel.innerHTML = `<option value="">Minhas Viagens</option>`; 
-    chatSel.innerHTML = `<option value="">Sem viagens salvas</option>`;
-    return; 
+      sel.innerHTML = `<option value="">Minhas Viagens</option>`; 
+      if(chatSel) chatSel.innerHTML = `<option value="">Sem viagens salvas</option>`;
+      return; 
   }
   let options = savedTrips.map(t => `<option value="${t.id}" ${t.id === activeTripId ? 'selected':''}>${esc(t.title)}</option>`).join('');
   sel.innerHTML = options;
-  chatSel.innerHTML = options;
+  if(chatSel) chatSel.innerHTML = options;
 }
 
 function changeActiveTrip(tripId, skipNav = false) {
@@ -1273,20 +1275,27 @@ function centerOnUser() {
 }
 
 /* =================================================================================
-   GERAÇÃO POR IA — MENU PRO, CHAT, WIZARD (7 PASSOS), API
+   GERAÇÃO E CHAT POR IA (RECURSOS PRO)
    ================================================================================= */
 
-function openFabMenu() {
-  if(!userSettings.pro) return; 
-  document.getElementById('fab-menu-modal').classList.add('open');
+function handleFabClick() {
+  if(!userSettings.pro) return; // Segurança dupla, o CSS já deve ocultar.
+  openFabMenu();
 }
+
+function openFabMenu() { document.getElementById('fab-menu-modal').classList.add('open'); }
 function closeFabMenu() { document.getElementById('fab-menu-modal').classList.remove('open'); }
 
-/* CHAT DE IA */
+/* CHAT IA */
 function openAiChat() {
   closeFabMenu();
+  updateTopSelector(); // Garante sync do select
   document.getElementById('ai-chat-modal').classList.add('open');
-  updateTopSelector(); // Garante o sync das opções
+  
+  let msgContainer = document.getElementById('chat-messages');
+  if(msgContainer.children.length === 0) {
+      msgContainer.innerHTML = `<div style="align-self: flex-start; background: var(--bg-card); padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid var(--border); max-width: 85%; line-height: 1.5; color: var(--text-secondary); box-shadow: var(--shadow);">Olá! Selecione uma de suas viagens no topo e me pergunte qualquer coisa sobre ela (roteiro, dicas, horários).</div>`;
+  }
 }
 function closeAiChat() { document.getElementById('ai-chat-modal').classList.remove('open'); }
 
@@ -1294,44 +1303,43 @@ function sendChatMessage() {
   let input = document.getElementById('chat-input');
   let text = input.value.trim();
   if(!text) return;
-  
+
   let msgContainer = document.getElementById('chat-messages');
-  
-  // Mensagem do usuário
+
   let userMsg = document.createElement('div');
   userMsg.style.cssText = "align-self: flex-end; background: var(--primary); color: white; padding: 12px 16px; border-radius: 12px 12px 0 12px; max-width: 85%; line-height: 1.5; box-shadow: var(--shadow);";
   userMsg.textContent = text;
   msgContainer.appendChild(userMsg);
   input.value = '';
-  
-  // Rola para baixo
   msgContainer.scrollTop = msgContainer.scrollHeight;
-  
-  // Loading falso
+
   let loading = document.createElement('div');
   loading.style.cssText = "align-self: flex-start; background: var(--bg-card); padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid var(--border); max-width: 85%; color: var(--text-muted); font-size: var(--text-sm);";
-  loading.innerHTML = `<div class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></div> Pensando...`;
+  loading.innerHTML = `<div class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:8px;"></div> Pensando...`;
   msgContainer.appendChild(loading);
   msgContainer.scrollTop = msgContainer.scrollHeight;
-  
-  // Mock da resposta
+
   setTimeout(() => {
-    loading.remove();
-    let tripId = document.getElementById('chat-trip-selector').value;
-    let trip = savedTrips.find(t => t.id === tripId);
-    let tripName = trip ? trip.title : "sua viagem";
-    
-    let botMsg = document.createElement('div');
-    botMsg.style.cssText = "align-self: flex-start; background: var(--bg-card); padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid var(--border); max-width: 85%; line-height: 1.5; color: var(--text-secondary); box-shadow: var(--shadow);";
-    botMsg.innerHTML = `<strong>IA:</strong> Neste momento, como demonstração, eu responderia cruzando a sua pergunta ("<em>${esc(text)}</em>") com todo o banco de dados JSON do roteiro <strong>${esc(tripName)}</strong>.`;
-    msgContainer.appendChild(botMsg);
-    msgContainer.scrollTop = msgContainer.scrollHeight;
+      loading.remove();
+      let tripId = document.getElementById('chat-trip-selector').value;
+      let trip = savedTrips.find(t => t.id === tripId);
+      let tripName = trip ? trip.title : "sua viagem";
+
+      let botMsg = document.createElement('div');
+      botMsg.style.cssText = "align-self: flex-start; background: var(--bg-card); padding: 12px 16px; border-radius: 12px 12px 12px 0; border: 1px solid var(--border); max-width: 85%; line-height: 1.5; color: var(--text-secondary); box-shadow: var(--shadow);";
+      botMsg.innerHTML = `<strong>IA:</strong> Neste momento, como demonstração, eu responderia cruzando a sua pergunta ("<em>${esc(text)}</em>") com o banco de dados de <strong>${esc(tripName)}</strong>. A integração com a API da IA cuidará disso no backend.`;
+      msgContainer.appendChild(botMsg);
+      msgContainer.scrollTop = msgContainer.scrollHeight;
   }, 1500);
 }
 
-/* WIZARD DE GERAÇÃO */
+/* WIZARD IA */
 function startWizardFromMenu() {
   closeFabMenu();
+  openWizard();
+}
+
+function openWizard() {
   wizStep = 1;
   updateWizUI();
   document.getElementById('wizard').classList.add('open');
@@ -1342,7 +1350,9 @@ function startWizardFromMenu() {
   document.getElementById('wizard-footer').style.display = 'flex';
 }
 
-function closeWizard() { document.getElementById('wizard').classList.remove('open'); }
+function closeWizard() {
+  document.getElementById('wizard').classList.remove('open');
+}
 
 function updateWizUI() {
   let pct = (wizStep / WIZ_TOTAL) * 100;
@@ -1362,7 +1372,11 @@ function updateWizUI() {
 
 function wizardNext() {
   if(wizStep === 1 && !document.getElementById('wiz-destino').value.trim()) { showToast('Informe o destino'); return; }
-  if(wizStep === WIZ_TOTAL) { startAIGeneration(); return; }
+  
+  if(wizStep === WIZ_TOTAL) {
+    startAIGeneration();
+    return;
+  }
   
   document.querySelector(`.wizard-step[data-step="${wizStep}"]`).style.display = 'none';
   wizStep++;
@@ -1425,6 +1439,7 @@ async function startAIGeneration() {
   let prompt = buildAIPrompt(data);
   
   try {
+    // Chamada à API
     const resp = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1490,16 +1505,30 @@ IMPORTANTE: Retorne APENAS o JSON puro. Não use formatação markdown (\`\`\`js
 
 function resetLoadingSteps() {
   ['ls-1', 'ls-2', 'ls-3', 'ls-4'].forEach(id => {
-    let e = document.getElementById(id); e.classList.remove('done'); e.querySelector('.material-symbols-rounded').textContent = 'radio_button_unchecked';
+    let e = document.getElementById(id);
+    e.classList.remove('done');
+    e.querySelector('.material-symbols-rounded').textContent = 'radio_button_unchecked';
   });
 }
 
 function animateLoadingSteps() {
-  setTimeout(() => markLS('ls-1'), 800); setTimeout(() => markLS('ls-2'), 2500); setTimeout(() => markLS('ls-3'), 4500);
+  setTimeout(() => markLS('ls-1'), 800);
+  setTimeout(() => markLS('ls-2'), 2500);
+  setTimeout(() => markLS('ls-3'), 4500);
 }
 
-function markLS(id) { let e = document.getElementById(id); e.classList.add('done'); e.querySelector('.material-symbols-rounded').textContent = 'check_circle'; }
-function completeLoadingSteps() { return new Promise(resolve => { markLS('ls-4'); setTimeout(resolve, 600); }); }
+function markLS(id) {
+  let e = document.getElementById(id);
+  e.classList.add('done');
+  e.querySelector('.material-symbols-rounded').textContent = 'check_circle';
+}
+
+function completeLoadingSteps() {
+  return new Promise(resolve => {
+    markLS('ls-4');
+    setTimeout(resolve, 600);
+  });
+}
 
 function renderAIPreview(data, destino) {
   closeWizard();
