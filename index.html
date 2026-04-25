@@ -141,8 +141,10 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 .tag { font-weight:700; letter-spacing: 0.3px; }
 .form-label { font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; }
-.loading-overlay { position:fixed; inset:0; z-index:2000; background:rgba(255,255,255,0.9); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
+.loading-overlay { position:fixed; inset:0; z-index:2000; background:rgba(255,255,255,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
 .loading-overlay.hidden { opacity:0; pointer-events:none; }
+.spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
 .toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:var(--text-sm); font-weight:700; z-index:3000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
 .toast.visible { transform:translateX(-50%) translateY(0); opacity:1; }
 
@@ -245,7 +247,7 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
 
 <div class="loading-overlay hidden" id="loading">
   <div class="loading-compass" style="margin-bottom: 10px;"></div>
-  <p id="loading-text" style="color:var(--primary-dark); font-weight: 700; font-size: var(--text-lg);">Processando...</p>
+  <p id="loading-text" style="color:var(--primary-dark); font-weight: 700; font-size: var(--text-lg);">Gerando seu roteiro em PDF...</p>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -1134,7 +1136,7 @@ function applyFilters(sourceTab) {
     if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
     if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
   });
-  let filHosp = activeHospagens.filter(d => {
+  let filHosp = activeHospedagens.filter(d => {
     if(city && d.cidade !== city) return false; if(day && d.dia !== day) return false;
     if(cat && d.categoria !== cat) return false; if(atv && d.atividade !== atv) return false; return true;
   });
@@ -1824,6 +1826,7 @@ async function generateTripPDF(tripId) {
     const trip = savedTrips.find(t => t.id === tripId);
     if (!trip) return;
 
+    // 1. Atualiza a tela de loading para a bússola giratória
     const loadingOverlay = document.getElementById('loading');
     const originalContent = loadingOverlay.innerHTML;
     
@@ -1836,11 +1839,16 @@ async function generateTripPDF(tripId) {
     const watermark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-opacity='0.08' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-opacity='0.08' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-opacity='0.15' stroke-width='3.5'/%3E%3C/svg%3E`;
 
     let pdfHtml = `
-    <div style="font-family: 'Montserrat', sans-serif; padding: 30px; background-color: #ffffff; background-image: url('${watermark}'); background-size: 250px 250px; color: #1a2a33; width: 800px; min-height: 100vh;">
+    <div style="font-family: 'Montserrat', sans-serif; padding: 30px; background-color: #ffffff; background-image: url('${watermark}'); background-size: 250px 250px; color: #1a2a33; width: 750px;">
+        <style>
+            .pdf-card { display: flex; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 25px; overflow: hidden; page-break-inside: avoid; break-inside: avoid; width: 100%; }
+            .city-label { background:#15556c; color:white; padding:10px 25px; border-radius:6px; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:2.5px; margin: 30px 0 15px; page-break-after: avoid; break-after: avoid; }
+            .day-header { font-size:22px; font-weight:800; color:#2596be; margin: 25px 0 15px; border-left: 6px solid #B8D430; padding-left: 15px; page-break-after: avoid; break-after: avoid; }
+        </style>
         
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2596be; padding-bottom:15px; margin-bottom:30px;">
             <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <div style="width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center;">
                     <div style="width:4px; height:24px; background:#B8D430; transform:rotate(45deg); border-radius:2px;"></div>
                 </div>
                 <span style="font-size:26px; font-weight:900; color:#2596be; letter-spacing:-1px;">SmartTrip</span>
@@ -1864,44 +1872,42 @@ async function generateTripPDF(tripId) {
     fullRoteiro.forEach(item => {
         if(item.cidade !== currentCity) {
             currentCity = item.cidade;
-            pdfHtml += `<div style="background:#15556c; color:white; padding:8px 20px; border-radius:6px; font-weight:900; font-size:14px; text-transform:uppercase; letter-spacing:2.5px; margin: 30px 0 15px; page-break-after: avoid;">${currentCity}</div>`;
+            pdfHtml += `<div class="city-label">${currentCity}</div>`;
         }
         if(item.dia !== currentDay) {
             currentDay = item.dia;
-            pdfHtml += `<h2 style="font-size:20px; font-weight:800; color:#2596be; margin: 20px 0 15px; border-left: 6px solid #B8D430; padding-left: 15px; page-break-after: avoid;">${currentDay}</h2>`;
+            pdfHtml += `<h2 class="day-header">${currentDay}</h2>`;
         }
 
-        let mapCoords = item.google_maps && item.google_maps.includes('@') ? item.google_maps.split('@')[1].split(',').slice(0,2).join(',') : '';
-        let mapImgSrc = mapCoords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-l+2596be(${mapCoords.split(',')[1]},${mapCoords.split(',')[0]})/${mapCoords.split(',')[1]},${mapCoords.split(',')[0]},15,0/300x300?access_token=SUA_CHAVE_MAPBOX_AQUI` : '';
+        let coords = extractCoords(item.google_maps);
+        // Mapbox Static Image URL com inversão correta (lng,lat). Substitua sua chave onde indicado.
+        let mapImgSrc = coords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-marker+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14/300x300?access_token=SUA_CHAVE_MAPBOX_AQUI` : '';
 
         pdfHtml += `
-        <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:20px; overflow:hidden; page-break-inside:avoid; break-inside:avoid; width: 100%;">
-            <div style="background:#f0f9ff; padding:15px; width:85px; text-align:center; border-right:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <span style="font-size:18px; font-weight:900; color:#2596be;">${item.hora || '--'}</span>
+        <div class="pdf-card">
+            <div style="background:#f0f9ff; padding:20px; width:95px; text-align:center; border-right:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <span style="font-size:20px; font-weight:900; color:#2596be;">${item.hora || '--'}</span>
             </div>
-            <div style="padding:15px; flex:1; display:flex; flex-direction:column; justify-content:center;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                    <span style="font-size:15px; font-weight:800; color:#1a2a33; line-height:1.2;">${item.atividade}</span>
-                    <span style="font-size:8px; font-weight:800; background:#B8D430; color:#15556c; padding:3px 8px; border-radius:4px; text-transform:uppercase; margin-left:8px; white-space:nowrap;">${item.categoria || 'Geral'}</span>
+            <div style="padding:20px; flex:1; display:flex; flex-direction:column; justify-content:center;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                    <span style="font-size:17px; font-weight:800; color:#1a2a33; line-height:1.2;">${item.atividade}</span>
+                    <span style="font-size:9px; font-weight:800; background:#B8D430; color:#15556c; padding:4px 10px; border-radius:5px; text-transform:uppercase; white-space:nowrap; margin-left:10px;">${item.categoria || 'Visita'}</span>
                 </div>
-                <div style="font-size:11px; color:#2596be; font-weight:700; margin-bottom:10px;">
+                <div style="font-size:12px; color:#2596be; font-weight:700; margin-bottom:12px;">
                     📍 ${item.endereco || parseFullAddress(item)}
                 </div>
-                ${item.observacoes ? `
-                <div style="font-size:11px; color:#4a5568; line-height:1.5; border-top: 1px solid #f0f0f0; padding-top:8px;">
-                    <b>Dica:</b> ${item.observacoes}
-                </div>` : ''}
+                ${item.observacoes ? `<div style="font-size:12px; color:#4a5568; line-height:1.6; border-top: 1px solid #f0f0f0; padding-top:10px;"><b>Dica:</b> ${item.observacoes}</div>` : ''}
             </div>
             ${mapImgSrc ? `
-            <div style="width:140px; background:#f7f9fb; border-left:1px solid #e2e8f0; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
-                <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;" crossOrigin="anonymous" onerror="this.style.display='none'">
+            <div style="width:160px; background:#f7f9fb; border-left:1px solid #e2e8f0; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;" crossOrigin="anonymous">
             </div>` : ''}
         </div>`;
     });
 
     pdfHtml += `</div>`;
 
-    // DESTRAVA O OVERFLOW DA TELA: Essencial para html2canvas capturar o documento inteiro
+    // DESTRAVA O OVERFLOW DA TELA: Essencial para html2canvas capturar o documento inteiro e não sair em branco
     const origHtmlOverflow = document.documentElement.style.overflow;
     const origHtmlHeight = document.documentElement.style.height;
     const origBodyOverflow = document.body.style.overflow;
@@ -1912,38 +1918,46 @@ async function generateTripPDF(tripId) {
     document.body.style.overflow = 'visible';
     document.body.style.height = 'auto';
 
-    // INJETA CONTEÚDO VISIVELMENTE NO DOM PARA CAPTURA (Fica atrás da tela de Loading)
+    // Injeta num container temporário para captura real (fica atrás do loading)
     const container = document.createElement('div');
     container.innerHTML = pdfHtml;
     container.style.position = 'absolute';
     container.style.top = '0';
     container.style.left = '0';
-    container.style.width = '800px'; 
+    container.style.width = '750px'; 
     container.style.zIndex = '1500'; 
     document.body.appendChild(container);
 
     const opt = {
-        margin: [10, 0, 15, 0], // Margem inferior de 15mm para caber o rodapé
+        margin: [10, 0, 20, 0], // Margem inferior de 20mm reserva espaço para o rodapé injetado
         filename: 'Roteiro_' + trip.title.replace(/\s+/g, '_') + '.pdf',
         pagebreak: { mode: ['css', 'legacy'] },
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, windowWidth: 800 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, windowWidth: 750 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Atraso de 800ms para garantir que o navegador pinte a tela e carregue a fonte Montserrat
+    // Delay curto para garantir que o navegador pinte o container novo
     setTimeout(() => {
         html2pdf().set(opt).from(container).toPdf().get('pdf').then(function (pdf) {
             const totalPages = pdf.internal.getNumberOfPages();
+            
+            // Loop para carimbar o rodapé e numeração em todas as páginas
             for (let i = 1; i <= totalPages; i++) {
                 pdf.setPage(i);
                 pdf.setFontSize(8);
                 pdf.setTextColor(136, 150, 164);
+                
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
                 
-                pdf.text('Guia de itinerário privado. Documento gerado por SmartTrip App ©.  |  ' + trip.title, 10, pageHeight - 8);
-                pdf.text(i + '/' + totalPages, pageWidth - 15, pageHeight - 8);
+                // Texto do rodapé
+                const footerText = 'Guia de itinerário privado. Documento gerado por SmartTrip App ©. | ' + trip.title;
+                pdf.text(footerText, 10, pageHeight - 8);
+                
+                // Numeração da página
+                const pageText = i + '/' + totalPages;
+                pdf.text(pageText, pageWidth - 15, pageHeight - 8);
             }
         }).save().then(() => {
             // RESTAURA A TELA AO NORMAL APÓS O DOWNLOAD
@@ -1958,13 +1972,9 @@ async function generateTripPDF(tripId) {
             showToast("✓ PDF exportado com sucesso!");
         }).catch(err => {
             console.error("Erro ao gerar PDF:", err);
-            
             document.documentElement.style.overflow = origHtmlOverflow;
-            document.documentElement.style.height = origHtmlHeight;
             document.body.style.overflow = origBodyOverflow;
-            document.body.style.height = origBodyHeight;
-            document.body.removeChild(container);
-            
+            if(container.parentNode) document.body.removeChild(container);
             loadingOverlay.innerHTML = originalContent;
             loadingOverlay.classList.add('hidden');
             showToast("Erro ao processar PDF.");
