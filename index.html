@@ -345,6 +345,9 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
   </div>
 
   <div class="screen" id="itinerary-screen">
+    <button class="btn btn-primary" style="position:absolute; top:12px; right:12px; z-index:100; font-size:12px; padding:8px 16px;" onclick="generateTripPDF(activeTripId)">
+        <span class="material-symbols-rounded" style="font-size:18px;">picture_as_pdf</span> PDF
+    </button>
     <div class="filters-bar">
       <button class="btn-clear" onclick="clearFilters()" title="Limpar Filtros"><span class="material-symbols-rounded" style="font-size:20px;">filter_alt_off</span></button>
       <div class="filter-chip"><select id="filter-city" class="global-trip-select" style="padding: 6px 24px 6px 12px;" onchange="applyFilters('itinerary')"><option value="">Cidade</option></select></div>
@@ -1657,7 +1660,6 @@ async function startAIGeneration() {
     await completeLoadingSteps();
     renderAIPreview(generatedData, data.destino);
     
-    // Após gerar, marca a viagem temporária na preview como pronta para geocodificação
     if (generatedData) {
         generatedData.isGeocoding = true;
     }
@@ -1792,7 +1794,7 @@ function importGenerated() {
     hospedagens: hosp,
     sheetUrl: null,
     icon: 'mat:auto_awesome',
-    isGeocoding: true // Aciona geocodificação
+    isGeocoding: true 
   };
   
   savedTrips.push(newTrip);
@@ -1822,22 +1824,29 @@ function backToWizard() {
   }, 300);
 }
 
-/* ================= EXPORTAÇÃO PDF ================= */
+/* ================= EXPORTAÇÃO PDF (CORRIGIDO) ================= */
 async function generateTripPDF(tripId) {
     const trip = savedTrips.find(t => t.id === tripId);
     if (!trip) return;
 
-    document.getElementById('loading').classList.remove('hidden');
+    // Atualiza tela de loading para o estilo SmartTrip IA
+    const loadingOverlay = document.getElementById('loading');
+    const originalContent = loadingOverlay.innerHTML;
+    
+    loadingOverlay.innerHTML = `
+        <div class="loading-compass"></div>
+        <p id="loading-text" style="font-weight: 700; color: var(--primary-dark); margin-top: 20px;">Gerando seu roteiro em PDF</p>
+    `;
+    loadingOverlay.classList.remove('hidden');
 
-    // SVG com a opacidade/cores já enfraquecidas nativamente (sem precisar de overlay absolute)
     const watermark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-opacity='0.08' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-opacity='0.08' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-opacity='0.15' stroke-width='3.5'/%3E%3C/svg%3E`;
 
     let pdfHtml = `
-    <div style="font-family: 'Montserrat', sans-serif; padding: 40px; background-color: #ffffff; background-image: url('${watermark}'); background-size: 250px 250px; color: #1a2a33;">
+    <div style="font-family: 'Montserrat', sans-serif; padding: 40px; background-color: #ffffff; background-image: url('${watermark}'); background-size: 250px 250px; color: #1a2a33; width: 750px; min-height: 1000px;">
         
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2596be; padding-bottom:15px; margin-bottom:40px;">
             <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                <div style="width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center;">
                     <div style="width:4px; height:24px; background:#B8D430; transform:rotate(45deg); border-radius:2px;"></div>
                 </div>
                 <span style="font-size:26px; font-weight:900; color:#2596be; letter-spacing:-1px;">SmartTrip</span>
@@ -1850,8 +1859,8 @@ async function generateTripPDF(tripId) {
 
     let currentCity = null;
     let currentDay = null;
-
     let fullRoteiro = [...(trip.hospedagens || []), ...(trip.roteiro || [])];
+    
     fullRoteiro.sort((a, b) => {
       let dA = parseDayNum(a.dia), dB = parseDayNum(b.dia);
       if (dA !== dB) return dA - dB;
@@ -1863,26 +1872,23 @@ async function generateTripPDF(tripId) {
             currentCity = item.cidade;
             pdfHtml += `<div style="background:#15556c; color:white; padding:10px 25px; border-radius:6px; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:2.5px; margin: 40px 0 20px;">${currentCity}</div>`;
         }
-
         if(item.dia !== currentDay) {
             currentDay = item.dia;
             pdfHtml += `<h2 style="font-size:22px; font-weight:800; color:#2596be; margin: 25px 0 15px; border-left: 6px solid #B8D430; padding-left: 15px;">${currentDay}</h2>`;
         }
 
-        // Tenta extrair a coordenada do link; se não existir, deixa em branco
         let mapCoords = item.google_maps && item.google_maps.includes('@') ? item.google_maps.split('@')[1].split(',').slice(0,2).join(',') : '';
-        // Cria a URL da imagem. NOTA: Substitua SUA_API_KEY_AQUI pela sua chave do Google Maps.
         let mapImgSrc = mapCoords ? `https://maps.googleapis.com/maps/api/staticmap?center=${mapCoords}&zoom=15&size=300x300&markers=color:0x2596be%7C${mapCoords}&key=SUA_API_KEY_AQUI` : '';
 
         pdfHtml += `
-        <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:25px; overflow:hidden; page-break-inside:avoid;">
+        <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:25px; overflow:hidden; page-break-inside:avoid; width: 100%;">
             <div style="background:#f0f9ff; padding:20px; width:95px; text-align:center; border-right:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 <span style="font-size:20px; font-weight:900; color:#2596be;">${item.hora || '--'}</span>
             </div>
             <div style="padding:20px; flex:1; display:flex; flex-direction:column; justify-content:center;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
                     <span style="font-size:17px; font-weight:800; color:#1a2a33; line-height:1.2;">${item.atividade}</span>
-                    <span style="font-size:9px; font-weight:800; background:#B8D430; color:#15556c; padding:4px 10px; border-radius:5px; text-transform:uppercase; margin-left:10px;">${item.categoria || 'Geral'}</span>
+                    <span style="font-size:9px; font-weight:800; background:#B8D430; color:#15556c; padding:4px 10px; border-radius:5px; text-transform:uppercase; white-space:nowrap; margin-left:10px;">${item.categoria || 'Geral'}</span>
                 </div>
                 <div style="font-size:12px; color:#2596be; font-weight:700; margin-bottom:12px;">
                     📍 ${item.endereco || parseFullAddress(item)}
@@ -1893,7 +1899,7 @@ async function generateTripPDF(tripId) {
             </div>
             ${mapImgSrc ? `
             <div style="width:160px; background:#f7f9fb; border-left:1px solid #e2e8f0; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
-                <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'">
+                <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;" crossOrigin="anonymous" onerror="this.style.display='none'">
                 <div style="position:absolute; bottom:5px; right:5px; background:rgba(255,255,255,0.8); padding:2px 4px; border-radius:2px; font-size:7px; color:#15556c; font-weight:700;">SmartTrip Map</div>
             </div>` : ''}
         </div>`;
@@ -1901,36 +1907,33 @@ async function generateTripPDF(tripId) {
 
     pdfHtml += `</div>`;
 
-    // 1. Criar container invisível na página real (Isso resolve 99% dos problemas de página em branco e fontes)
-    const container = document.createElement('div');
-    container.innerHTML = pdfHtml;
-    container.style.position = 'absolute';
-    container.style.left = '-9999px';
-    container.style.top = '0';
-    container.style.width = '800px'; // Força a largura para formato A4
-    document.body.appendChild(container);
-
     const opt = {
         margin: 10,
-        filename: `Roteiro_SmartTrip.pdf`,
+        filename: 'Roteiro_' + trip.title.replace(/\s+/g, '_') + '.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true,
+            scrollY: 0,
+            logging: false
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // 2. Aguarda a injeção do DOM ser lida pelo navegador antes de printar
+    // Gera o PDF diretamente da string HTML (método mais estável para html2pdf)
     setTimeout(() => {
-        html2pdf().set(opt).from(container).save().then(() => {
-            document.body.removeChild(container); // Limpa o DOM após gerar
-            document.getElementById('loading').classList.add('hidden');
+        html2pdf().set(opt).from(pdfHtml).save().then(() => {
+            loadingOverlay.innerHTML = originalContent;
+            loadingOverlay.classList.add('hidden');
             showToast("✓ PDF exportado com sucesso!");
         }).catch(err => {
-            document.body.removeChild(container);
-            document.getElementById('loading').classList.add('hidden');
-            showToast("Erro ao gerar PDF. Verifique os dados.");
-            console.error(err);
+            console.error("Erro ao gerar PDF:", err);
+            loadingOverlay.innerHTML = originalContent;
+            loadingOverlay.classList.add('hidden');
+            showToast("Erro ao processar PDF.");
         });
-    }, 500);
+    }, 600);
 }
 </script>
 
