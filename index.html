@@ -141,7 +141,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 .tag { font-weight:700; letter-spacing: 0.3px; }
 .form-label { font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; }
-.loading-overlay { position:fixed; inset:0; z-index:2000; background:rgba(255,255,255,0.9); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
+.loading-overlay { position:fixed; inset:0; z-index:2000; background:rgba(255,255,255,1); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
 .loading-overlay.hidden { opacity:0; pointer-events:none; }
 .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
@@ -1880,7 +1880,7 @@ async function generateTripPDF(tripId) {
 
         // page-break-inside: avoid garante que o card inteiro pule de página se não couber
         pdfHtml += `
-        <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:20px; overflow:hidden; page-break-inside:avoid; width: 100%;">
+        <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:20px; overflow:hidden; page-break-inside:avoid; break-inside:avoid; width: 100%;">
             <div style="background:#f0f9ff; padding:15px; width:85px; text-align:center; border-right:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 <span style="font-size:18px; font-weight:900; color:#2596be;">${item.hora || '--'}</span>
             </div>
