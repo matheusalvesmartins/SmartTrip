@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL@20..48,100..700,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
 /* VARIÁVEIS DE ACORDO COM O BRANDBOOK v2.0 */
 :root {
@@ -72,6 +73,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
 .filled { font-variation-settings:'FILL' 1; }
+.anim-spin { animation: spin 2s linear infinite; }
 
 .topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg-card); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:64px; box-shadow: var(--shadow); position: relative;}
 .brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
@@ -139,11 +141,11 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 .tag { font-weight:700; letter-spacing: 0.3px; }
 .form-label { font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; }
-.loading-overlay { position:fixed; inset:0; z-index:1000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
+.loading-overlay { position:fixed; inset:0; z-index:2000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
 .loading-overlay.hidden { opacity:0; pointer-events:none; }
 .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
 @keyframes spin { to{transform:rotate(360deg)} }
-.toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:var(--text-sm); font-weight:700; z-index:2000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
+.toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:var(--text-sm); font-weight:700; z-index:3000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
 .toast.visible { transform:translateX(-50%) translateY(0); opacity:1; }
 
 /* Toggle Switch (PRO Settings) */
@@ -649,11 +651,102 @@ window.onload = () => {
   applyGlobalSettings();
   renderIconOptions();
   loadTripsFromStorage();
+  
+  // Triggers geocoding queues if needed
+  if (savedTrips.length > 0) {
+      savedTrips.forEach(trip => {
+          let allItems = [...(trip.roteiro || []), ...(trip.hospedagens || [])];
+          let needsGeocoding = allItems.some(i => !i.endereco && extractCoords(i.google_maps));
+          if (needsGeocoding && !trip.isGeocoding) {
+              trip.isGeocoding = true;
+              setTimeout(() => startGeocoding(trip.id), 500);
+          }
+      });
+  }
+
   renderHomeTrips();
   updateTopSelector();
   if(savedTrips.length > 0) changeActiveTrip(savedTrips[0].id, true);
   setDefaultDates(); 
 };
+
+/* ================= GEOCODING EM BACKGROUND (Nominatim OSM) ================= */
+async function startGeocoding(tripId) {
+    let trip = savedTrips.find(t => t.id === tripId);
+    if (!trip) return;
+
+    let needsSave = false;
+    let allItems = [...(trip.roteiro || []), ...(trip.hospedagens || [])];
+
+    for (let i = 0; i < allItems.length; i++) {
+        let item = allItems[i];
+        if (!item.endereco) {
+            let coords = extractCoords(item.google_maps);
+            if (coords) {
+                try {
+                    let res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1`);
+                    let data = await res.json();
+                    if (data && data.display_name) {
+                        let addr = data.address;
+                        let street = addr.road || addr.pedestrian || addr.suburb || "";
+                        let number = addr.house_number || "";
+                        let suburb = addr.suburb || addr.neighbourhood || addr.city_district || "";
+                        
+                        let formatted = "";
+                        if(street) formatted += street;
+                        if(number) formatted += ", " + number;
+                        if(suburb) formatted += " - " + suburb;
+                        
+                        if(formatted === "") formatted = data.display_name.split(',').slice(0,3).join(',');
+
+                        item.endereco = formatted;
+                    } else {
+                        item.endereco = "Endereço não localizado";
+                    }
+                } catch (e) {
+                    console.error("Geocoding error", e);
+                    item.endereco = "Endereço indisponível";
+                }
+                needsSave = true;
+                saveTripsToStorage();
+                renderHomeTrips(); 
+                await new Promise(r => setTimeout(r, 1200)); // Rate limit de 1 req/s
+            } else {
+                // Sem coords, faz fallback pro parser manual do url
+                item.endereco = parseAddressLocal(item.google_maps);
+                needsSave = true;
+            }
+        }
+    }
+    
+    trip.isGeocoding = false;
+    if (needsSave) {
+        saveTripsToStorage();
+    }
+    renderHomeTrips();
+}
+
+function parseAddressLocal(url) {
+    if(!url) return "Endereço não informado";
+    try {
+        if(url.includes('/place/')) {
+            let parts = url.split('/place/')[1].split('/')[0];
+            return decodeURIComponent(parts).replace(/\+/g, ' ');
+        }
+        return "Ver no mapa";
+    } catch(e) { return "Localização"; }
+}
+
+function parseFullAddress(item) {
+    if(item.endereco && item.endereco.trim() !== "") return item.endereco;
+    if(item.google_maps && item.google_maps.includes('/place/')) {
+        try {
+            let slug = item.google_maps.split('/place/')[1].split('/')[0];
+            return decodeURIComponent(slug).replace(/\+/g, ' ');
+        } catch(e) { return "Localização no Mapa"; }
+    }
+    return "Buscando localização...";
+}
 
 /* ================= ÍCONES E CONFIGURAÇÕES ================= */
 function renderIconOptions() {
@@ -745,18 +838,43 @@ function renderHomeTrips() {
 
   if(savedTrips.length > 0) {
     html += savedTrips.map(trip => {
+      let allItems = [...(trip.roteiro||[]), ...(trip.hospedagens||[])];
       let distinctHotels = new Set((trip.hospedagens||[]).map(h => h.google_maps || h.atividade)).size;
+      
+      let itemsToGeocode = allItems.filter(i => !i.endereco && extractCoords(i.google_maps)).length;
+      let pdfBtnHtml = '';
+
+      if (itemsToGeocode > 0) {
+        pdfBtnHtml = `
+            <button class="btn-icon" title="Buscando endereços... (${itemsToGeocode} restantes)" style="position:absolute; bottom:12px; right:50px; width:32px; height:32px; color:var(--text-muted); background:transparent; z-index:2; cursor:wait;">
+               <span class="material-symbols-rounded anim-spin" style="font-size:18px;">sync</span>
+            </button>
+        `;
+        if (!trip.isGeocoding) {
+            trip.isGeocoding = true;
+            setTimeout(() => startGeocoding(trip.id), 500);
+        }
+      } else {
+        trip.isGeocoding = false;
+        pdfBtnHtml = `
+            <button class="btn-icon" onclick="event.stopPropagation(); generateTripPDF('${trip.id}')" title="Gerar PDF" style="position:absolute; bottom:12px; right:50px; width:32px; height:32px; color:var(--primary); background:rgba(37,150,190,0.1); z-index:2;">
+               <span class="material-symbols-rounded" style="font-size:18px;">picture_as_pdf</span>
+            </button>
+        `;
+      }
+
       return `
       <div class="activity-card" style="display:block; position:relative; padding:16px; margin-bottom:16px;">
         <div style="display:flex; align-items:center; gap:16px; width:100%; cursor:pointer;" onclick="changeActiveTrip('${trip.id}')">
           <div style="background:var(--bg-elevated); color:var(--primary); width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
             ${renderIconHtml(trip.icon)}
           </div>
-          <div style="flex:1; min-width:0; padding-right: 30px;">
+          <div style="flex:1; min-width:0; padding-right: 70px;">
             <div style="font-weight:700; font-size:var(--text-lg); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%;">${esc(trip.title)}</div>
             <div style="font-size:var(--text-sm); color:var(--text-secondary); font-weight:500; margin-top:2px;">${(trip.roteiro||[]).length} atividades • ${distinctHotels} hotéis</div>
           </div>
         </div>
+        ${pdfBtnHtml}
         <button class="btn-icon" onclick="editTrip(event, '${trip.id}')" title="Configurar" style="position:absolute; bottom:12px; right:12px; width:32px; height:32px; color:var(--text-secondary); background:transparent; z-index:2;">
            <span class="material-symbols-rounded" style="font-size:20px;">tune</span>
         </button>
@@ -866,7 +984,8 @@ function parseGviz(data) {
     hora: headers.findIndex(h => h.includes('hora')||h.includes('time')), categoria: headers.findIndex(h => h.includes('categoria')||h.includes('tipo')),
     atividade: headers.findIndex(h => h.includes('atividade')||h.includes('descricao')||h.includes('titulo')), google_maps: headers.findIndex(h => h.includes('maps')||h.includes('mapa')),
     observacoes: headers.findIndex(h => h.includes('observacoes')||h.includes('obs')), link: headers.findIndex(h => (h.includes('link')||h.includes('anexo')) && !h.includes('maps')),
-    custos: headers.findIndex(h => h.includes('custo')||h.includes('valor')||h.includes('preco'))
+    custos: headers.findIndex(h => h.includes('custo')||h.includes('valor')||h.includes('preco')),
+    endereco: headers.findIndex(h => h.includes('endereco')||h.includes('rua')||h.includes('localizacao'))
   };
   return data.table.rows.map(row => {
     let r = row.c; let item = { _id: 'id_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 9) };
@@ -882,12 +1001,19 @@ function checkImportStatus() {
       let trip = savedTrips.find(t => t.id === importContext.updateId);
       trip.roteiro = importContext.roteiro; trip.hospedagens = importContext.hospedagens;
       trip.title = importContext.customName; trip.sheetUrl = importContext.url; trip.icon = importContext.customIcon;
+      
+      trip.isGeocoding = true;
+      setTimeout(() => startGeocoding(trip.id), 500);
+
       saveTripsToStorage(); renderHomeTrips(); updateTopSelector();
       if(activeTripId === trip.id) changeActiveTrip(trip.id, true);
       showToast('Sincronização concluída!');
     } else {
-      let newTrip = { id: 'trip_' + Date.now(), title: importContext.customName || 'Nova Viagem', roteiro: importContext.roteiro, hospedagens: importContext.hospedagens, sheetUrl: importContext.url, icon: importContext.customIcon || 'mat:flight_takeoff' };
+      let newTrip = { id: 'trip_' + Date.now(), title: importContext.customName || 'Nova Viagem', roteiro: importContext.roteiro, hospedagens: importContext.hospedagens, sheetUrl: importContext.url, icon: importContext.customIcon || 'mat:flight_takeoff', isGeocoding: true };
       savedTrips.push(newTrip); saveTripsToStorage(); renderHomeTrips(); updateTopSelector(); changeActiveTrip(newTrip.id);
+      
+      setTimeout(() => startGeocoding(newTrip.id), 500);
+
       showToast('Roteiro importado com sucesso!');
     }
   }
@@ -1099,6 +1225,7 @@ function openDetail(id, isHosp) {
   document.getElementById('modal-info-grid').innerHTML = grid;
 
   let sec = '';
+  if(parseFullAddress(item) !== "Endereço sob consulta") sec += `<div class="modal-section"><div class="section-title">Endereço</div><div class="section-body" style="font-weight: 600; color: var(--primary-dark);">📍 ${esc(parseFullAddress(item))}</div></div>`;
   if(item.observacoes) sec += `<div class="modal-section"><div class="section-title">Observações</div><div class="section-body">${esc(item.observacoes).replace(/\n/g,'<br>')}</div></div>`;
   if(item.link) sec += `<div class="modal-section"><div class="section-title">Anexos</div><div class="section-body"><a href="${esc(item.link)}" target="_blank"><span class="material-symbols-rounded" style="font-size:var(--text-xl);">attach_file</span> Visualizar Anexo/Link</a></div></div>`;
   
@@ -1338,7 +1465,6 @@ async function sendChatMessage() {
 
   let msgContainer = document.getElementById('chat-messages');
 
-  // Mensagem do usuário
   let userMsg = document.createElement('div');
   userMsg.className = "chat-msg user";
   userMsg.textContent = text;
@@ -1346,7 +1472,6 @@ async function sendChatMessage() {
   input.value = '';
   msgContainer.scrollTop = msgContainer.scrollHeight;
 
-  // Estado de "Pensando..."
   let loading = document.createElement('div');
   loading.className = "chat-msg bot";
   loading.style.color = "var(--text-muted)";
@@ -1357,7 +1482,6 @@ async function sendChatMessage() {
   let tripId = document.getElementById('chat-trip-selector').value;
   let trip = savedTrips.find(t => t.id === tripId);
   
-  // OTIMIZAÇÃO: Filtramos URLs de mapas e IDs para economizar milhares de tokens
   let contextoLimpo = "Nenhuma viagem selecionada.";
   if (trip) {
     const roteiroEnxuto = (trip.roteiro || []).map(item => ({
@@ -1512,7 +1636,6 @@ async function startAIGeneration() {
   let prompt = buildAIPrompt(data);
   
   try {
-    // Chamada à API do Vercel
     const resp = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1534,6 +1657,10 @@ async function startAIGeneration() {
     await completeLoadingSteps();
     renderAIPreview(generatedData, data.destino);
     
+    // Após gerar, marca a viagem temporária na preview como pronta para geocodificação
+    if (generatedData) {
+        generatedData.isGeocoding = true;
+    }
   } catch(err) {
     console.error('AI Generation error:', err);
     showToast(`Erro: ${err.message}`);
@@ -1664,11 +1791,15 @@ function importGenerated() {
     roteiro: rot,
     hospedagens: hosp,
     sheetUrl: null,
-    icon: 'mat:auto_awesome'
+    icon: 'mat:auto_awesome',
+    isGeocoding: true // Aciona geocodificação
   };
   
   savedTrips.push(newTrip);
   saveTripsToStorage();
+  
+  setTimeout(() => startGeocoding(newTrip.id), 500);
+
   renderHomeTrips();
   updateTopSelector();
   
@@ -1690,6 +1821,97 @@ function backToWizard() {
     updateWizUI();
   }, 300);
 }
+
+/* ================= EXPORTAÇÃO PDF (LAYOUT v2.6) ================= */
+async function generateTripPDF(tripId) {
+    const trip = savedTrips.find(t => t.id === tripId);
+    if (!trip) return;
+
+    document.getElementById('loading').classList.remove('hidden');
+
+    const watermark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-width='3.5'/%3E%3C/svg%3E`;
+
+    let pdfHtml = `
+    <div style="font-family: 'Montserrat', sans-serif; padding: 40px; background: #fff; background-image: url('${watermark}'); background-size: 200px 200px; position: relative;">
+        <div style="position: absolute; inset: 0; background: rgba(255,255,255,0.95); z-index: 1;"></div>
+        
+        <div style="position: relative; z-index: 2;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2596be; padding-bottom:15px; margin-bottom:40px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center;">
+                        <div style="width:4px; height:24px; background:#B8D430; transform:rotate(45deg); border-radius:2px;"></div>
+                    </div>
+                    <span style="font-size:26px; font-weight:900; color:#2596be; letter-spacing:-1px;">SmartTrip</span>
+                </div>
+                <div style="text-align:right">
+                    <div style="font-size:18px; font-weight:800; color:#15556c;">${trip.title}</div>
+                    <div style="font-size:10px; color:#8896a4; text-transform:uppercase; letter-spacing:1px;">Guia de Itinerário v2.6</div>
+                </div>
+            </div>`;
+
+    let currentCity = null;
+    let currentDay = null;
+
+    let fullRoteiro = [...(trip.hospedagens || []), ...(trip.roteiro || [])];
+    fullRoteiro.sort((a, b) => {
+      let dA = parseDayNum(a.dia), dB = parseDayNum(b.dia);
+      if (dA !== dB) return dA - dB;
+      return parseTimeNum(a.hora) - parseTimeNum(b.hora);
+    });
+
+    fullRoteiro.forEach(item => {
+        if(item.cidade !== currentCity) {
+            currentCity = item.cidade;
+            pdfHtml += `<div style="background:#15556c; color:white; padding:10px 25px; border-radius:6px; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:2.5px; margin: 40px 0 20px;">${currentCity}</div>`;
+        }
+
+        if(item.dia !== currentDay) {
+            currentDay = item.dia;
+            pdfHtml += `<h2 style="font-size:22px; font-weight:800; color:#2596be; margin: 25px 0 15px; border-left: 6px solid #B8D430; padding-left: 15px;">${currentDay}</h2>`;
+        }
+
+        pdfHtml += `
+        <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:25px; overflow:hidden; page-break-inside:avoid; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
+            <div style="background:#f0f9ff; padding:20px; min-width:90px; text-align:center; border-right:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center;">
+                <span style="font-size:20px; font-weight:900; color:#2596be;">${item.hora || '--'}</span>
+            </div>
+            <div style="padding:20px; flex:1; display:flex; flex-direction:column; justify-content:center;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+                    <span style="font-size:17px; font-weight:800; color:#1a2a33; line-height:1.2;">${item.atividade}</span>
+                    <span style="font-size:9px; font-weight:800; background:#B8D430; color:#15556c; padding:4px 10px; border-radius:5px; text-transform:uppercase; white-space:nowrap; margin-left:10px;">${item.categoria || 'Geral'}</span>
+                </div>
+                <div style="font-size:12px; color:#2596be; font-weight:700; margin-bottom:12px; display:flex; align-items:flex-start; gap:6px;">
+                    <span style="font-size:14px;">📍</span> <span>${item.endereco || parseFullAddress(item)}</span>
+                </div>
+                <div style="font-size:12px; color:#4a5568; line-height:1.6; border-top: 1px solid #f0f0f0; padding-top:10px;">
+                    ${item.observacoes ? `<b>Dica:</b> ${item.observacoes}` : 'Aproveite o momento!'}
+                </div>
+            </div>
+            <div style="width:33%; background:#f7f9fb; border-left:1px solid #e2e8f0; position:relative; min-height:180px;">
+                <img src="https://maps.googleapis.com/maps/api/staticmap?center=${item.google_maps && item.google_maps.includes('@') ? item.google_maps.split('@')[1].split(',').slice(0,2).join(',') : '0,0'}&zoom=15&size=300x300&markers=color:0x2596be%7C${item.google_maps && item.google_maps.includes('@') ? item.google_maps.split('@')[1].split(',').slice(0,2).join(',') : ''}&key=SUA_API_KEY_AQUI" 
+                     style="width:100%; height:100%; object-fit:cover;"
+                     onerror="this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='">
+                <div style="position:absolute; bottom:8px; right:8px; background:rgba(255,255,255,0.8); padding:2px 6px; border-radius:3px; font-size:8px; color:#15556c; font-weight:700;">SmartTrip Map</div>
+            </div>
+        </div>`;
+    });
+
+    pdfHtml += `</div></div>`;
+
+    const opt = {
+        margin: 0,
+        filename: `Roteiro_${trip.title.replace(/\s+/g, '_')}.pdf`,
+        image: { type: 'jpeg', quality: 1 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(pdfHtml).save().then(() => {
+        document.getElementById('loading').classList.add('hidden');
+        showToast("✓ PDF exportado com sucesso!");
+    });
+}
 </script>
+
 </body>
 </html>
