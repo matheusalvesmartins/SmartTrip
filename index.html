@@ -141,10 +141,8 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 .tag { font-weight:700; letter-spacing: 0.3px; }
 .form-label { font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; }
-.loading-overlay { position:fixed; inset:0; z-index:2000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
+.loading-overlay { position:fixed; inset:0; z-index:2000; background:rgba(255,255,255,0.9); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
 .loading-overlay.hidden { opacity:0; pointer-events:none; }
-.spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
 .toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:var(--text-sm); font-weight:700; z-index:3000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
 .toast.visible { transform:translateX(-50%) translateY(0); opacity:1; }
 
@@ -1874,8 +1872,8 @@ async function generateTripPDF(tripId) {
             pdfHtml += `<h2 style="font-size:22px; font-weight:800; color:#2596be; margin: 25px 0 15px; border-left: 6px solid #B8D430; padding-left: 15px;">${currentDay}</h2>`;
         }
 
-        let mapCoords = item.google_maps && item.google_maps.includes('@') ? item.google_maps.split('@')[1].split(',').slice(0,2).join(',') : '';
-        let mapImgSrc = mapCoords ? `https://maps.googleapis.com/maps/api/staticmap?center=${mapCoords}&zoom=15&size=300x300&markers=color:0x2596be%7C${mapCoords}&key=SUA_API_KEY_AQUI` : '';
+        let coords = extractCoords(item.google_maps);
+        let mapImgSrc = coords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-l+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},15,0/300x300?access_token=pk.eyJ1IjoibS1hbHZlc21hcnRpbnMiLCJhIjoiY21vZXV5NzlvMGpqajJxcHdscmF2eHNkcCJ9.68vvBSKBe29Wc7WUvrBImw` : '';
 
         pdfHtml += `
         <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:25px; overflow:hidden; page-break-inside:avoid; width: 100%;">
@@ -1890,19 +1888,24 @@ async function generateTripPDF(tripId) {
                 <div style="font-size:12px; color:#2596be; font-weight:700; margin-bottom:12px;">
                     📍 ${item.endereco || parseFullAddress(item)}
                 </div>
+                ${item.observacoes ? `
                 <div style="font-size:12px; color:#4a5568; line-height:1.6; border-top: 1px solid #f0f0f0; padding-top:10px;">
-                    ${item.observacoes ? `<b>Dica:</b> ${item.observacoes}` : 'Aproveite o local!'}
-                </div>
+                    <b>Dica:</b> ${item.observacoes}
+                </div>` : ''}
             </div>
             ${mapImgSrc ? `
             <div style="width:160px; background:#f7f9fb; border-left:1px solid #e2e8f0; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative;">
                 <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;" crossOrigin="anonymous" onerror="this.style.display='none'">
-                <div style="position:absolute; bottom:5px; right:5px; background:rgba(255,255,255,0.8); padding:2px 4px; border-radius:2px; font-size:7px; color:#15556c; font-weight:700;">SmartTrip Map</div>
             </div>` : ''}
         </div>`;
     });
-
-    pdfHtml += `</div>`;
+    
+    // Rodapé profissional
+    pdfHtml += `
+        <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #8896a4;">
+            Guia de itinerário privado. Documento gerado por SmartTrip App ©.
+        </div>
+    </div>`;
 
     const opt = {
         margin: 10,
