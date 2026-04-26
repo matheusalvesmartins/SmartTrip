@@ -143,8 +143,6 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 .form-label { font-size: var(--text-sm); font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; display: block; text-transform: uppercase; }
 .loading-overlay { position:fixed; inset:0; z-index:2000; background:rgba(255,255,255,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; transition:opacity .3s ease; }
 .loading-overlay.hidden { opacity:0; pointer-events:none; }
-.spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--primary); border-radius:50%; animation:spin .8s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
 .toast { position:fixed; top:80px; left:50%; transform:translateX(-50%) translateY(-20px); background:var(--text); color:var(--bg); padding:12px 24px; border-radius:30px; font-size:var(--text-sm); font-weight:700; z-index:3000; transition:all .3s ease; text-align:center; box-shadow:var(--shadow); opacity:0; pointer-events:none; }
 .toast.visible { transform:translateX(-50%) translateY(0); opacity:1; }
 
@@ -1821,8 +1819,7 @@ function backToWizard() {
   }, 300);
 }
 
-/* ================= EXPORTAÇÃO PDF (CORREÇÃO DE PÁGINA EM BRANCO) ================= */
-/* ================= EXPORTAÇÃO PDF (CORREÇÃO BASE64 / STRING HTML) ================= */
+/* ================= EXPORTAÇÃO PDF (CORREÇÃO BASE64 E OVERFLOW DOM) ================= */
 async function generateTripPDF(tripId) {
     const trip = savedTrips.find(t => t.id === tripId);
     if (!trip) return;
@@ -1843,23 +1840,22 @@ async function generateTripPDF(tripId) {
         loadingOverlay.classList.add('hidden');
     }
 
-    // 2. Função Helper: Baixa imagem externa via Canvas e converte para Base64
+    // 2. Função Helper: Transforma imagem remota (URL) em string local Base64 via Canvas. 
+    //    Isso IMPEDE o html2canvas de dar timeout na página.
     const getBase64Image = async (url) => {
         return new Promise((resolve) => {
             const img = new Image();
-            img.crossOrigin = "Anonymous"; // Exige CORS para o canvas não ser "manchado"
+            img.crossOrigin = "Anonymous"; // Exige CORS
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
                 canvas.height = img.height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0);
-                // Retorna Base64 JPEG (mais leve pro PDF)
                 resolve(canvas.toDataURL('image/jpeg', 0.8));
             };
             img.onerror = () => {
-                console.warn("Erro ao carregar imagem para o PDF:", url);
-                resolve(''); // Fallback seguro
+                resolve(''); // Se a API do Mapbox der erro (ex: falta de token), cai aqui e não trava.
             };
             img.src = url;
         });
@@ -1878,21 +1874,21 @@ async function generateTripPDF(tripId) {
     let pdfHtml = `
     <div style="font-family: 'Montserrat', sans-serif; padding: 30px; background-color: #ffffff; background-image: url('${watermark}'); background-size: 250px 250px; color: #1a2a33; width: 750px;">
         <style>
-            .pdf-card { display: flex; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 25px; overflow: hidden; page-break-inside: avoid; break-inside: avoid; width: 100%; }
+            .pdf-card { display: table; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 25px; page-break-inside: avoid; break-inside: avoid; width: 100%; border-collapse: separate; table-layout: fixed; }
             .city-label { background:#15556c; color:white; padding:10px 25px; border-radius:6px; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:2.5px; margin: 30px 0 15px; display:inline-block; page-break-after: avoid; break-after: avoid; }
             .day-header { font-size:22px; font-weight:800; color:#2596be; margin: 25px 0 15px; border-left: 6px solid #B8D430; padding-left: 15px; page-break-after: avoid; break-after: avoid; }
         </style>
         
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2596be; padding-bottom:15px; margin-bottom:30px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                    <div style="width:4px; height:24px; background:#B8D430; transform:rotate(45deg); border-radius:2px;"></div>
+        <div style="display:table; width:100%; border-bottom:3px solid #2596be; padding-bottom:15px; margin-bottom:30px;">
+            <div style="display:table-cell; vertical-align:middle; width:70%;">
+                <div style="display:inline-block; width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; vertical-align:middle; text-align:center;">
+                    <div style="width:4px; height:24px; background:#B8D430; transform:rotate(45deg); display:inline-block; margin-top:9px;"></div>
                 </div>
-                <span style="font-size:26px; font-weight:900; color:#2596be; letter-spacing:-1px;">SmartTrip</span>
+                <span style="font-size:26px; font-weight:900; color:#2596be; letter-spacing:-1px; vertical-align:middle; margin-left:12px;">SmartTrip</span>
             </div>
-            <div style="text-align:right">
+            <div style="display:table-cell; vertical-align:middle; text-align:right;">
                 <div style="font-size:18px; font-weight:800; color:#15556c;">${trip.title}</div>
-                <div style="font-size:10px; color:#8896a4; text-transform:uppercase; letter-spacing:1px;">Guia de Itinerário</div>
+                <div style="font-size:10px; color:#8896a4; text-transform:uppercase; letter-spacing:1px; margin-top:4px;">Guia de Itinerário</div>
             </div>
         </div>`;
 
@@ -1901,7 +1897,7 @@ async function generateTripPDF(tripId) {
     let processedCount = 0;
     const progressEl = document.getElementById('loading-progress');
 
-    // 4. Loop assíncrono para pré-carregar os mapas em Base64
+    // 4. Loop assíncrono para gerar todo o HTML e as imagens Base64
     for (const item of fullRoteiro) {
         processedCount++;
         if (progressEl) progressEl.innerText = `Processando mapas... (${processedCount}/${fullRoteiro.length})`;
@@ -1920,59 +1916,77 @@ async function generateTripPDF(tripId) {
         
         let base64Map = '';
         if (mapImgSrc) {
-            base64Map = await getBase64Image(mapImgSrc); // Aguarda a imagem converter em string text
+            base64Map = await getBase64Image(mapImgSrc); 
         }
 
+        // Tabela é a estrutura mais inquebrável para o html2canvas não fatiar as bordas!
         pdfHtml += `
-        <div class="pdf-card">
-            <div style="background:#f0f9ff; padding:20px; width:95px; text-align:center; border-right:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <span style="font-size:20px; font-weight:900; color:#2596be;">${item.hora || '--'}</span>
-            </div>
-            <div style="padding:20px; flex:1; display:flex; flex-direction:column; justify-content:center;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
-                    <span style="font-size:17px; font-weight:800; color:#1a2a33; line-height:1.2;">${item.atividade}</span>
-                    <span style="font-size:9px; font-weight:800; background:#B8D430; color:#15556c; padding:4px 10px; border-radius:5px; text-transform:uppercase; white-space:nowrap; margin-left:10px;">${item.categoria || 'Visita'}</span>
-                </div>
-                <div style="font-size:12px; color:#2596be; font-weight:700; margin-bottom:12px;">
-                    📍 ${item.endereco || parseFullAddress(item)}
-                </div>
-                ${item.observacoes ? `<div style="font-size:12px; color:#4a5568; line-height:1.6; border-top: 1px solid #f0f0f0; padding-top:10px;"><b>Dica:</b> ${item.observacoes}</div>` : ''}
-            </div>
-            ${base64Map ? `
-            <div style="width:160px; background:#f7f9fb; border-left:1px solid #e2e8f0; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                <img src="${base64Map}" style="width:100%; height:100%; object-fit:cover;">
-            </div>` : ''}
-        </div>`;
+        <table class="pdf-card">
+            <tr>
+                <td style="width:95px; background:#f0f9ff; text-align:center; border-right:1px solid #e2e8f0; padding:20px; vertical-align:middle; border-top-left-radius:12px; border-bottom-left-radius:12px;">
+                    <span style="font-size:20px; font-weight:900; color:#2596be;">${item.hora || '--'}</span>
+                </td>
+                <td style="padding:20px; vertical-align:middle;">
+                    <div style="margin-bottom:10px;">
+                        <span style="font-size:17px; font-weight:800; color:#1a2a33;">${item.atividade}</span>
+                        <span style="font-size:9px; font-weight:800; background:#B8D430; color:#15556c; padding:4px 10px; border-radius:5px; text-transform:uppercase; margin-left:10px;">${item.categoria || 'Visita'}</span>
+                    </div>
+                    <div style="font-size:12px; color:#2596be; font-weight:700; margin-bottom:12px;">
+                        📍 ${item.endereco || parseFullAddress(item)}
+                    </div>
+                    ${item.observacoes ? `<div style="font-size:12px; color:#4a5568; line-height:1.6; border-top: 1px solid #f0f0f0; padding-top:10px;"><b>Dica:</b> ${item.observacoes}</div>` : ''}
+                </td>
+                <td style="width:160px; background:#f7f9fb; border-left:1px solid #e2e8f0; vertical-align:middle; padding:0; border-top-right-radius:12px; border-bottom-right-radius:12px;">
+                    ${base64Map ? `<img src="${base64Map}" style="width:160px; height:100%; object-fit:cover; display:block;">` : 
+                    `<div style="width:160px; height:150px; background-color:#f1f5f9; background-image:radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size:15px 15px; text-align:center; padding-top:55px; box-sizing:border-box;">
+                        <span style="font-size:24px;">📍</span>
+                        <div style="font-size:8px; font-weight:800; color:#64748b; margin-top:6px; text-transform:uppercase; letter-spacing:1px;">Ver Mapa</div>
+                    </div>`}
+                </td>
+            </tr>
+        </table>`;
     }
 
     pdfHtml += `</div>`;
 
-    if(progressEl) progressEl.innerText = "Montando documento...";
+    if(progressEl) progressEl.innerText = "Montando documento final...";
 
-    // 5. Configuração e Geração a partir da String HTML diretamente
+    // 5. MÁGICA: Destrava o overflow do Body do app!
+    // Se não fizermos isso, o html2canvas vai "ler" o app como travado na altura da tela (100vh) e vai cortar o PDF gerando uma tela branca no final.
+    const origHtmlOverflow = document.documentElement.style.overflow;
+    const origHtmlHeight = document.documentElement.style.height;
+    const origBodyOverflow = document.body.style.overflow;
+    const origBodyHeight = document.body.style.height;
+
+    document.documentElement.style.overflow = 'visible';
+    document.documentElement.style.height = 'auto';
+    document.body.style.overflow = 'visible';
+    document.body.style.height = 'auto';
+
+    // 6. Configuração e Geração a partir da String HTML diretamente (Passando pelo from())
     const opt = {
-        margin: [10, 0, 20, 0], // Margem inferior de 20mm para acomodar o rodapé seguro
+        margin: [10, 0, 20, 0], // Margem inferior de 20mm para acomodar o rodapé (JS)
         filename: 'Roteiro_' + trip.title.replace(/\s+/g, '_') + '.pdf',
         pagebreak: { mode: ['css', 'legacy'] },
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false, windowWidth: 800 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
         await html2pdf()
             .set(opt)
-            .from(pdfHtml) // Passo Mágico: string direta (sem injetar no DOM bloqueado)
+            .from(pdfHtml) // Utiliza a string direto! Muito mais limpo e estável.
             .toPdf()
             .get('pdf')
             .then(function (pdf) {
                 const totalPages = pdf.internal.getNumberOfPages();
                 
-                // Carimba o rodapé usando a API nativa
+                // Carimba o rodapé e numeração no documento inteiro
                 for (let i = 1; i <= totalPages; i++) {
                     pdf.setPage(i);
                     pdf.setFontSize(8);
-                    pdf.setTextColor(136, 150, 164);
+                    pdf.setTextColor(136, 150, 164); // --text-muted
                     
                     const pageWidth = pdf.internal.pageSize.getWidth();
                     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -1983,11 +1997,21 @@ async function generateTripPDF(tripId) {
             })
             .save();
 
+        // Volta a página ao normal
+        document.documentElement.style.overflow = origHtmlOverflow;
+        document.documentElement.style.height = origHtmlHeight;
+        document.body.style.overflow = origBodyOverflow;
+        document.body.style.height = origBodyHeight;
+
         finishPdf();
         showToast("✓ PDF exportado com sucesso!");
 
     } catch (err) {
         console.error("Erro ao gerar PDF:", err);
+        document.documentElement.style.overflow = origHtmlOverflow;
+        document.documentElement.style.height = origHtmlHeight;
+        document.body.style.overflow = origBodyOverflow;
+        document.body.style.height = origBodyHeight;
         finishPdf();
         showToast("Erro ao processar PDF.");
     }
