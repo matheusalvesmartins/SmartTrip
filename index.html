@@ -1962,7 +1962,7 @@ async function generateTripPDF(tripId) {
     try {
         await html2pdf()
             .set(opt)
-            .from(pdfHtml) 
+            .from(pdfHtml, 'string') 
             .toPdf()
             .get('pdf')
             .then(function (pdf) {
