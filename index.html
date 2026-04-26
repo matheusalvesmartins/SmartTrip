@@ -1836,7 +1836,63 @@ async function generateTripPDF(tripId) {
     `;
     loadingOverlay.classList.remove('hidden');
  
-    // 2. Monta o HTML do PDF (string pura, isolada do DOM do app)
+    function finishPdf() {
+        loadingOverlay.innerHTML = originalLoadingContent;
+        loadingOverlay.classList.add('hidden');
+    }
+ 
+    // 2. Ordena o roteiro completo
+    let fullRoteiro = [...(trip.hospedagens || []), ...(trip.roteiro || [])];
+    fullRoteiro.sort((a, b) => {
+        let dA = parseDayNum(a.dia), dB = parseDayNum(b.dia);
+        if (dA !== dB) return dA - dB;
+        return parseTimeNum(a.hora) - parseTimeNum(b.hora);
+    });
+ 
+    // 3. Pré-busca TODAS as imagens de mapa e converte para base64
+    let mapImageCache = {};
+ 
+    async function fetchMapAsBase64(coords) {
+        let key = coords.lat + ',' + coords.lng;
+        if (mapImageCache[key]) return; // já buscou
+        let url = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-marker+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14/300x300?access_token=SUA_CHAVE_MAPBOX_AQUI`;
+        try {
+            let resp = await fetch(url);
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            let blob = await resp.blob();
+            let dataUri = await new Promise((resolve, reject) => {
+                let reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+            mapImageCache[key] = dataUri;
+        } catch (e) {
+            console.warn('Falha ao buscar mapa para', key, e);
+            mapImageCache[key] = ''; // fallback: sem imagem
+        }
+    }
+ 
+    // Busca todas em paralelo (max 6 simultâneas para não sobrecarregar)
+    let coordsToFetch = fullRoteiro
+        .map(item => extractCoords(item.google_maps))
+        .filter(Boolean);
+ 
+    // Deduplica por coordenada
+    let uniqueCoords = [];
+    let seen = new Set();
+    coordsToFetch.forEach(c => {
+        let key = c.lat + ',' + c.lng;
+        if (!seen.has(key)) { seen.add(key); uniqueCoords.push(c); }
+    });
+ 
+    // Busca em lotes de 6
+    for (let i = 0; i < uniqueCoords.length; i += 6) {
+        let batch = uniqueCoords.slice(i, i + 6);
+        await Promise.all(batch.map(c => fetchMapAsBase64(c)));
+    }
+ 
+    // 4. Monta o HTML do PDF com imagens já em base64
     const watermark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-opacity='0.08' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-opacity='0.08' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-opacity='0.15' stroke-width='3.5'/%3E%3C/svg%3E`;
  
     let pdfHtml = `
@@ -1857,13 +1913,6 @@ async function generateTripPDF(tripId) {
  
     let currentCity = null;
     let currentDay = null;
-    let fullRoteiro = [...(trip.hospedagens || []), ...(trip.roteiro || [])];
- 
-    fullRoteiro.sort((a, b) => {
-        let dA = parseDayNum(a.dia), dB = parseDayNum(b.dia);
-        if (dA !== dB) return dA - dB;
-        return parseTimeNum(a.hora) - parseTimeNum(b.hora);
-    });
  
     fullRoteiro.forEach(item => {
         if (item.cidade !== currentCity) {
@@ -1876,7 +1925,11 @@ async function generateTripPDF(tripId) {
         }
  
         let coords = extractCoords(item.google_maps);
-        let mapImgSrc = coords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-marker+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14/300x300?access_token=SUA_CHAVE_MAPBOX_AQUI` : '';
+        let mapImgSrc = '';
+        if (coords) {
+            let key = coords.lat + ',' + coords.lng;
+            mapImgSrc = mapImageCache[key] || '';
+        }
  
         pdfHtml += `
         <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:25px; overflow:hidden; page-break-inside:avoid; break-inside:avoid; width:100%;">
@@ -1895,19 +1948,19 @@ async function generateTripPDF(tripId) {
             </div>
             ${mapImgSrc ? `
             <div style="width:160px; background:#f7f9fb; border-left:1px solid #e2e8f0; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;" crossOrigin="anonymous">
+                <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;">
             </div>` : ''}
         </div>`;
     });
  
     pdfHtml += `</div>`;
  
-    // 3. Aguarda fontes carregarem
+    // 5. Aguarda fontes carregarem
     if (document.fonts && document.fonts.ready) {
         await document.fonts.ready;
     }
  
-    // 4. Gera o PDF usando from(string) — html2pdf cria seu próprio container isolado
+    // 6. Gera o PDF
     const opt = {
         margin: [10, 0, 20, 0],
         filename: 'Roteiro_' + trip.title.replace(/\s+/g, '_') + '.pdf',
@@ -1923,11 +1976,6 @@ async function generateTripPDF(tripId) {
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
- 
-    function finishPdf() {
-        loadingOverlay.innerHTML = originalLoadingContent;
-        loadingOverlay.classList.add('hidden');
-    }
  
     try {
         await html2pdf()
