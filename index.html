@@ -1826,7 +1826,7 @@ async function generateTripPDF(tripId) {
     const trip = savedTrips.find(t => t.id === tripId);
     if (!trip) return;
  
-    // 1. Mostra loading com bússola
+    // 1. Mostra loading
     const loadingOverlay = document.getElementById('loading');
     const originalLoadingContent = loadingOverlay.innerHTML;
  
@@ -1841,7 +1841,7 @@ async function generateTripPDF(tripId) {
         loadingOverlay.classList.add('hidden');
     }
  
-    // 2. Ordena o roteiro completo
+    // 2. Ordena roteiro
     let fullRoteiro = [...(trip.hospedagens || []), ...(trip.roteiro || [])];
     fullRoteiro.sort((a, b) => {
         let dA = parseDayNum(a.dia), dB = parseDayNum(b.dia);
@@ -1849,55 +1849,17 @@ async function generateTripPDF(tripId) {
         return parseTimeNum(a.hora) - parseTimeNum(b.hora);
     });
  
-    // 3. Pré-busca TODAS as imagens de mapa e converte para base64
-    let mapImageCache = {};
- 
-    async function fetchMapAsBase64(coords) {
-        let key = coords.lat + ',' + coords.lng;
-        if (mapImageCache[key]) return; // já buscou
-        let url = `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-marker+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14/300x300?access_token=SUA_CHAVE_MAPBOX_AQUI`;
-        try {
-            let resp = await fetch(url);
-            if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            let blob = await resp.blob();
-            let dataUri = await new Promise((resolve, reject) => {
-                let reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            });
-            mapImageCache[key] = dataUri;
-        } catch (e) {
-            console.warn('Falha ao buscar mapa para', key, e);
-            mapImageCache[key] = ''; // fallback: sem imagem
-        }
-    }
- 
-    // Busca todas em paralelo (max 6 simultâneas para não sobrecarregar)
-    let coordsToFetch = fullRoteiro
-        .map(item => extractCoords(item.google_maps))
-        .filter(Boolean);
- 
-    // Deduplica por coordenada
-    let uniqueCoords = [];
-    let seen = new Set();
-    coordsToFetch.forEach(c => {
-        let key = c.lat + ',' + c.lng;
-        if (!seen.has(key)) { seen.add(key); uniqueCoords.push(c); }
-    });
- 
-    // Busca em lotes de 6
-    for (let i = 0; i < uniqueCoords.length; i += 6) {
-        let batch = uniqueCoords.slice(i, i + 6);
-        await Promise.all(batch.map(c => fetchMapAsBase64(c)));
-    }
- 
-    // 4. Monta o HTML do PDF com imagens já em base64
+    // 3. Monta HTML do PDF (com <img> tags normais apontando pro Mapbox)
     const watermark = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='16' stroke='%232596be' stroke-opacity='0.08' stroke-width='1.5' fill='none'/%3E%3Ccircle cx='80' cy='80' r='36' stroke='%232596be' stroke-opacity='0.08' stroke-width='1.5' fill='none'/%3E%3Cline x1='73' y1='87' x2='87' y2='73' stroke='%23B8D430' stroke-opacity='0.15' stroke-width='3.5'/%3E%3C/svg%3E`;
  
     let pdfHtml = `
     <div style="font-family: 'Montserrat', Arial, Helvetica, sans-serif; padding: 30px; background-color: #ffffff; background-image: url('${watermark}'); background-size: 250px 250px; color: #1a2a33; width: 750px;">
- 
+        <style>
+            .pdf-card { display: flex; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 25px; overflow: hidden; page-break-inside: avoid; break-inside: avoid; width: 100%; }
+            .city-label { background:#15556c; color:white; padding:10px 25px; border-radius:6px; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:2.5px; margin: 30px 0 15px; page-break-after: avoid; break-after: avoid; }
+            .day-header { font-size:22px; font-weight:800; color:#2596be; margin: 25px 0 15px; border-left: 6px solid #B8D430; padding-left: 15px; page-break-after: avoid; break-after: avoid; }
+        </style>
+        
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2596be; padding-bottom:15px; margin-bottom:30px;">
             <div style="display:flex; align-items:center; gap:12px;">
                 <div style="width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; position:relative; display:flex; align-items:center; justify-content:center;">
@@ -1917,22 +1879,18 @@ async function generateTripPDF(tripId) {
     fullRoteiro.forEach(item => {
         if (item.cidade !== currentCity) {
             currentCity = item.cidade;
-            pdfHtml += `<div style="background:#15556c; color:white; padding:10px 25px; border-radius:6px; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:2.5px; margin:30px 0 15px; page-break-after:avoid; break-after:avoid;">${currentCity}</div>`;
+            pdfHtml += `<div class="city-label">${currentCity}</div>`;
         }
         if (item.dia !== currentDay) {
             currentDay = item.dia;
-            pdfHtml += `<h2 style="font-size:22px; font-weight:800; color:#2596be; margin:25px 0 15px; border-left:6px solid #B8D430; padding-left:15px; page-break-after:avoid; break-after:avoid;">${currentDay}</h2>`;
+            pdfHtml += `<h2 class="day-header">${currentDay}</h2>`;
         }
  
         let coords = extractCoords(item.google_maps);
-        let mapImgSrc = '';
-        if (coords) {
-            let key = coords.lat + ',' + coords.lng;
-            mapImgSrc = mapImageCache[key] || '';
-        }
+        let mapImgSrc = coords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-marker+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14/300x300?access_token=SUA_CHAVE_MAPBOX_AQUI` : '';
  
         pdfHtml += `
-        <div style="display:flex; background:#fff; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:25px; overflow:hidden; page-break-inside:avoid; break-inside:avoid; width:100%;">
+        <div class="pdf-card">
             <div style="background:#f0f9ff; padding:20px; width:95px; text-align:center; border-right:1px solid #e2e8f0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 <span style="font-size:20px; font-weight:900; color:#2596be;">${item.hora || '--'}</span>
             </div>
@@ -1944,23 +1902,42 @@ async function generateTripPDF(tripId) {
                 <div style="font-size:12px; color:#2596be; font-weight:700; margin-bottom:12px;">
                     📍 ${item.endereco || parseFullAddress(item)}
                 </div>
-                ${item.observacoes ? `<div style="font-size:12px; color:#4a5568; line-height:1.6; border-top:1px solid #f0f0f0; padding-top:10px;"><b>Dica:</b> ${item.observacoes}</div>` : ''}
+                ${item.observacoes ? `<div style="font-size:12px; color:#4a5568; line-height:1.6; border-top: 1px solid #f0f0f0; padding-top:10px;"><b>Dica:</b> ${item.observacoes}</div>` : ''}
             </div>
             ${mapImgSrc ? `
             <div style="width:160px; background:#f7f9fb; border-left:1px solid #e2e8f0; flex-shrink:0; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;">
+                <img src="${mapImgSrc}" style="width:100%; height:100%; object-fit:cover;" crossOrigin="anonymous">
             </div>` : ''}
         </div>`;
     });
  
     pdfHtml += `</div>`;
  
-    // 5. Aguarda fontes carregarem
+    // 4. Cria container com position:fixed (ignora body flex completamente)
+    const container = document.createElement('div');
+    container.innerHTML = pdfHtml;
+    container.style.cssText = 'position:fixed; top:0; left:0; width:750px; background:#ffffff; z-index:1999; pointer-events:none;';
+    document.body.appendChild(container);
+ 
+    // 5. Aguarda TODAS as imagens dentro do container carregarem
+    const images = container.querySelectorAll('img');
+    if (images.length > 0) {
+        await Promise.all(Array.from(images).map(img => {
+            if (img.complete && img.naturalHeight > 0) return Promise.resolve();
+            return new Promise(resolve => {
+                img.onload = resolve;
+                img.onerror = resolve; // não trava em falhas
+            });
+        }));
+    }
+ 
+    // 6. Aguarda fontes + tempo extra para o browser pintar tudo
     if (document.fonts && document.fonts.ready) {
         await document.fonts.ready;
     }
+    await new Promise(r => setTimeout(r, 500));
  
-    // 6. Gera o PDF
+    // 7. Captura com html2pdf a partir do container DOM (imagens já carregadas)
     const opt = {
         margin: [10, 0, 20, 0],
         filename: 'Roteiro_' + trip.title.replace(/\s+/g, '_') + '.pdf',
@@ -1971,8 +1948,7 @@ async function generateTripPDF(tripId) {
             useCORS: true,
             letterRendering: true,
             scrollY: 0,
-            windowWidth: 800,
-            logging: false
+            windowWidth: 750
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
@@ -1980,7 +1956,7 @@ async function generateTripPDF(tripId) {
     try {
         await html2pdf()
             .set(opt)
-            .from(pdfHtml, 'string')
+            .from(container)
             .toPdf()
             .get('pdf')
             .then(function (pdf) {
@@ -1998,11 +1974,13 @@ async function generateTripPDF(tripId) {
             })
             .save();
  
+        if (container.parentNode) container.parentNode.removeChild(container);
         finishPdf();
         showToast("✓ PDF exportado com sucesso!");
  
     } catch (err) {
         console.error("Erro ao gerar PDF:", err);
+        if (container.parentNode) container.parentNode.removeChild(container);
         finishPdf();
         showToast("Erro ao processar PDF.");
     }
