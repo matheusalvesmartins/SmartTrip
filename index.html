@@ -1819,7 +1819,7 @@ function backToWizard() {
   }, 300);
 }
 
-/* ================= EXPORTAÇÃO PDF (CORREÇÃO BASE64 E OVERFLOW DOM) ================= */
+/* ================= EXPORTAÇÃO PDF (CORREÇÃO DEFINITIVA) ================= */
 async function generateTripPDF(tripId) {
     const trip = savedTrips.find(t => t.id === tripId);
     if (!trip) return;
@@ -1827,25 +1827,23 @@ async function generateTripPDF(tripId) {
     // 1. Atualiza tela de loading
     const loadingOverlay = document.getElementById('loading');
     const originalContent = loadingOverlay.innerHTML;
+    const origBackground = loadingOverlay.style.background;
     
+    // Fundo 100% sólido para esconder o truque de CSS que faremos abaixo
+    loadingOverlay.style.background = '#ffffff'; 
     loadingOverlay.innerHTML = `
         <div class="loading-compass" style="margin-bottom: 10px;"></div>
         <p style="color:var(--primary-dark); font-weight: 700; font-size: var(--text-lg); margin-top: 20px;">Gerando seu roteiro em PDF...</p>
-        <p id="loading-progress" style="color:var(--text-muted); font-size: 12px; margin-top: 5px;">Processando dados...</p>
+        <p id="loading-progress" style="color:var(--text-muted); font-size: 12px; margin-top: 5px;">Preparando dados...</p>
     `;
     loadingOverlay.classList.remove('hidden');
 
-    function finishPdf() {
-        loadingOverlay.innerHTML = originalContent;
-        loadingOverlay.classList.add('hidden');
-    }
-
-    // 2. Função Helper: Transforma imagem remota (URL) em string local Base64 via Canvas. 
-    //    Isso IMPEDE o html2canvas de dar timeout na página.
+    // Função Helper: Baixa imagem externa via Canvas e converte para texto Base64
+    // Isso impede o html2canvas de travar esperando requests externos de imagem (CORS)
     const getBase64Image = async (url) => {
         return new Promise((resolve) => {
             const img = new Image();
-            img.crossOrigin = "Anonymous"; // Exige CORS
+            img.crossOrigin = "Anonymous";
             img.onload = () => {
                 const canvas = document.createElement('canvas');
                 canvas.width = img.width;
@@ -1854,14 +1852,11 @@ async function generateTripPDF(tripId) {
                 ctx.drawImage(img, 0, 0);
                 resolve(canvas.toDataURL('image/jpeg', 0.8));
             };
-            img.onerror = () => {
-                resolve(''); // Se a API do Mapbox der erro (ex: falta de token), cai aqui e não trava.
-            };
+            img.onerror = () => resolve(''); // Fallback seguro para o SVG se o mapa falhar
             img.src = url;
         });
     };
 
-    // 3. Prepara ordenação do roteiro
     let fullRoteiro = [...(trip.hospedagens || []), ...(trip.roteiro || [])];
     fullRoteiro.sort((a, b) => {
       let dA = parseDayNum(a.dia), dB = parseDayNum(b.dia);
@@ -1874,6 +1869,7 @@ async function generateTripPDF(tripId) {
     let pdfHtml = `
     <div style="font-family: 'Montserrat', sans-serif; padding: 30px; background-color: #ffffff; background-image: url('${watermark}'); background-size: 250px 250px; color: #1a2a33; width: 750px;">
         <style>
+            /* Utilizar display: table evita cortes abruptos nas quebras de página */
             .pdf-card { display: table; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 25px; page-break-inside: avoid; break-inside: avoid; width: 100%; border-collapse: separate; table-layout: fixed; }
             .city-label { background:#15556c; color:white; padding:10px 25px; border-radius:6px; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:2.5px; margin: 30px 0 15px; display:inline-block; page-break-after: avoid; break-after: avoid; }
             .day-header { font-size:22px; font-weight:800; color:#2596be; margin: 25px 0 15px; border-left: 6px solid #B8D430; padding-left: 15px; page-break-after: avoid; break-after: avoid; }
@@ -1897,7 +1893,7 @@ async function generateTripPDF(tripId) {
     let processedCount = 0;
     const progressEl = document.getElementById('loading-progress');
 
-    // 4. Loop assíncrono para gerar todo o HTML e as imagens Base64
+    // 2. Loop assíncrono para gerar todo o HTML e as imagens Base64
     for (const item of fullRoteiro) {
         processedCount++;
         if (progressEl) progressEl.innerText = `Processando mapas... (${processedCount}/${fullRoteiro.length})`;
@@ -1919,7 +1915,6 @@ async function generateTripPDF(tripId) {
             base64Map = await getBase64Image(mapImgSrc); 
         }
 
-        // Tabela é a estrutura mais inquebrável para o html2canvas não fatiar as bordas!
         pdfHtml += `
         <table class="pdf-card">
             <tr>
@@ -1929,7 +1924,7 @@ async function generateTripPDF(tripId) {
                 <td style="padding:20px; vertical-align:middle;">
                     <div style="margin-bottom:10px;">
                         <span style="font-size:17px; font-weight:800; color:#1a2a33;">${item.atividade}</span>
-                        <span style="font-size:9px; font-weight:800; background:#B8D430; color:#15556c; padding:4px 10px; border-radius:5px; text-transform:uppercase; margin-left:10px;">${item.categoria || 'Visita'}</span>
+                        <span style="font-size:9px; font-weight:800; background:#B8D430; color:#15556c; padding:4px 10px; border-radius:5px; text-transform:uppercase; margin-left:10px; white-space:nowrap;">${item.categoria || 'Visita'}</span>
                     </div>
                     <div style="font-size:12px; color:#2596be; font-weight:700; margin-bottom:12px;">
                         📍 ${item.endereco || parseFullAddress(item)}
@@ -1940,7 +1935,7 @@ async function generateTripPDF(tripId) {
                     ${base64Map ? `<img src="${base64Map}" style="width:160px; height:100%; object-fit:cover; display:block;">` : 
                     `<div style="width:160px; height:150px; background-color:#f1f5f9; background-image:radial-gradient(#cbd5e1 1.5px, transparent 1.5px); background-size:15px 15px; text-align:center; padding-top:55px; box-sizing:border-box;">
                         <span style="font-size:24px;">📍</span>
-                        <div style="font-size:8px; font-weight:800; color:#64748b; margin-top:6px; text-transform:uppercase; letter-spacing:1px;">Ver Mapa</div>
+                        <div style="font-size:8px; font-weight:800; color:#64748b; margin-top:6px; text-transform:uppercase; letter-spacing:1px;">Mapa Indisponível</div>
                     </div>`}
                 </td>
             </tr>
@@ -1951,8 +1946,11 @@ async function generateTripPDF(tripId) {
 
     if(progressEl) progressEl.innerText = "Montando documento final...";
 
-    // 5. MÁGICA: Destrava o overflow do Body do app!
-    // Se não fizermos isso, o html2canvas vai "ler" o app como travado na altura da tela (100vh) e vai cortar o PDF gerando uma tela branca no final.
+    // 3. O GRANDE TRUQUE DE CSS: Esconde a interface do App temporariamente e destrava o scroll de Body e Html.
+    // Assim o html2canvas consegue enxergar a altura real do conteúdo criado.
+    const appElements = document.querySelectorAll('.topbar, .main-content, .bottom-nav, .fab, .pattern-bg');
+    appElements.forEach(el => el.style.display = 'none');
+
     const origHtmlOverflow = document.documentElement.style.overflow;
     const origHtmlHeight = document.documentElement.style.height;
     const origBodyOverflow = document.body.style.overflow;
@@ -1963,58 +1961,70 @@ async function generateTripPDF(tripId) {
     document.body.style.overflow = 'visible';
     document.body.style.height = 'auto';
 
-    // 6. Configuração e Geração a partir da String HTML diretamente (Passando pelo from())
+    // 4. Injeta o HTML no Body da página (Ficará escondido atrás da tela sólida de loading)
+    const container = document.createElement('div');
+    container.innerHTML = pdfHtml;
+    container.style.width = '750px';
+    container.style.margin = '0 auto';
+    document.body.appendChild(container);
+
     const opt = {
-        margin: [10, 0, 20, 0], // Margem inferior de 20mm para acomodar o rodapé (JS)
+        margin: [10, 0, 20, 0], // Margem inferior de 20mm para acomodar o rodapé seguro
         filename: 'Roteiro_' + trip.title.replace(/\s+/g, '_') + '.pdf',
         pagebreak: { mode: ['css', 'legacy'] },
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true, logging: false, windowWidth: 800 },
+        html2canvas: { scale: 2, useCORS: true, letterRendering: true, windowWidth: 800 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    try {
-        await html2pdf()
-            .set(opt)
-            .from(pdfHtml) // Utiliza a string direto! Muito mais limpo e estável.
-            .toPdf()
-            .get('pdf')
-            .then(function (pdf) {
-                const totalPages = pdf.internal.getNumberOfPages();
-                
-                // Carimba o rodapé e numeração no documento inteiro
-                for (let i = 1; i <= totalPages; i++) {
-                    pdf.setPage(i);
-                    pdf.setFontSize(8);
-                    pdf.setTextColor(136, 150, 164); // --text-muted
-                    
-                    const pageWidth = pdf.internal.pageSize.getWidth();
-                    const pageHeight = pdf.internal.pageSize.getHeight();
-                    
-                    pdf.text('Guia de itinerário privado. Documento gerado por SmartTrip App ©. | ' + trip.title, 10, pageHeight - 8);
-                    pdf.text(i + '/' + totalPages, pageWidth - 15, pageHeight - 8);
-                }
-            })
-            .save();
-
-        // Volta a página ao normal
+    // Função para restaurar a UI
+    const restoreApp = () => {
+        document.body.removeChild(container);
         document.documentElement.style.overflow = origHtmlOverflow;
         document.documentElement.style.height = origHtmlHeight;
         document.body.style.overflow = origBodyOverflow;
         document.body.style.height = origBodyHeight;
+        appElements.forEach(el => el.style.display = '');
+        
+        loadingOverlay.style.background = origBackground;
+        loadingOverlay.innerHTML = originalContent;
+        loadingOverlay.classList.add('hidden');
+    };
 
-        finishPdf();
-        showToast("✓ PDF exportado com sucesso!");
+    // 5. Aguarda 1 segundo para o Chrome renderizar as fontes e capturar o Canvas
+    setTimeout(async () => {
+        try {
+            await html2pdf()
+                .set(opt)
+                .from(container)
+                .toPdf()
+                .get('pdf')
+                .then(function (pdf) {
+                    // Carimba o rodapé usando a API nativa
+                    const totalPages = pdf.internal.getNumberOfPages();
+                    for (let i = 1; i <= totalPages; i++) {
+                        pdf.setPage(i);
+                        pdf.setFontSize(8);
+                        pdf.setTextColor(136, 150, 164); // --text-muted
+                        
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+                        
+                        pdf.text('Guia de itinerário privado. Documento gerado por SmartTrip App ©. | ' + trip.title, 10, pageHeight - 8);
+                        pdf.text(i + '/' + totalPages, pageWidth - 15, pageHeight - 8);
+                    }
+                })
+                .save();
 
-    } catch (err) {
-        console.error("Erro ao gerar PDF:", err);
-        document.documentElement.style.overflow = origHtmlOverflow;
-        document.documentElement.style.height = origHtmlHeight;
-        document.body.style.overflow = origBodyOverflow;
-        document.body.style.height = origBodyHeight;
-        finishPdf();
-        showToast("Erro ao processar PDF.");
-    }
+            restoreApp();
+            showToast("✓ PDF exportado com sucesso!");
+
+        } catch (err) {
+            console.error("Erro ao gerar PDF:", err);
+            restoreApp();
+            showToast("Erro ao processar PDF.");
+        }
+    }, 1000); 
 }
 </script>
 
