@@ -1910,7 +1910,7 @@ async function generateTripPDF(tripId) {
         }
 
         let coords = extractCoords(item.google_maps);
-        let mapImgSrc = coords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-marker+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14,0/300x300?access_token=SUA_CHAVE_MAPBOX_AQUI` : '';
+        let mapImgSrc = coords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-marker+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14,0/300x300?access_token=pk.eyJ1IjoibS1hbHZlc21hcnRpbnMiLCJhIjoiY21vZXV5NzlvMGpqajJxcHdscmF2eHNkcCJ9.68vvBSKBe29Wc7WUvrBImw` : '';
         let base64Map = mapImgSrc ? await getBase64Image(mapImgSrc) : '';
 
         // Envolve a tabela inteira numa div page-break-inside avoid: garante não fatiar os cards.
