@@ -237,9 +237,46 @@ textarea.wiz-input { resize:none; height:120px; line-height:1.6; font-size:var(-
 .chat-msg { max-width: 85%; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: var(--text-base); }
 .chat-msg.bot { align-self: flex-start; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); border-radius: 12px 12px 12px 0; box-shadow: var(--shadow); }
 .chat-msg.user { align-self: flex-end; background: var(--primary); color: white; border-radius: 12px 12px 0 12px; box-shadow: var(--shadow); }
+
+/* Splash Screen (Tela de Abertura) */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  background-color: var(--bg);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+}
+.splash-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.splash-compass-wrapper {
+  transform: scale(1.2); /* Deixa a bússola um pouco maior na tela de entrada */
+  position: relative;
+  z-index: 2;
+}
+
 </style>
 </head>
 <body>
+
+<script>
+  (function() {
+    let settings = JSON.parse(localStorage.getItem('smartTripSettings') || '{"theme":"light"}');
+    if (settings.theme === 'dark') document.body.classList.add('dark-theme');
+  })();
+</script>
+
+<div class="splash-screen" id="splash-screen">
+  <div class="pattern-bg" style="opacity: var(--pattern-opacity);"></div>
+  <div class="splash-compass-wrapper">
+    <div class="loading-compass"></div>
+  </div>
+</div>
 
 <div class="pattern-bg"></div>
 
@@ -645,8 +682,31 @@ const BRAND_COLORS = [
   { bg: '#B8D430', text: '#15556c' }, { bg: '#8EA622', text: '#ffffff' }, { bg: '#1a2a33', text: '#ffffff' }
 ];
 
+/* ================= SPLASH SCREEN ================= */
+let splashTimeout;
+function playSplashScreen() {
+  const splash = document.getElementById('splash-screen');
+  if (!splash) return;
+  
+  clearTimeout(splashTimeout);
+  splash.classList.remove('hidden'); // Exibe a tela
+  
+  // Oculta suavemente após 1.2 segundos
+  splashTimeout = setTimeout(() => {
+      splash.classList.add('hidden');
+  }, 1200);
+}
+
+// Gatilho: Quando você minimiza o navegador e volta pro App (Page Visibility API)
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+      playSplashScreen();
+  }
+});
+  
 window.onload = () => {
   applyGlobalSettings();
+  playSplashScreen(); // Aciona a Splash Screen no F5 / Abertura inicial
   renderIconOptions();
   loadTripsFromStorage();
   
