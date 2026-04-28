@@ -673,6 +673,8 @@ async function startGeocoding(tripId) {
     let trip = savedTrips.find(t => t.id === tripId);
     if (!trip) return;
 
+    // Força o status para true para iniciar o processo
+    trip.isGeocoding = true;
     let needsSave = false;
     let allItems = [...(trip.roteiro || []), ...(trip.hospedagens || [])];
 
@@ -682,41 +684,52 @@ async function startGeocoding(tripId) {
             let coords = extractCoords(item.google_maps);
             if (coords) {
                 try {
-                    let res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1`);
-                    let data = await res.json();
-                    if (data && data.display_name) {
-                        let addr = data.address;
-                        let street = addr.road || addr.pedestrian || addr.suburb || "";
-                        let number = addr.house_number || "";
-                        let suburb = addr.suburb || addr.neighbourhood || addr.city_district || "";
-                        
-                        let formatted = "";
-                        if(street) formatted += street;
-                        if(number) formatted += ", " + number;
-                        if(suburb) formatted += " - " + suburb;
-                        
-                        if(formatted === "") formatted = data.display_name.split(',').slice(0,3).join(',');
+                    // Cache Buster e instrução no-store para o Safari não reutilizar requisições travadas
+                    let url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1&_=${new Date().getTime()}`;
+                    let res = await fetch(url, {
+                        headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' },
+                        cache: 'no-store'
+                    });
+                    
+                    if (res.ok) {
+                        let data = await res.json();
+                        if (data && data.display_name) {
+                            let addr = data.address;
+                            let street = addr.road || addr.pedestrian || addr.suburb || "";
+                            let number = addr.house_number || "";
+                            let suburb = addr.suburb || addr.neighbourhood || addr.city_district || "";
+                            
+                            let formatted = "";
+                            if(street) formatted += street;
+                            if(number) formatted += ", " + number;
+                            if(suburb) formatted += " - " + suburb;
+                            
+                            if(formatted === "") formatted = data.display_name.split(',').slice(0,3).join(',');
 
-                        item.endereco = formatted;
+                            item.endereco = formatted;
+                        } else {
+                            item.endereco = "Endereço não localizado";
+                        }
                     } else {
                         item.endereco = "Endereço não localizado";
                     }
                 } catch (e) {
                     console.error("Geocoding error", e);
-                    item.endereco = "Endereço indisponível";
+                    // Não marca como indisponível definitivo se for falha de rede temporária
+                    item.endereco = ""; 
                 }
                 needsSave = true;
                 saveTripsToStorage();
                 renderHomeTrips(); 
-                await new Promise(r => setTimeout(r, 1200)); // Rate limit de 1 req/s
+                await new Promise(r => setTimeout(r, 1200)); // Rate limit obrigatório do OSM
             } else {
-                // Sem coords, faz fallback pro parser manual do url
                 item.endereco = parseAddressLocal(item.google_maps);
                 needsSave = true;
             }
         }
     }
     
+    // Libera a trava ao finalizar
     trip.isGeocoding = false;
     if (needsSave) {
         saveTripsToStorage();
@@ -1004,14 +1017,15 @@ function checkImportStatus() {
       trip.roteiro = importContext.roteiro; trip.hospedagens = importContext.hospedagens;
       trip.title = importContext.customName; trip.sheetUrl = importContext.url; trip.icon = importContext.customIcon;
       
-      trip.isGeocoding = true;
+      // Quebra a trava de background do iOS à força
+      trip.isGeocoding = false;
       setTimeout(() => startGeocoding(trip.id), 500);
 
       saveTripsToStorage(); renderHomeTrips(); updateTopSelector();
       if(activeTripId === trip.id) changeActiveTrip(trip.id, true);
       showToast('Sincronização concluída!');
     } else {
-      let newTrip = { id: 'trip_' + Date.now(), title: importContext.customName || 'Nova Viagem', roteiro: importContext.roteiro, hospedagens: importContext.hospedagens, sheetUrl: importContext.url, icon: importContext.customIcon || 'mat:flight_takeoff', isGeocoding: true };
+      let newTrip = { id: 'trip_' + Date.now(), title: importContext.customName || 'Nova Viagem', roteiro: importContext.roteiro, hospedagens: importContext.hospedagens, sheetUrl: importContext.url, icon: importContext.customIcon || 'mat:flight_takeoff', isGeocoding: false };
       savedTrips.push(newTrip); saveTripsToStorage(); renderHomeTrips(); updateTopSelector(); changeActiveTrip(newTrip.id);
       
       setTimeout(() => startGeocoding(newTrip.id), 500);
@@ -1171,6 +1185,14 @@ function changeActiveTrip(tripId, skipNav = false) {
   activeHospedagens = (trip.hospedagens || []).sort((a,b) => parseDayNum(a.dia) - parseDayNum(b.dia));
   
   clearFilters(null, true); populateFilters();
+  
+  // VERIFICAÇÃO AUTOMÁTICA: Força o Geocoding se algo ficou pendente ao abrir a viagem
+  let allItems = [...activeRoteiro, ...activeHospedagens];
+  let missingGeocode = allItems.some(i => !i.endereco && extractCoords(i.google_maps));
+  if (missingGeocode) {
+      trip.isGeocoding = false; // Destrava e força a continuidade
+      setTimeout(() => startGeocoding(trip.id), 500);
+  }
   
   if(!skipNav) {
     let currentActive = document.querySelector('.nav-item.active').id.replace('nav-', '');
