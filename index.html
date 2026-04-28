@@ -1819,15 +1819,14 @@ function backToWizard() {
   }, 300);
 }
 
-/* ================= EXPORTAÇÃO PDF (CORREÇÃO DE MEMÓRIA EM LOTES E UI DE DOWNLOAD) ================= */
+/* ================= EXPORTAÇÃO PDF (CORREÇÃO CHUNKS E UI DE DOWNLOAD) ================= */
 async function generateTripPDF(tripId) {
     const trip = savedTrips.find(t => t.id === tripId);
     if (!trip) return;
 
-    // 1. Tela de Loading
+    // 1. Tela de Loading Bloqueadora
     const loadingOverlay = document.getElementById('loading');
     
-    // Salva o estado original com segurança para não perder ao longo dos processos
     if (!window.origLoadingOverlayHTML) {
         window.origLoadingOverlayHTML = loadingOverlay.innerHTML;
     }
@@ -1839,7 +1838,7 @@ async function generateTripPDF(tripId) {
     loadingOverlay.innerHTML = `
         <div class="loading-compass" style="margin-bottom: 10px;"></div>
         <p style="color:var(--primary-dark); font-weight: 700; font-size: var(--text-lg); margin-top: 20px; text-align:center;">Gerando seu roteiro em PDF...</p>
-        <p id="loading-progress" style="color:var(--text-muted); font-size: 12px; margin-top: 5px; text-align:center;">Carregando mapas...</p>
+        <p id="loading-progress" style="color:var(--text-muted); font-size: 12px; margin-top: 5px; text-align:center;">Preparando mapas...</p>
     `;
     loadingOverlay.classList.remove('hidden');
 
@@ -1850,19 +1849,24 @@ async function generateTripPDF(tripId) {
         loadingOverlay.classList.add('hidden');
     };
 
-    // 2. Helper: Converte imagem do Mapbox para Base64 (Imune a CORS)
+    // 2. Helper Imune a Falhas: Converte Mapa p/ Base64 para poupar rede no momento de gerar
     const getBase64Image = async (url) => {
         return new Promise((resolve) => {
-            if (!url) resolve('');
+            if (!url) { resolve(''); return; }
             const img = new Image();
             img.crossOrigin = "Anonymous";
             img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.width = img.naturalWidth || 300;
-                canvas.height = img.naturalHeight || 300;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                resolve(canvas.toDataURL('image/jpeg', 0.85));
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth || 300;
+                    canvas.height = img.naturalHeight || 300;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                } catch (e) {
+                    console.warn("Aviso: Canvas bloqueado por CORS. Usando URL direta.");
+                    resolve(url); // Fallback para URL crua
+                }
             };
             img.onerror = () => resolve(''); 
             img.src = url;
@@ -1883,30 +1887,31 @@ async function generateTripPDF(tripId) {
     let processedCount = 0;
     const progressEl = document.getElementById('loading-progress');
 
-    // 3. Sistema de Chunks (Lotes de 15 em 15 atividades)
+    // 3. Empacotamento em Lotes (15 atividades = 1 lote PDF) para não explodir a memória RAM
     const CHUNK_SIZE = 15;
-    const elementsToRender = [];
+    const htmlChunks = [];
     let currentChunkHtml = '';
     let itemCount = 0;
 
     for (let i = 0; i < fullRoteiro.length; i++) {
         const item = fullRoteiro[i];
         processedCount++;
-        if (progressEl) progressEl.innerText = `Analisando e baixando mapas (${processedCount}/${fullRoteiro.length})...`;
+        if (progressEl) progressEl.innerText = `Analisando roteiro (${processedCount}/${fullRoteiro.length})...`;
 
+        // Cabeçalho Principal (Apenas na Página 1)
         if (itemCount === 0) {
             currentChunkHtml = `<div style="font-family: 'Montserrat', sans-serif; padding: 30px; background-color: #ffffff; background-image: url('${watermark}'); background-size: 250px 250px; color: #1a2a33; width: 800px; box-sizing: border-box;">`;
             
             if (i === 0) {
                 currentChunkHtml += `
-                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #2596be; padding-bottom:15px; margin-bottom:30px;">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                            <div style="width:4px; height:24px; background:#B8D430; transform:rotate(45deg); border-radius:2px;"></div>
+                <div style="display:table; width:100%; border-bottom:3px solid #2596be; padding-bottom:15px; margin-bottom:30px;">
+                    <div style="display:table-cell; vertical-align:middle; width:70%;">
+                        <div style="display:inline-block; width:45px; height:45px; border:3.5px solid #2596be; border-radius:50%; vertical-align:middle; text-align:center;">
+                            <div style="width:4px; height:24px; background:#B8D430; transform:rotate(45deg); display:inline-block; margin-top:9px;"></div>
                         </div>
-                        <span style="font-size:26px; font-weight:900; color:#2596be; letter-spacing:-1px;">SmartTrip</span>
+                        <span style="font-size:26px; font-weight:900; color:#2596be; letter-spacing:-1px; vertical-align:middle; margin-left:12px;">SmartTrip</span>
                     </div>
-                    <div style="text-align:right">
+                    <div style="display:table-cell; vertical-align:middle; text-align:right;">
                         <div style="font-size:18px; font-weight:800; color:#15556c;">${trip.title}</div>
                         <div style="font-size:10px; color:#8896a4; text-transform:uppercase; letter-spacing:1px; margin-top:4px;">Guia de Itinerário</div>
                     </div>
@@ -1924,8 +1929,16 @@ async function generateTripPDF(tripId) {
         }
 
         let coords = extractCoords(item.google_maps);
-        let mapImgSrc = coords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-s-marker+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14/300x300?access_token=pk.eyJ1IjoibS1hbHZlc21hcnRpbnMiLCJhIjoiY21vZXV5NzlvMGpqajJxcHdscmF2eHNkcCJ9.68vvBSKBe29Wc7WUvrBImw` : '';
+        let mapImgSrc = coords ? `https://api.mapbox.com/styles/v1/mapbox/streets-v12/static/pin-l+2596be(${coords.lng},${coords.lat})/${coords.lng},${coords.lat},14,0/300x300?access_token=pk.eyJ1IjoibS1hbHZlc21hcnRpbnMiLCJhIjoiY21vZXV5NzlvMGpqajJxcHdscmF2eHNkcCJ9.68vvBSKBe29Wc7WUvrBImw` : '';
         let base64Map = mapImgSrc ? await getBase64Image(mapImgSrc) : '';
+
+        // Tabela é usada pois protege 100% o Card de ser cortado na quebra da folha A4
+        let mapDisplay = base64Map 
+            ? `<img src="${base64Map}" style="width:160px; height:150px; object-fit:cover; display:block; border-top-right-radius:12px; border-bottom-right-radius:12px;">` 
+            : `<div style="width:160px; height:150px; background-color:#f1f5f9; padding-top:55px; box-sizing:border-box; text-align:center; border-top-right-radius:12px; border-bottom-right-radius:12px;">
+                <span style="font-size:24px;">📍</span><br>
+                <span style="font-size:8px; font-weight:800; color:#8896a4; text-transform:uppercase;">Mapa</span>
+               </div>`;
 
         currentChunkHtml += `
         <div style="page-break-inside: avoid; break-inside: avoid; margin-bottom: 25px;">
@@ -1945,11 +1958,7 @@ async function generateTripPDF(tripId) {
                         ${item.observacoes ? `<div style="font-size:12px; color:#4a5568; line-height:1.6; border-top: 1px solid #f0f0f0; padding-top:10px;"><b>Dica:</b> ${item.observacoes}</div>` : ''}
                     </td>
                     <td style="width:160px; background:#f7f9fb; border-left:1px solid #e2e8f0; padding:0; vertical-align:middle; text-align:center; height:100%;">
-                        ${base64Map ? `<img src="${base64Map}" style="width:100%; height:100%; object-fit:cover; display:block; min-height: 120px;">` : 
-                        `<div style="padding: 40px 10px; box-sizing:border-box;">
-                            <span style="font-size:24px;">📍</span><br>
-                            <span style="font-size:8px; font-weight:800; color:#8896a4; text-transform:uppercase;">Mapa Indisponível</span>
-                        </div>`}
+                        ${mapDisplay}
                     </td>
                 </tr>
             </table>
@@ -1957,64 +1966,69 @@ async function generateTripPDF(tripId) {
 
         itemCount++;
 
-        // Encerra a div do Lote
+        // Fim de Lote: Joga o pacote para a fila e zera o HTML base
         if (itemCount === CHUNK_SIZE || i === fullRoteiro.length - 1) {
             currentChunkHtml += `</div>`;
-            
-            let tempDiv = document.createElement('div');
-            tempDiv.innerHTML = currentChunkHtml;
-            tempDiv.style.position = 'absolute';
-            tempDiv.style.left = '-9999px';
-            tempDiv.style.top = '0';
-            tempDiv.style.width = '800px'; 
-            document.body.appendChild(tempDiv);
-            
-            elementsToRender.push(tempDiv);
-            
+            htmlChunks.push(currentChunkHtml);
             itemCount = 0;
             currentChunkHtml = '';
         }
     }
 
-    if(progressEl) progressEl.innerText = "Montando documento final...";
+    if(progressEl) progressEl.innerText = "Empacotando documento...";
 
-    // 4. Configuração Inicial do PDF com Trava para Mobile (800px)
+    // 4. DESTRAVA DO APP (Sem isso os Pdfs geram páginas infinitamente em branco)
+    const appElements = document.querySelectorAll('.topbar, .main-content, .bottom-nav, .fab, .pattern-bg');
+    appElements.forEach(el => { if(el) el.style.display = 'none'; });
+
+    const origHtmlOverflow = document.documentElement.style.overflow;
+    const origHtmlHeight = document.documentElement.style.height;
+    const origBodyOverflow = document.body.style.overflow;
+    const origBodyHeight = document.body.style.height;
+
+    document.documentElement.style.overflow = 'visible';
+    document.documentElement.style.height = 'auto';
+    document.body.style.overflow = 'visible';
+    document.body.style.height = 'auto';
+
+    // 5. Configuração Blindada (Força Escala Desktop de 800px no Mobile e protege a margem do Rodapé)
     const opt = {
         margin: [10, 0, 20, 0], 
         filename: 'Roteiro_' + trip.title.replace(/\s+/g, '_') + '.pdf',
         pagebreak: { mode: ['css', 'legacy'] },
-        image: { type: 'jpeg', quality: 0.98 },
+        image: { type: 'jpeg', quality: 0.95 },
         html2canvas: { 
             scale: 2, 
             useCORS: true, 
             letterRendering: true, 
-            windowWidth: 800, // Previne esmagamento da tabela no smartphone
-            width: 800 
+            windowWidth: 800, // A TRAVA ANTI-DISTORÇÃO DO CELULAR
+            width: 800,
+            scrollY: 0
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
     try {
-        // 5. Cadeia de Paginação
         let worker = html2pdf().set(opt);
         
-        for (let j = 0; j < elementsToRender.length; j++) {
+        // Laço Progressivo: Manda HTML como string direta e empilha de página em página sem estourar a RAM
+        for (let j = 0; j < htmlChunks.length; j++) {
             if (j === 0) {
-                worker = worker.from(elementsToRender[j]).toPdf();
+                worker = worker.from(htmlChunks[j], 'string').toPdf();
             } else {
                 worker = worker.get('pdf').then(pdf => {
                     pdf.addPage();
-                }).from(elementsToRender[j]).toContainer().toCanvas().toPdf();
+                }).from(htmlChunks[j], 'string').toContainer().toCanvas().toPdf();
             }
         }
 
-        // 6. Finaliza o processo, adiciona Rodapés e mostra UI de Download
+        // 6. Finaliza Gerando os Rodapés e Abrindo a Interface de Download Blob
         await worker.get('pdf').then(function (pdf) {
             const totalPages = pdf.internal.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 pdf.setPage(i);
                 pdf.setFontSize(8);
-                pdf.setTextColor(136, 150, 164);
+                pdf.setTextColor(136, 150, 164); // text-muted
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
                 
@@ -2023,11 +2037,14 @@ async function generateTripPDF(tripId) {
             }
         }).output('blob').then(function(blob) {
             
-            elementsToRender.forEach(div => {
-                if (div.parentNode) div.parentNode.removeChild(div);
-            });
+            // Restaura o visual do site
+            document.documentElement.style.overflow = origHtmlOverflow;
+            document.documentElement.style.height = origHtmlHeight;
+            document.body.style.overflow = origBodyOverflow;
+            document.body.style.height = origBodyHeight;
+            appElements.forEach(el => { if(el) el.style.display = ''; });
 
-            // 7. Modifica a Tela de Loading para Opções de Saída
+            // 7. Modifica a Tela para a de Sucesso com Botões Nativos
             const pdfUrl = URL.createObjectURL(blob);
             const fileName = 'Roteiro_' + trip.title.replace(/\s+/g, '_') + '.pdf';
             
@@ -2050,15 +2067,34 @@ async function generateTripPDF(tripId) {
                 </div>
             `;
 
-            // Ação de Download Direto
+            // Lógica Unificada de Download e Compartilhamento
             document.getElementById('btn-download-pdf').onclick = () => {
+                // Tenta acionar a API de Share Nativa (Para Celulares)
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([blob], fileName, { type: 'application/pdf' });
+                    if (navigator.canShare({ files: [file] })) {
+                        navigator.share({
+                            files: [file],
+                            title: 'Meu Roteiro: ' + trip.title,
+                            text: 'Confira meu roteiro de viagem pelo SmartTrip!'
+                        }).catch(err => {
+                            // Se o usuário abortar ou falhar, força o link
+                            triggerDirectDownload();
+                        });
+                        return;
+                    }
+                }
+                triggerDirectDownload();
+            };
+
+            function triggerDirectDownload() {
                 const a = document.createElement('a');
                 a.href = pdfUrl;
                 a.download = fileName;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-            };
+            }
 
             document.getElementById('btn-close-pdf').onclick = () => {
                 restoreApp();
@@ -2067,9 +2103,11 @@ async function generateTripPDF(tripId) {
 
     } catch (err) {
         console.error("Erro ao gerar PDF:", err);
-        elementsToRender.forEach(div => {
-            if (div.parentNode) div.parentNode.removeChild(div);
-        });
+        document.documentElement.style.overflow = origHtmlOverflow;
+        document.documentElement.style.height = origHtmlHeight;
+        document.body.style.overflow = origBodyOverflow;
+        document.body.style.height = origBodyHeight;
+        appElements.forEach(el => { if(el) el.style.display = ''; });
         restoreApp();
         showToast("Erro ao processar PDF.");
     }
