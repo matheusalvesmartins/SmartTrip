@@ -73,7 +73,7 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
 .filled { font-variation-settings:'FILL' 1; }
-.anim-spin { animation: spin 2s linear infinite; }
+.anim-spin { animation: spin 2s linear infinite; display: inline-block; }
 
 .topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg-card); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:64px; box-shadow: var(--shadow); position: relative;}
 .brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
@@ -966,8 +966,12 @@ function executeImport(url, updateId, customName, customIcon) {
   let sheetId = m[1]; 
   closeNewTripModal(); showLoading(updateId ? 'Sincronizando dados...' : 'Buscando roteiro...');
   importContext = { url: url, customName: customName, customIcon: customIcon, updateId: updateId, rotDone: false, hospDone: false, roteiro: [], hospedagens: [] };
-  injectScript('gviz-rot', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Roteiro&tqx=responseHandler:_cbRoteiro`);
-  injectScript('gviz-hosp', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Hospedagens&tqx=responseHandler:_cbHospedagens`);
+  
+  // Cache Buster: Usa a data atual em milissegundos para obrigar o navegador do celular a não usar o cache
+  let timestamp = new Date().getTime();
+  
+  injectScript('gviz-rot', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Roteiro&tqx=responseHandler:_cbRoteiro&_=${timestamp}`);
+  injectScript('gviz-hosp', `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?headers=1&sheet=Hospedagens&tqx=responseHandler:_cbHospedagens&_=${timestamp}`);
 }
 
 function _cbRoteiro(data) { importContext.roteiro = parseGviz(data); importContext.rotDone = true; checkImportStatus(); }
