@@ -73,7 +73,9 @@ html, body { height:100%; font-family:var(--font-body); background:var(--bg); co
 
 .material-symbols-rounded { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; user-select:none; }
 .filled { font-variation-settings:'FILL' 1; }
-.anim-spin { animation: spin 2s linear infinite; display: inline-block; }
+/* CORREÇÃO DO ÍCONE QUE NÃO GIRA */
+.anim-spin { display: inline-block !important; animation: spin 1.5s linear infinite !important; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 .topbar { display:flex; align-items:center; gap:12px; padding:12px 16px; background:var(--bg-card); border-bottom:1px solid var(--border); flex-shrink:0; z-index:100; height:64px; box-shadow: var(--shadow); position: relative;}
 .brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
@@ -728,44 +730,39 @@ window.onload = () => {
   setDefaultDates(); 
 };
 
-/* ================= GEOCODING EM BACKGROUND (Nominatim OSM) ================= */
+/* ================= GEOCODING EM BACKGROUND (MAPBOX API - ALTA PERFORMANCE) ================= */
 async function startGeocoding(tripId) {
     let trip = savedTrips.find(t => t.id === tripId);
     if (!trip) return;
 
-    // Força o status para true para iniciar o processo
+    // Trava ativada para iniciar o processo
     trip.isGeocoding = true;
     let needsSave = false;
     let allItems = [...(trip.roteiro || []), ...(trip.hospedagens || [])];
 
+    // COLE A SUA CHAVE DO MAPBOX AQUI (A mesma que você usa para gerar as imagens do PDF)
+    const MAPBOX_TOKEN = 'pk.eyJ1IjoibS1hbHZlc21hcnRpbnMiLCJhIjoiY21vZXV5NzlvMGpqajJxcHdscmF2eHNkcCJ9.68vvBSKBe29Wc7WUvrBImw'; 
+
     for (let i = 0; i < allItems.length; i++) {
         let item = allItems[i];
+        
         if (!item.endereco) {
             let coords = extractCoords(item.google_maps);
             if (coords) {
                 try {
-                    // Cache Buster e instrução no-store para o Safari não reutilizar requisições travadas
-                    let url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}&addressdetails=1&_=${new Date().getTime()}`;
-                    let res = await fetch(url, {
-                        headers: { 'Accept-Language': 'pt-BR,pt;q=0.9' },
-                        cache: 'no-store'
-                    });
+                    // API do Mapbox - Muito mais rápida e com limite altíssimo (600 req/minuto)
+                    let url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${coords.lng},${coords.lat}.json?access_token=${MAPBOX_TOKEN}&language=pt`;
+                    let res = await fetch(url, { cache: 'no-store' });
                     
                     if (res.ok) {
                         let data = await res.json();
-                        if (data && data.display_name) {
-                            let addr = data.address;
-                            let street = addr.road || addr.pedestrian || addr.suburb || "";
-                            let number = addr.house_number || "";
-                            let suburb = addr.suburb || addr.neighbourhood || addr.city_district || "";
+                        if (data.features && data.features.length > 0) {
+                            // O Mapbox retorna algo como "Avenida 9 de Julio 1000, San Nicolás, Buenos Aires, Argentina"
+                            let formatted = data.features[0].place_name;
                             
-                            let formatted = "";
-                            if(street) formatted += street;
-                            if(number) formatted += ", " + number;
-                            if(suburb) formatted += " - " + suburb;
+                            // Removemos o país do final da string para deixar o endereço mais limpo no PDF
+                            formatted = formatted.split(',').slice(0, 3).join(',').trim();
                             
-                            if(formatted === "") formatted = data.display_name.split(',').slice(0,3).join(',');
-
                             item.endereco = formatted;
                         } else {
                             item.endereco = "Endereço não localizado";
@@ -775,21 +772,23 @@ async function startGeocoding(tripId) {
                     }
                 } catch (e) {
                     console.error("Geocoding error", e);
-                    // Não marca como indisponível definitivo se for falha de rede temporária
-                    item.endereco = ""; 
+                    item.endereco = ""; // Deixa vazio para tentar de novo se a internet cair
                 }
                 needsSave = true;
                 saveTripsToStorage();
                 renderHomeTrips(); 
-                await new Promise(r => setTimeout(r, 1200)); // Rate limit obrigatório do OSM
+                
+                // Intervalo minúsculo: 100 milissegundos (Processa 10 endereços por segundo sem bloquear a API)
+                await new Promise(r => setTimeout(r, 100)); 
             } else {
+                // Caso o usuário não tenha colocado link do Maps com coordenadas na planilha
                 item.endereco = parseAddressLocal(item.google_maps);
                 needsSave = true;
             }
         }
     }
     
-    // Libera a trava ao finalizar
+    // Libera a trava ao finalizar e libera o botão de gerar PDF
     trip.isGeocoding = false;
     if (needsSave) {
         saveTripsToStorage();
